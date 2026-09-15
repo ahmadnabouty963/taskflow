@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="TaskFlow helps small teams plan projects, assign tasks and keep work moving."
+    />
+
+    <title>TaskFlow — Project management without the clutter</title>
+
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="container header-content">
+        <a class="brand" href="#" aria-label="TaskFlow homepage">
+          <span class="brand-mark" aria-hidden="true">TF</span>
+          <span>TaskFlow</span>
+        </a>
+
+        <nav class="desktop-navigation" aria-label="Main navigation">
+          <ul>
+            <li><a href="#product">Product</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">Why TaskFlow?</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <a class="text-link" href="#login">Log in</a>
+          <a class="small-button" href="#signup">Start free</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-layout">
+          <div class="hero-copy">
+            <p class="eyebrow">
+              <span aria-hidden="true"></span>
+              Built for small teams
+            </p>
+
+            <h1>
+              Good work starts with a
+              <em>clear next step.</em>
+            </h1>
+
+            <p class="hero-description">
+              Plan projects, assign responsibilities and see what your team is
+              working on—without adding another complicated tool.
+            </p>
+
+            <div class="hero-actions">
+              <a class="button button-primary" href="#signup">
+                Create your workspace
+              </a>
+
+              <a class="button button-secondary" href="#product">
+                See how it works
+              </a>
+            </div>
+
+            <dl class="hero-stats">
+              <div>
+                <dt>Projects</dt>
+                <dd>12 active</dd>
+              </div>
+
+              <div>
+                <dt>Tasks completed</dt>
+                <dd>84 this month</dd>
+              </div>
+
+              <div>
+                <dt>Team focus</dt>
+                <dd>92%</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div id="product" class="product-preview">
+            <div class="window-bar">
+              <div class="window-dots" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+
+              <p>taskflow.local/workspace</p>
+            </div>
+
+            <div class="app-preview">
+              <aside class="preview-sidebar">
+                <a class="preview-logo" href="#" aria-label="TaskFlow"> TF </a>
+
+                <nav aria-label="Application preview">
+                  <a class="active" href="#" aria-label="Projects">
+                    <span>P</span>
+                  </a>
+
+                  <a href="#" aria-label="Tasks">
+                    <span>T</span>
+                  </a>
+
+                  <a href="#" aria-label="Team">
+                    <span>M</span>
+                  </a>
+                </nav>
+
+                <span class="avatar" aria-label="User AM">AM</span>
+              </aside>
+
+              <div class="preview-workspace">
+                <div class="workspace-header">
+                  <div>
+                    <p>Marketing team</p>
+                    <h2>Website launch</h2>
+                  </div>
+
+                  <div class="team-members" aria-label="Project members">
+                    <span>AM</span>
+                    <span>LK</span>
+                    <span>+2</span>
+                  </div>
+                </div>
+
+                <div class="workspace-toolbar">
+                  <p>
+                    <span class="status-dot"></span>
+                    8 tasks in progress
+                  </p>
+
+                  <button type="button">Add task</button>
+                </div>
+
+                <div class="task-board">
+                  <section class="task-column">
+                    <div class="column-heading">
+                      <h3>To do</h3>
+                      <span>3</span>
+                    </div>
+
+                    <article class="task-card">
+                      <span class="task-category category-research">
+                        Research
+                      </span>
+
+                      <h4>Review customer interviews</h4>
+
+                      <div class="task-meta">
+                        <span>Sep 18</span>
+                        <span class="small-avatar">AM</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <span class="task-category category-content">
+                        Content
+                      </span>
+
+                      <h4>Prepare launch announcement</h4>
+
+                      <div class="task-meta">
+                        <span>Sep 20</span>
+                        <span class="small-avatar">LK</span>
+                      </div>
+                    </article>
+                  </section>
+
+                  <section class="task-column">
+                    <div class="column-heading">
+                      <h3>In progress</h3>
+                      <span>2</span>
+                    </div>
+
+                    <article class="task-card task-card-featured">
+                      <span class="task-category category-design">
+                        Design
+                      </span>
+
+                      <h4>Build the new landing page</h4>
+
+                      <p>Finalize the layout and prepare the mobile version.</p>
+
+                      <div class="task-progress">
+                        <span style="width: 68%"></span>
+                      </div>
+
+                      <div class="task-meta">
+                        <span>68% complete</span>
+                        <span class="small-avatar">JS</span>
+                      </div>
+                    </article>
+                  </section>
+
+                  <section class="task-column">
+                    <div class="column-heading">
+                      <h3>Done</h3>
+                      <span>4</span>
+                    </div>
+
+                    <article class="task-card task-card-done">
+                      <span class="task-category category-planning">
+                        Planning
+                      </span>
+
+                      <h4>Define project milestones</h4>
+
+                      <div class="task-meta">
+                        <span>Completed</span>
+                        <span class="small-avatar">AM</span>
+                      </div>
+                    </article>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="features">
+        <div class="container">
+          <div class="section-introduction">
+            <p class="section-label">What you need, nothing you don’t</p>
+
+            <h2>A calmer way to manage busy work.</h2>
+
+            <p>
+              TaskFlow keeps the important details visible and the unnecessary
+              ones out of your way.
+            </p>
+          </div>
+
+          <div class="feature-list">
+            <article class="feature-item">
+              <span class="feature-number">01</span>
+
+              <h3>One home for every project</h3>
+
+              <p>
+                Keep tasks, deadlines and decisions together so nobody has to
+                search through messages to understand the plan.
+              </p>
+            </article>
+
+            <article class="feature-item">
+              <span class="feature-number">02</span>
+
+              <h3>Responsibilities stay visible</h3>
+
+              <p>
+                Every task has a clear owner, status and due date. Your team
+                always knows who is doing what.
+              </p>
+            </article>
+
+            <article class="feature-item">
+              <span class="feature-number">03</span>
+
+              <h3>Progress you can understand</h3>
+
+              <p>
+                Simple project views reveal what is finished, what is blocked
+                and what needs attention next.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="principle-section">
+        <div class="container principle-layout">
+          <p class="section-label">Our principle</p>
+
+          <blockquote>
+            “Project software should make the work clearer—not become more work
+            for the team.”
+          </blockquote>
+
+          <a class="button button-light" href="#signup"> Start organizing </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-content">
+        <a class="brand footer-brand" href="#">
+          <span class="brand-mark" aria-hidden="true">TF</span>
+          <span>TaskFlow</span>
+        </a>
+
+        <p>Built carefully as a full-stack learning project.</p>
+
+        <p>&copy; 2026 TaskFlow</p>
+      </div>
+    </footer>
+  </body>
+</html>
