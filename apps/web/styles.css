@@ -844,3 +844,76 @@ button:focus-visible {
     padding-block: 72px;
   }
 }
+.workflow {
+  scroll-margin-top: 76px;
+  padding-block: 110px;
+  border-top: 1px solid var(--color-line);
+  background-color: var(--color-page);
+}
+
+.workflow-content > h2 {
+  max-width: 700px;
+  margin-bottom: 56px;
+  color: var(--color-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.045em;
+}
+
+.workflow-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.workflow-step {
+  padding: 26px 24px 0 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.workflow-step::marker {
+  color: var(--color-orange);
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.workflow-step h3 {
+  margin-bottom: 14px;
+  color: var(--color-ink);
+  font-size: 1.2rem;
+}
+
+.workflow-step p {
+  max-width: 320px;
+  margin-bottom: 0;
+  color: var(--color-text);
+}
+
+@media (max-width: 720px) {
+  .workflow {
+    padding-block: 72px;
+  }
+
+  .workflow-content > h2 {
+    margin-bottom: 40px;
+  }
+
+  .workflow-list {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-left: 1.25rem;
+  }
+
+  .workflow-step {
+    padding-top: 22px;
+  }
+
+  .workflow-step p {
+    max-width: none;
+  }
+}
