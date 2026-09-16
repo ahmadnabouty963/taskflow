@@ -917,3 +917,11 @@ button:focus-visible {
     max-width: none;
   }
 }
+.task-list {
+  display: grid;
+  gap: 10px;
+}
+
+.task-list .task-card {
+  margin-bottom: 0;
+}
