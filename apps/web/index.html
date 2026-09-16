@@ -13,6 +13,7 @@
     <title>TaskFlow — Project management without the clutter</title>
 
     <link rel="stylesheet" href="./styles.css" />
+    <script src="./script.js" defer></script>
   </head>
 
   <body>
@@ -137,14 +138,14 @@
                     8 tasks in progress
                   </p>
 
-                  <button type="button">Add task</button>
+                  <button id="add-task-button" type="button">Add task</button>
                 </div>
 
                 <div class="task-board">
-                  <section class="task-column">
+                  <section id="todo-column" class="task-column">
                     <div class="column-heading">
                       <h3>To do</h3>
-                      <span>3</span>
+                      <span id="todo-count">3</span>
                     </div>
 
                     <article class="task-card">
