@@ -925,3 +925,16 @@ button:focus-visible {
 .task-list .task-card {
   margin-bottom: 0;
 }
+.task-delete-button {
+  padding: 4px 6px;
+  color: #9b3f32;
+  border: 0;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 0.55rem;
+  font-weight: 800;
+}
+.task-delete-button:hover {
+  color: #ffffff;
+  background-color: #9b3f32;
+}

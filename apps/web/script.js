@@ -75,7 +75,17 @@ function createTaskCard(task) {
   avatar.classList.add("small-avatar");
   avatar.textContent = task.assignee;
 
-  taskMeta.append(dueDate, avatar);
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.classList.add("task-delete-button");
+  deleteButton.textContent = "Delete";
+  deleteButton.setAttribute("aria-label", `Delete ${task.title}`);
+
+  deleteButton.addEventListener("click", () => {
+    deleteTask(task.id);
+  });
+
+  taskMeta.append(dueDate, avatar, deleteButton);
   taskCard.append(category, taskTitle, taskMeta);
 
   return taskCard;
@@ -121,6 +131,11 @@ function handleAddTask() {
 
   tasks.push(newTask);
 
+  saveTasks();
+  renderTasks();
+}
+function deleteTask(taskId) {
+  tasks = tasks.filter((task) => task.id !== taskId);
   saveTasks();
   renderTasks();
 }
