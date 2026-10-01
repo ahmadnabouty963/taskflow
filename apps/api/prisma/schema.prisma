@@ -24,6 +24,7 @@ model User {
   name         String
   email        String    @unique
   passwordHash String
+  sessions     Session[]
   projects     Project[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -56,4 +57,16 @@ model Task {
 
   @@index([projectId])
   @@index([status])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
