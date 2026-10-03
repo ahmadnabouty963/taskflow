@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "node --env-file=.env.test --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "dev": "node --watch src/server.js",
     "start": "node src/server.js"
   },
