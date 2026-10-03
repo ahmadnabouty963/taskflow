@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import projectRouter from "./routes/project.routes.js";
+import taskRouter from "./routes/task.routes.js";
 const app = express();
 
 app.use(express.json({ limit: "10kb" }));
@@ -17,6 +18,7 @@ app.get("/api/health", (request, response) => {
     },
   });
 });
+app.use("/api/projects/:projectId/tasks", taskRouter);
 
 app.use("/api/auth", authRouter);
 app.use("/api/projects", projectRouter);
