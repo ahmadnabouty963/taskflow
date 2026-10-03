@@ -13,8 +13,10 @@ import { projectIdParamsSchema } from "../schemas/project.schema.js";
 import {
   createTaskSchema,
   taskIdParamsSchema,
+  taskListQuerySchema,
   updateTaskSchema,
 } from "../schemas/task.schema.js";
+import { validateQuery } from "../middleware/validateQuery.js";
 
 const taskRouter = Router({
   mergeParams: true,
@@ -25,7 +27,7 @@ taskRouter.use(validateParams(projectIdParamsSchema));
 
 taskRouter.post("/", validateBody(createTaskSchema), createTask);
 
-taskRouter.get("/", getTasks);
+taskRouter.get("/", validateQuery(taskListQuerySchema), getTasks);
 taskRouter.get("/:taskId", validateParams(taskIdParamsSchema), getTaskById);
 taskRouter.patch(
   "/:taskId",

@@ -209,4 +209,72 @@ describe("Tasks API", () => {
     expect(ownerResponse.statusCode).toBe(200);
     expect(ownerResponse.body.data.task.title).toBe("Private Task");
   });
+  it("filters, searches and paginates tasks", async () => {
+    const project = await createProject(ownerAgent);
+
+    await ownerAgent.post(`/api/projects/${project.id}/tasks`).send({
+      title: "Deploy production API",
+      status: "DONE",
+      priority: "HIGH",
+    });
+
+    await ownerAgent.post(`/api/projects/${project.id}/tasks`).send({
+      title: "Deploy API documentation",
+      status: "DONE",
+      priority: "HIGH",
+    });
+
+    await ownerAgent.post(`/api/projects/${project.id}/tasks`).send({
+      title: "Fix local styling",
+      status: "TODO",
+      priority: "LOW",
+    });
+
+    const firstPageResponse = await ownerAgent.get(
+      `/api/projects/${project.id}/tasks` +
+        "?status=DONE" +
+        "&priority=HIGH" +
+        "&search=deploy" +
+        "&page=1" +
+        "&limit=1",
+    );
+
+    expect(firstPageResponse.statusCode).toBe(200);
+    expect(firstPageResponse.body.data.tasks).toHaveLength(1);
+    expect(firstPageResponse.body.data.tasks[0]).toMatchObject({
+      status: "DONE",
+      priority: "HIGH",
+    });
+    expect(firstPageResponse.body.data.pagination).toEqual({
+      page: 1,
+      limit: 1,
+      total: 2,
+      totalPages: 2,
+    });
+
+    const secondPageResponse = await ownerAgent.get(
+      `/api/projects/${project.id}/tasks` +
+        "?status=DONE" +
+        "&priority=HIGH" +
+        "&search=deploy" +
+        "&page=2" +
+        "&limit=1",
+    );
+
+    expect(secondPageResponse.statusCode).toBe(200);
+    expect(secondPageResponse.body.data.tasks).toHaveLength(1);
+    expect(secondPageResponse.body.data.pagination.page).toBe(2);
+  });
+
+  it("rejects invalid task query parameters", async () => {
+    const project = await createProject(ownerAgent);
+
+    const response = await ownerAgent.get(
+      `/api/projects/${project.id}/tasks` + "?status=FINISHED&page=0&limit=500",
+    );
+
+    expect(response.statusCode).toBe(422);
+    expect(response.body.success).toBe(false);
+    expect(response.body.error.code).toBe("VALIDATION_ERROR");
+  });
 });

@@ -49,6 +49,7 @@ export async function createTask(request, response, next) {
 export async function getTasks(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
+    const { status, priority, search, page, limit } = request.validatedQuery;
 
     const project = await findOwnedProject(projectId, request.user.id);
 
@@ -62,19 +63,56 @@ export async function getTasks(request, response, next) {
       });
     }
 
-    const tasks = await prisma.task.findMany({
-      where: {
-        projectId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const where = {
+      projectId,
+      ...(status && {
+        status,
+      }),
+      ...(priority && {
+        priority,
+      }),
+      ...(search && {
+        OR: [
+          {
+            title: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+          {
+            description: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+        ],
+      }),
+    };
+
+    const [tasks, total] = await prisma.$transaction([
+      prisma.task.findMany({
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.task.count({
+        where,
+      }),
+    ]);
 
     return response.status(200).json({
       success: true,
       data: {
         tasks,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
     });
   } catch (error) {

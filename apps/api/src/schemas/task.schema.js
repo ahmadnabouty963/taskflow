@@ -59,3 +59,19 @@ export const updateTaskSchema = z
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided.",
   });
+export const taskListQuerySchema = z.object({
+  status: z.enum(["TODO", "IN_PROGRESS", "DONE"]).optional(),
+
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+
+  search: z
+    .string()
+    .trim()
+    .min(1, "Search must not be empty.")
+    .max(100, "Search must not exceed 100 characters.")
+    .optional(),
+
+  page: z.coerce.number().int().min(1).default(1),
+
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+});
