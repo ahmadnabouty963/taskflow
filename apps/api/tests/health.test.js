@@ -16,3 +16,19 @@ describe("GET /api/health", () => {
     });
   });
 });
+
+describe("Unknown routes", () => {
+  it("returns a consistent JSON 404 response", async () => {
+    const response = await request(app).get("/api/does-not-exist");
+
+    expect(response.statusCode).toBe(404);
+
+    expect(response.body).toEqual({
+      success: false,
+      error: {
+        code: "ROUTE_NOT_FOUND",
+        message: "Route not found.",
+      },
+    });
+  });
+});

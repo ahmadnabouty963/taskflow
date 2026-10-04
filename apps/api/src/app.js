@@ -7,6 +7,7 @@ import projectRouter from "./routes/project.routes.js";
 import taskRouter from "./routes/task.routes.js";
 import { apiLimiter } from "./middleware/rateLimiters.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { notFound } from "./middleware/notFound.js";
 
 const app = express();
 
@@ -45,7 +46,7 @@ app.use("/api", apiLimiter);
 app.use("/api/auth", authRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/projects/:projectId/tasks", taskRouter);
-
+app.use(notFound);
 app.use(errorHandler);
 
 export default app;
