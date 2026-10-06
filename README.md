@@ -6,11 +6,12 @@ Registrierte Benutzer:innen können eigene Projekte erstellen, Aufgaben organisi
 
 ## Projektstatus
 
-Das Backend-MVP ist implementiert und wird aktuell für das Deployment vorbereitet.
+Das Backend-MVP ist implementiert und als öffentliche REST-API auf Render bereitgestellt.
 
 - API lokal: `http://localhost:3000`
 - Health-Endpoint: `http://localhost:3000/api/health`
-- Live-API: Wird nach dem Deployment ergänzt
+- Live-API: https://taskflow-api-ts4u.onrender.com
+- Live Health-Endpoint: https://taskflow-api-ts4u.onrender.com/api/health
 - Repository: https://github.com/ahmadnabouty963/taskflow
 
 Der Ordner `apps/web` enthält einen frühen Frontend-Prototyp mit HTML, CSS und JavaScript. Dieser Prototyp verwendet aktuell noch `localStorage` und ist nicht Bestandteil des Backend-MVP.
@@ -542,41 +543,47 @@ Benutzer:innen können ausschließlich auf ihre eigenen Projekte und Aufgaben zu
 - keine `.env`-Dateien im Repository
 - HTTPS für die Produktions-API
 
-## Dokumentation
-
-Die ausführliche Projektplanung mit Datenmodell, ER-Diagramm, Sicherheitskonzept und Technologieentscheidungen befindet sich hier:
-
-- [Projektplanung und ER-Diagramm](docs/PROJECT_PLAN.md)
-
-Das Prisma-Datenmodell befindet sich hier:
-
-- [Prisma Schema](apps/api/prisma/schema.prisma)
-
 ## Deployment
 
-Die Produktions-URL wird nach dem Deployment hier ergänzt.
+Die TaskFlow REST-API ist öffentlich auf Render verfügbar:
 
-Vor dem Deployment müssen folgende Umgebungsvariablen gesetzt werden:
+- Live-API: https://taskflow-api-ts4u.onrender.com
+- Health-Endpoint: https://taskflow-api-ts4u.onrender.com/api/health
+- API-Hosting: Render
+- Produktionsdatenbank: Neon PostgreSQL
+- Deployment-Branch: `main`
+- Root Directory: `apps/api`
+
+Render verwendet folgende Befehle:
+
+```bash
+npm ci && npm run build
+npm run db:deploy && npm start
+```
+
+Folgende Umgebungsvariablen sind in Render konfiguriert:
 
 ```env
 DATABASE_URL=...
-PORT=...
 NODE_ENV=production
 CLIENT_ORIGINS=...
-API_RATE_LIMIT_MAX=...
-AUTH_RATE_LIMIT_MAX=...
+API_RATE_LIMIT_MAX=100
+AUTH_RATE_LIMIT_MAX=10
 ```
 
-Anschließend müssen die Datenbankmigrationen ausgeführt und mindestens folgende Abläufe über HTTPS überprüft werden:
+`DATABASE_URL` enthält vertrauliche Zugangsdaten und wird nicht im Repository gespeichert. Die Variable `PORT` wird von Render automatisch bereitgestellt.
+
+Folgende Abläufe wurden am 06.10.2026 erfolgreich über HTTPS geprüft:
 
 - Health-Check
 - Registrierung
 - Login und Session-Cookie
-- Projekt-CRUD
-- Task-CRUD
+- Abruf des angemeldeten Benutzers
+- Projekterstellung und Projektauflistung
+- Task-Erstellung
 - Filterung und Pagination
-- Autorisierung
-- Logout
+
+Da ein kostenloser Render Web Service verwendet wird, kann der erste Aufruf nach längerer Inaktivität etwas länger dauern.
 
 ## Verfügbare npm-Skripte
 
@@ -585,6 +592,8 @@ Im Ordner `apps/api`:
 ```bash
 npm run dev
 npm start
+npm run build
+npm run db:deploy
 npm test
 ```
 
