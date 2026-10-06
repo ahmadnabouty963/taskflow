@@ -6,7 +6,9 @@
   "scripts": {
     "test": "node --env-file=.env.test --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "build": "prisma generate",
+    "db:deploy": "prisma migrate deploy"
   },
   "keywords": [],
   "author": "",
