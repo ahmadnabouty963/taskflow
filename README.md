@@ -234,6 +234,8 @@ Aktuell umfasst die Testsuite 18 Integrationstests für:
 - Validierung
 - Autorisierung
 - Filterung, Suche und Pagination
+- Autorisierung und Datenisolation zwischen Benutzern
+- Logout und Ungültigmachung der Session
 - CORS und Security Header
 - unbekannte Routen
 
@@ -582,6 +584,8 @@ Folgende Abläufe wurden am 06.10.2026 erfolgreich über HTTPS geprüft:
 - Projekterstellung und Projektauflistung
 - Task-Erstellung
 - Filterung und Pagination
+- Autorisierung und Datenisolation zwischen zwei Benutzern
+- Logout und Ungültigmachung der Session
 
 Da ein kostenloser Render Web Service verwendet wird, kann der erste Aufruf nach längerer Inaktivität etwas länger dauern.
 

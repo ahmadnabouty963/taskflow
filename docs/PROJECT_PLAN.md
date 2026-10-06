@@ -411,19 +411,43 @@ Automatisierte Integrationstests prüfen:
 
 Für Tests wird eine separate PostgreSQL-Datenbank verwendet, damit Entwicklungsdaten nicht verändert werden.
 
-## 12. Deployment-Plan
+## 12. Deployment
 
-Die API wird mit einer verwalteten PostgreSQL-Datenbank bereitgestellt.
+Die TaskFlow REST-API wurde am 06.10.2026 erfolgreich bereitgestellt.
 
-Für die Produktionsumgebung werden mindestens folgende Variablen benötigt:
+- Live-API: https://taskflow-api-ts4u.onrender.com
+- Health-Endpoint: https://taskflow-api-ts4u.onrender.com/api/health
+- API-Hosting: Render
+- Produktionsdatenbank: Neon PostgreSQL
+- Deployment-Branch: `main`
+- Root Directory: `apps/api`
+
+Beim Deployment werden folgende Befehle verwendet:
+
+```bash
+npm ci && npm run build
+npm run db:deploy && npm start
+```
+
+Für die Produktionsumgebung sind folgende Variablen konfiguriert:
 
 - `DATABASE_URL`
-- `PORT`
 - `NODE_ENV=production`
 - `CLIENT_ORIGINS`
 - `API_RATE_LIMIT_MAX`
 - `AUTH_RATE_LIMIT_MAX`
 
-Nach dem Deployment werden Health-Endpoint, Authentifizierung sowie Projekt- und Aufgaben-Endpunkte über HTTPS getestet.
+Die Variable `PORT` wird automatisch von Render bereitgestellt. Zugangsdaten und andere vertrauliche Werte werden ausschließlich als Umgebungsvariablen gespeichert und nicht in das Repository eingecheckt.
 
-Die Live-URL wird nach erfolgreichem Deployment in die README-Datei eingetragen.
+Nach dem Deployment wurden folgende Abläufe erfolgreich über HTTPS geprüft:
+
+- Health-Endpoint
+- Registrierung und Login
+- Session-Cookie und geschützte Endpoints
+- Projekterstellung und Projektauflistung
+- Task-Erstellung
+- Filterung und Pagination
+- Autorisierung und Datenisolation zwischen zwei Benutzern
+- Logout und Ungültigmachung der Session
+
+Der kostenlose Render Web Service kann nach längerer Inaktivität herunterfahren. Deshalb kann der erste Aufruf kurzzeitig länger dauern.
