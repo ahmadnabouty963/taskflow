@@ -36,7 +36,7 @@ app.get("/api/health", (request, response) => {
     success: true,
     data: {
       status: "ok",
-      service: "taskflow-api",
+      service: "ordanly-api",
     },
   });
 });

@@ -11,7 +11,7 @@ describe("GET /api/health", () => {
       success: true,
       data: {
         status: "ok",
-        service: "taskflow-api",
+        service: "ordanly-api",
       },
     });
   });

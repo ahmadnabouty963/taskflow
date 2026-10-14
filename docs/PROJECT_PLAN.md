@@ -1,8 +1,8 @@
-# TaskFlow REST API – Projektplanung
+# Ordanly REST API – Projektplanung
 
 ## 1. Projektzweck
 
-TaskFlow ist eine REST-API zur Verwaltung persönlicher Projekte und ihrer Aufgaben.
+Ordanly ist eine REST-API zur Verwaltung persönlicher Projekte und ihrer Aufgaben.
 
 Registrierte Benutzer:innen können Projekte erstellen, Aufgaben planen, ihren Bearbeitungsstatus verwalten und Aufgaben anhand verschiedener Kriterien suchen und filtern.
 
@@ -12,7 +12,7 @@ Die API richtet sich in der aktuellen Version an Einzelpersonen, die ihre Arbeit
 
 Aufgaben werden häufig in verschiedenen Notizen oder Anwendungen verteilt gespeichert. Dadurch gehen Prioritäten, Fristen und der aktuelle Bearbeitungsstatus schnell verloren.
 
-TaskFlow bietet dafür eine zentrale API:
+Ordanly bietet dafür eine zentrale API:
 
 - Projekte anlegen und verwalten
 - Aufgaben einem Projekt zuordnen
@@ -247,7 +247,7 @@ Cookie: session_token=...
 
 ```json
 {
-  "title": "TaskFlow Backend",
+  "title": "Ordanly Backend",
   "description": "Backend module final project"
 }
 ```
@@ -343,7 +343,7 @@ Cookie: session_token=...
 
 ## 8. Authentifizierung und Autorisierung
 
-TaskFlow verwendet eine selbst implementierte Session-Authentifizierung und keinen externen Auth-Anbieter.
+Ordanly verwendet eine selbst implementierte Session-Authentifizierung und keinen externen Auth-Anbieter.
 
 Ablauf:
 
@@ -413,7 +413,7 @@ Für Tests wird eine separate PostgreSQL-Datenbank verwendet, damit Entwicklungs
 
 ## 12. Deployment
 
-Die TaskFlow REST-API wurde am 06.10.2026 erfolgreich bereitgestellt.
+Die Ordanly REST-API wurde am 06.10.2026 erfolgreich bereitgestellt.
 
 - Live-API: https://api.ordanly.com
 - Health-Endpoint: https://api.ordanly.com/api/health

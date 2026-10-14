@@ -11,7 +11,7 @@ async function startServer() {
     console.log("Database connection successful.");
 
     app.listen(port, () => {
-      console.log(`TaskFlow API is running on http://localhost:${port}`);
+      console.log(`Ordanly API is running on http://localhost:${port}`);
     });
   } catch (error) {
     console.error("Database connection failed.");

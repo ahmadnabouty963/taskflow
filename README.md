@@ -1,6 +1,6 @@
-# TaskFlow REST API
+# Ordanly REST API
 
-TaskFlow ist eine sichere REST-API zur Verwaltung persönlicher Projekte und Aufgaben.
+Ordanly ist eine sichere REST-API zur Verwaltung persönlicher Projekte und Aufgaben.
 
 Registrierte Benutzer:innen können eigene Projekte erstellen, Aufgaben organisieren, Status und Prioritäten verwalten sowie Aufgaben suchen, filtern und seitenweise abrufen. Alle geschützten Daten sind an den angemeldeten Benutzer gebunden.
 
@@ -186,7 +186,7 @@ Erwartete Antwort:
   "success": true,
   "data": {
     "status": "ok",
-    "service": "taskflow-api"
+    "service": "ordanly-api"
   }
 }
 ```
@@ -357,7 +357,7 @@ curl -i \
   -X POST http://localhost:3000/api/projects \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "TaskFlow Backend",
+    "title": "Ordanly Backend",
     "description": "Backend module final project"
   }'
 ```
@@ -370,7 +370,7 @@ Erfolgreiche Antwort: `201 Created`
   "data": {
     "project": {
       "id": "e6a274f7-a1b8-4726-9285-a3c76c3f4857",
-      "title": "TaskFlow Backend",
+      "title": "Ordanly Backend",
       "description": "Backend module final project",
       "ownerId": "e138993b-7fd5-433d-998d-09af54f88005",
       "createdAt": "2026-10-02T12:06:50.049Z",
@@ -431,7 +431,7 @@ curl -i \
   http://localhost:3000/api/projects/PROJECT_ID \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "TaskFlow Production API"
+    "title": "Ordanly Production API"
   }'
 ```
 
@@ -516,7 +516,7 @@ Login und Registrierung werden durch ein strengeres Rate Limit geschützt.
 
 ## Authentifizierung und Autorisierung
 
-TaskFlow verwendet eine selbst implementierte Session-Authentifizierung:
+Ordanly verwendet eine selbst implementierte Session-Authentifizierung:
 
 1. Passwörter werden mit Argon2id gehasht.
 2. Bei Registrierung oder Login wird ein kryptografisch zufälliger Session-Token erzeugt.
@@ -547,7 +547,7 @@ Benutzer:innen können ausschließlich auf ihre eigenen Projekte und Aufgaben zu
 
 ## Deployment
 
-Die TaskFlow REST-API ist öffentlich auf Render verfügbar:
+Die Ordanly REST-API ist öffentlich auf Render verfügbar:
 
 - Live-API: https://api.ordanly.com
 - Health-Endpoint: https://api.ordanly.com/api/health
