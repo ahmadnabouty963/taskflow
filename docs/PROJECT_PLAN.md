@@ -415,8 +415,8 @@ Für Tests wird eine separate PostgreSQL-Datenbank verwendet, damit Entwicklungs
 
 Die TaskFlow REST-API wurde am 06.10.2026 erfolgreich bereitgestellt.
 
-- Live-API: https://taskflow-api-ts4u.onrender.com
-- Health-Endpoint: https://taskflow-api-ts4u.onrender.com/api/health
+- Live-API: https://api.ordanly.com
+- Health-Endpoint: https://api.ordanly.com/api/health
 - API-Hosting: Render
 - Produktionsdatenbank: Neon PostgreSQL
 - Deployment-Branch: `main`

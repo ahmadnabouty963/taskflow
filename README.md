@@ -10,8 +10,8 @@ Das Backend-MVP ist implementiert und als öffentliche REST-API auf Render berei
 
 - API lokal: `http://localhost:3000`
 - Health-Endpoint: `http://localhost:3000/api/health`
-- Live-API: https://taskflow-api-ts4u.onrender.com
-- Live Health-Endpoint: https://taskflow-api-ts4u.onrender.com/api/health
+- Live-API: https://api.ordanly.com
+- Live Health-Endpoint: https://api.ordanly.com/api/health
 - Repository: https://github.com/ahmadnabouty963/taskflow
 
 Der Ordner `apps/web` enthält einen frühen Frontend-Prototyp mit HTML, CSS und JavaScript. Dieser Prototyp verwendet aktuell noch `localStorage` und ist nicht Bestandteil des Backend-MVP.
@@ -549,8 +549,8 @@ Benutzer:innen können ausschließlich auf ihre eigenen Projekte und Aufgaben zu
 
 Die TaskFlow REST-API ist öffentlich auf Render verfügbar:
 
-- Live-API: https://taskflow-api-ts4u.onrender.com
-- Health-Endpoint: https://taskflow-api-ts4u.onrender.com/api/health
+- Live-API: https://api.ordanly.com
+- Health-Endpoint: https://api.ordanly.com/api/health
 - API-Hosting: Render
 - Produktionsdatenbank: Neon PostgreSQL
 - Deployment-Branch: `main`
