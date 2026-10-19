@@ -5,6 +5,7 @@ import { LandingPage } from "./pages/LandingPage.jsx";
 import { LoginPage } from "./pages/LoginPage.jsx";
 import { NotFoundPage } from "./pages/NotFoundPage.jsx";
 import { RegisterPage } from "./pages/RegisterPage.jsx";
+import { ProjectPage } from "./pages/ProjectPage.jsx";
 import "./App.css";
 
 function App() {
@@ -18,6 +19,14 @@ function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/projects/:projectId"
+        element={
+          <ProtectedRoute>
+            <ProjectPage />
           </ProtectedRoute>
         }
       />
