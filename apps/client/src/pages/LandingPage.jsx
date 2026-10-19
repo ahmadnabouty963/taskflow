@@ -36,8 +36,7 @@ export function LandingPage() {
             <p className="eyebrow">Built for focused teams</p>
 
             <h1>
-              Make the next step
-              <span> unmistakably clear.</span>
+              Make the next step <span> unmistakably clear.</span>
             </h1>
 
             <p className="hero-description">
