@@ -1,63 +1,28 @@
-import { useEffect, useState } from "react";
-import { apiRequest } from "./lib/api.js";
+import { Route, Routes } from "react-router";
+import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
+import { DashboardPage } from "./pages/DashboardPage.jsx";
+import { LandingPage } from "./pages/LandingPage.jsx";
+import { LoginPage } from "./pages/LoginPage.jsx";
+import { NotFoundPage } from "./pages/NotFoundPage.jsx";
+import { RegisterPage } from "./pages/RegisterPage.jsx";
 import "./App.css";
 
 function App() {
-  const [apiState, setApiState] = useState({
-    status: "loading",
-    message: "Connecting to the Ordanly API...",
-  });
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function checkApiHealth() {
-      try {
-        const result = await apiRequest("/api/health", {
-          signal: controller.signal,
-        });
-
-        setApiState({
-          status: "online",
-          message: `${result.data.service} is online`,
-        });
-      } catch (error) {
-        if (error.name === "AbortError") {
-          return;
-        }
-
-        setApiState({
-          status: "offline",
-          message: error.message,
-        });
-      }
-    }
-
-    checkApiHealth();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
   return (
-    <main className="app-shell">
-      <section className="status-card">
-        <div className="brand-mark">O</div>
-
-        <p className="eyebrow">Ordanly workspace</p>
-        <h1>Plan clearly. Move work forward.</h1>
-
-        <p className="intro">
-          A simple place to organize projects, tasks and priorities.
-        </p>
-
-        <div className={`api-status api-status--${apiState.status}`}>
-          <span aria-hidden="true" className="status-dot" />
-          <span>{apiState.message}</span>
-        </div>
-      </section>
-    </main>
+    <Routes>
+      <Route index element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route
+        path="/app"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
 
