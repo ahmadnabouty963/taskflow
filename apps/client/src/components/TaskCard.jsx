@@ -21,6 +21,7 @@ export function TaskCard({
   isListView = false,
   onEdit,
   onDelete,
+  onOpenDetails,
   onStatusChange,
   onDragStart,
   onDragEnd,
@@ -87,6 +88,9 @@ export function TaskCard({
           </label>
 
           <div className="task-card__actions">
+            <button onClick={() => onOpenDetails(task)} type="button">
+              Details
+            </button>
             <button onClick={() => onEdit(task)} type="button">
               Edit
             </button>

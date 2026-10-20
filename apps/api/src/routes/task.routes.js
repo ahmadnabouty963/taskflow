@@ -17,6 +17,20 @@ import {
   updateTaskSchema,
 } from "../schemas/task.schema.js";
 import { validateQuery } from "../middleware/validateQuery.js";
+import {
+  createComment,
+  createSubtask,
+  deleteComment,
+  deleteSubtask,
+  updateSubtask,
+} from "../controllers/task-details.controller.js";
+import {
+  commentParamsSchema,
+  createCommentSchema,
+  createSubtaskSchema,
+  subtaskParamsSchema,
+  updateSubtaskSchema,
+} from "../schemas/task-details.schema.js";
 
 const taskRouter = Router({
   mergeParams: true,
@@ -28,6 +42,35 @@ taskRouter.use(validateParams(projectIdParamsSchema));
 taskRouter.post("/", validateBody(createTaskSchema), createTask);
 
 taskRouter.get("/", validateQuery(taskListQuerySchema), getTasks);
+taskRouter.post(
+  "/:taskId/subtasks",
+  validateParams(taskIdParamsSchema),
+  validateBody(createSubtaskSchema),
+  createSubtask,
+);
+taskRouter.patch(
+  "/:taskId/subtasks/:subtaskId",
+  validateParams(subtaskParamsSchema),
+  validateBody(updateSubtaskSchema),
+  updateSubtask,
+);
+taskRouter.delete(
+  "/:taskId/subtasks/:subtaskId",
+  validateParams(subtaskParamsSchema),
+  deleteSubtask,
+);
+taskRouter.post(
+  "/:taskId/comments",
+  validateParams(taskIdParamsSchema),
+  validateBody(createCommentSchema),
+  createComment,
+);
+taskRouter.delete(
+  "/:taskId/comments/:commentId",
+  validateParams(commentParamsSchema),
+  deleteComment,
+);
+
 taskRouter.get("/:taskId", validateParams(taskIdParamsSchema), getTaskById);
 taskRouter.patch(
   "/:taskId",

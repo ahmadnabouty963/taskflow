@@ -92,6 +92,11 @@ export async function getTasks(request, response, next) {
     const [tasks, total] = await prisma.$transaction([
       prisma.task.findMany({
         where,
+        include: {
+          _count: {
+            select: { subtasks: true, comments: true },
+          },
+        },
         orderBy: {
           createdAt: "desc",
         },
@@ -129,6 +134,19 @@ export async function getTaskById(request, response, next) {
         projectId,
         project: {
           ownerId: request.user.id,
+        },
+      },
+      include: {
+        subtasks: {
+          orderBy: { createdAt: "asc" },
+        },
+        comments: {
+          include: {
+            author: {
+              select: { id: true, name: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
         },
       },
     });

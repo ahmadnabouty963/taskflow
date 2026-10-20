@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { TaskDialog } from "../components/TaskDialog.jsx";
+import { TaskDetailsPanel } from "../components/TaskDetailsPanel.jsx";
 import { TaskCard } from "../components/TaskCard.jsx";
 import { useAuth } from "../context/auth-context.js";
 import { apiRequest } from "../lib/api.js";
@@ -52,6 +53,7 @@ export function ProjectPage() {
 
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [detailTask, setDetailTask] = useState(null);
 
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [deleteError, setDeleteError] = useState("");
@@ -645,6 +647,7 @@ export function ProjectPage() {
                       onDragEnd={handleDragEnd}
                       onDragStart={handleDragStart}
                       onEdit={openEditDialog}
+                      onOpenDetails={setDetailTask}
                       onStatusChange={moveTask}
                       statusLabel={column.label}
                       task={task}
@@ -677,6 +680,7 @@ export function ProjectPage() {
                 onDragEnd={handleDragEnd}
                 onDragStart={handleDragStart}
                 onEdit={openEditDialog}
+                onOpenDetails={setDetailTask}
                 onStatusChange={moveTask}
                 statusLabel={
                   taskColumns.find((column) => column.status === task.status)
@@ -688,6 +692,15 @@ export function ProjectPage() {
           </section>
         )}
       </main>
+
+      {detailTask && (
+        <TaskDetailsPanel
+          key={detailTask.id}
+          onClose={() => setDetailTask(null)}
+          projectId={projectId}
+          task={detailTask}
+        />
+      )}
 
       {isTaskDialogOpen && (
         <TaskDialog
