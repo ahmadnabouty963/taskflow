@@ -136,12 +136,15 @@ export function DashboardPage() {
           </Link>
 
           <nav className="workspace-nav" aria-label="Workspace navigation">
-            <a
+            <Link
               className="workspace-nav__item workspace-nav__item--active"
-              href="#projects"
+              to="/app"
             >
               Projects
-            </a>
+            </Link>
+            <Link className="workspace-nav__item" to="/app/settings">
+              Settings
+            </Link>
           </nav>
         </div>
 

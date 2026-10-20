@@ -56,6 +56,40 @@ export function AuthProvider({ children }) {
     });
   }
 
+  async function updateProfile(profile) {
+    const result = await apiRequest("/api/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(profile),
+    });
+
+    setUser(result.data.user);
+    return result.data.user;
+  }
+
+  async function changePassword(passwords) {
+    await apiRequest("/api/auth/password", {
+      method: "PATCH",
+      body: JSON.stringify(passwords),
+    });
+  }
+
+  async function logoutOtherSessions() {
+    const result = await apiRequest("/api/auth/logout-others", {
+      method: "POST",
+    });
+
+    return result.data.deletedSessions;
+  }
+
+  async function deleteAccount(password) {
+    await apiRequest("/api/auth/me", {
+      method: "DELETE",
+      body: JSON.stringify({ password }),
+    });
+
+    setUser(null);
+  }
+
   async function logout() {
     await apiRequest("/api/auth/logout", {
       method: "POST",
@@ -70,6 +104,10 @@ export function AuthProvider({ children }) {
         isLoading,
         login,
         register,
+        updateProfile,
+        changePassword,
+        logoutOtherSessions,
+        deleteAccount,
         logout,
       }}
     >
