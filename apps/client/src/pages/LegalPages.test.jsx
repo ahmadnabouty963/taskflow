@@ -30,9 +30,12 @@ describe("Legal pages", () => {
   it("documents the application's actual data processing", () => {
     renderPage(<PrivacyPage />);
 
-    expect(
-      screen.getByRole("heading", { name: "Datenschutzerklärung" }),
-    ).toBeInTheDocument();
+    const heading = screen.getByRole("heading", {
+      name: "Datenschutzerklärung",
+    });
+
+    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveClass("legal-title--long");
 
     expect(screen.getByText(/Vercel bereitgestellt/i)).toBeInTheDocument();
     expect(screen.getByText(/keine Webanalyse/i)).toBeInTheDocument();

@@ -1983,6 +1983,13 @@ input:focus-visible {
   letter-spacing: -0.055em;
 }
 
+.legal-main > .legal-title--long {
+  overflow-wrap: anywhere;
+  font-size: clamp(3rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
 .legal-intro {
   max-width: 650px;
   margin: 0;
@@ -2090,6 +2097,12 @@ input:focus-visible {
 
   .legal-main > h1 {
     font-size: clamp(2.8rem, 15vw, 4.4rem);
+  }
+
+  .legal-main > .legal-title--long {
+    font-size: clamp(1.9rem, 9vw, 2.8rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
   }
 
   .legal-content {

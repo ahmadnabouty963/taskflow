@@ -16,7 +16,15 @@ export function LegalLayout({ eyebrow, title, intro, children }) {
 
       <main className="legal-main">
         <p className="eyebrow">{eyebrow}</p>
-        <h1>{title}</h1>
+        <h1
+          className={
+            title.length > 14
+              ? "legal-title legal-title--long"
+              : "legal-title"
+          }
+        >
+          {title}
+        </h1>
         <p className="legal-intro">{intro}</p>
 
         <article className="legal-content">{children}</article>
