@@ -412,6 +412,9 @@ export function ProjectPage() {
             <Link className="workspace-nav__item" to="/app/upcoming">
               Upcoming
             </Link>
+            <Link className="workspace-nav__item" to="/app/calendar">
+              Calendar
+            </Link>
             <Link className="workspace-nav__item" to="/app/settings">
               Settings
             </Link>

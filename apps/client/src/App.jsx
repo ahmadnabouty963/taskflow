@@ -11,6 +11,7 @@ import { ImpressumPage } from "./pages/ImpressumPage.jsx";
 import { PrivacyPage } from "./pages/PrivacyPage.jsx";
 import { SettingsPage } from "./pages/SettingsPage.jsx";
 import { PlanningPage } from "./pages/PlanningPage.jsx";
+import { CalendarPage } from "./pages/CalendarPage.jsx";
 import { PageTitle } from "./components/PageTitle.jsx";
 import "./App.css";
 
@@ -46,6 +47,14 @@ function App() {
           element={
             <ProtectedRoute>
               <PlanningPage mode="upcoming" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/app/calendar"
+          element={
+            <ProtectedRoute>
+              <CalendarPage />
             </ProtectedRoute>
           }
         />
