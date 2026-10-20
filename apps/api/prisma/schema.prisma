@@ -27,6 +27,7 @@ model User {
   sessions     Session[]
   projects     Project[]
   comments     Comment[]
+  calendarEvents CalendarEvent[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -88,6 +89,24 @@ model Comment {
 
   @@index([taskId, createdAt])
   @@index([authorId])
+}
+
+model CalendarEvent {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  location    String?
+  startsAt    DateTime
+  endsAt      DateTime
+  allDay      Boolean  @default(false)
+  color       String   @default("#2F6049")
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerId, startsAt])
+  @@index([ownerId, endsAt])
 }
 
 model Session {
