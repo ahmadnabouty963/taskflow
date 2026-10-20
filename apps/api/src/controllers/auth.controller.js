@@ -135,3 +135,146 @@ export async function logout(request, response, next) {
     next(error);
   }
 }
+
+
+export async function updateProfile(request, response, next) {
+  try {
+    const user = await prisma.user.update({
+      where: {
+        id: request.user.id,
+      },
+      data: {
+        name: request.body.name,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    return response.status(200).json({
+      success: true,
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function changePassword(request, response, next) {
+  try {
+    const { currentPassword, newPassword } = request.body;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: request.user.id,
+      },
+    });
+
+    const passwordIsValid =
+      user && (await argon2.verify(user.passwordHash, currentPassword));
+
+    if (!passwordIsValid) {
+      return response.status(401).json({
+        success: false,
+        error: {
+          code: "INVALID_PASSWORD",
+          message: "Current password is incorrect.",
+        },
+      });
+    }
+
+    const passwordHash = await argon2.hash(newPassword, {
+      type: argon2.argon2id,
+    });
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: {
+          id: request.user.id,
+        },
+        data: {
+          passwordHash,
+        },
+      }),
+      prisma.session.deleteMany({
+        where: {
+          userId: request.user.id,
+          id: {
+            not: request.session.id,
+          },
+        },
+      }),
+    ]);
+
+    return response.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function logoutOtherSessions(request, response, next) {
+  try {
+    const result = await prisma.session.deleteMany({
+      where: {
+        userId: request.user.id,
+        id: {
+          not: request.session.id,
+        },
+      },
+    });
+
+    return response.status(200).json({
+      success: true,
+      data: {
+        signedOutSessions: result.count,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteAccount(request, response, next) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: request.user.id,
+      },
+    });
+
+    const passwordIsValid =
+      user && (await argon2.verify(user.passwordHash, request.body.password));
+
+    if (!passwordIsValid) {
+      return response.status(401).json({
+        success: false,
+        error: {
+          code: "INVALID_PASSWORD",
+          message: "Password is incorrect.",
+        },
+      });
+    }
+
+    await prisma.user.delete({
+      where: {
+        id: request.user.id,
+      },
+    });
+
+    response.clearCookie("session_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return response.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
