@@ -211,24 +211,25 @@ input:focus-visible {
   width: min(1180px, calc(100% - 40px));
   min-height: 670px;
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(520px, 1.18fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(500px, 1.05fr);
   align-items: center;
-  gap: 72px;
+  gap: 56px;
   margin: 0 auto;
   padding: 78px 0 88px;
 }
 
 .hero-copy h1 {
-  max-width: 610px;
+  max-width: 100%;
   margin: 20px 0 26px;
   font-family: var(--serif);
-  font-size: clamp(3.6rem, 6.5vw, 6.7rem);
+  font-size: clamp(3.5rem, 5vw, 4.75rem);
   font-weight: 400;
-  line-height: 0.91;
-  letter-spacing: -0.065em;
+  line-height: 0.94;
+  letter-spacing: -0.055em;
 }
 
 .hero-copy h1 span {
+  display: block;
   color: var(--green);
   font-style: italic;
 }
@@ -899,7 +900,8 @@ input:focus-visible {
   }
 
   .hero-copy h1 {
-    font-size: clamp(3.25rem, 17vw, 5rem);
+    font-size: clamp(2.85rem, 13.5vw, 4rem);
+    line-height: 0.96;
   }
 
   .hero-actions {
@@ -1886,6 +1888,20 @@ input:focus-visible {
 
 :root[data-theme="dark"] .button--dark:hover {
   background: #d9ddd6;
+}
+
+:root[data-theme="dark"] .button--ghost {
+  color: #f1efe8;
+  border-color: #c8cec7;
+}
+
+:root[data-theme="dark"] .button--ghost:hover {
+  color: #f1efe8;
+  background: #202821;
+}
+
+:root[data-theme="dark"] .product-preview {
+  background: #151b17;
 }
 
 :root[data-theme="dark"] .form-field input,
