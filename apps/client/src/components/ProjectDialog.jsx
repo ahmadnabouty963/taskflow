@@ -10,7 +10,7 @@ const projectColors = [
   { label: "Rose", value: "#E11D48" },
 ];
 
-export function ProjectDialog({ project, onClose, onSaved }) {
+export function ProjectDialog({ project, workspaceId, onClose, onSaved }) {
   const isEditing = Boolean(project?.id);
 
   const [form, setForm] = useState({
@@ -51,6 +51,7 @@ export function ProjectDialog({ project, onClose, onSaved }) {
       title: form.title.trim(),
       description: form.description.trim(),
       color: form.color,
+      ...(!isEditing && workspaceId ? { workspaceId } : {}),
     };
 
     try {

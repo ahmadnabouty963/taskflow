@@ -52,17 +52,17 @@ beforeEach(() => {
 
 describe("Workspace pages", () => {
   it("loads and displays the user's projects", async () => {
-    apiRequest.mockResolvedValue({
-      data: {
-        projects: [
-          {
+    apiRequest.mockImplementation((path) => {
+      if (path === "/api/workspaces") {
+        return Promise.resolve({ data: { workspaces: [{ id: "workspace-1", name: "My workspace", role: "OWNER" }] } });
+      }
+      return Promise.resolve({ data: { projects: [{
             id: "project-1",
+            workspaceId: "workspace-1",
             title: "Website launch",
             description: "Prepare the Ordanly release.",
             updatedAt: "2026-10-19T12:00:00.000Z",
-          },
-        ],
-      },
+          }] } });
     });
 
     renderDashboard();
@@ -88,10 +88,11 @@ describe("Workspace pages", () => {
   it("opens the project dialog from the empty state", async () => {
     const user = userEvent.setup();
 
-    apiRequest.mockResolvedValue({
-      data: {
-        projects: [],
-      },
+    apiRequest.mockImplementation((path) => {
+      if (path === "/api/workspaces") {
+        return Promise.resolve({ data: { workspaces: [{ id: "workspace-1", name: "My workspace", role: "OWNER" }] } });
+      }
+      return Promise.resolve({ data: { projects: [] } });
     });
 
     renderDashboard();
@@ -313,11 +314,15 @@ describe("Workspace pages", () => {
       color: "#E11D48",
       archivedAt: null,
       updatedAt: "2026-10-20T12:00:00.000Z",
+      workspaceId: "workspace-1",
     };
 
     apiRequest.mockImplementation((path, options = {}) => {
       if (path === "/api/projects" && !options.method) {
         return Promise.resolve({ data: { projects: [activeProject] } });
+      }
+      if (path === "/api/workspaces") {
+        return Promise.resolve({ data: { workspaces: [{ id: "workspace-1", name: "My workspace", role: "OWNER" }] } });
       }
       if (path === "/api/projects/project-color" && options.method === "PATCH") {
         return Promise.resolve({

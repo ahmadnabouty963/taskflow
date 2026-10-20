@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { ProjectDialog } from "../components/ProjectDialog.jsx";
+import { WorkspaceDialog } from "../components/WorkspaceDialog.jsx";
 import { useAuth } from "../context/auth-context.js";
 import { apiRequest } from "../lib/api.js";
 
@@ -16,12 +17,17 @@ export function DashboardPage() {
   const navigate = useNavigate();
 
   const [projects, setProjects] = useState([]);
+  const [workspaces, setWorkspaces] = useState([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState(
+    () => window.localStorage.getItem("ordanly.activeWorkspaceId") || "",
+  );
   const [projectsStatus, setProjectsStatus] = useState("loading");
   const [projectsError, setProjectsError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [projectView, setProjectView] = useState("active");
 
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+  const [isWorkspaceDialogOpen, setIsWorkspaceDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [deleteError, setDeleteError] = useState("");
@@ -35,15 +41,24 @@ export function DashboardPage() {
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadProjects() {
+    async function loadWorkspace() {
       setProjectsStatus("loading");
       setProjectsError("");
 
       try {
-        const result = await apiRequest("/api/projects", {
-          signal: controller.signal,
+        const [projectResult, workspaceResult] = await Promise.all([
+          apiRequest("/api/projects", { signal: controller.signal }),
+          apiRequest("/api/workspaces", { signal: controller.signal }),
+        ]);
+        const nextWorkspaces = workspaceResult.data.workspaces;
+        setProjects(projectResult.data.projects);
+        setWorkspaces(nextWorkspaces);
+        setActiveWorkspaceId((currentId) => {
+          const currentExists = nextWorkspaces.some(({ id }) => id === currentId);
+          const nextId = currentExists ? currentId : nextWorkspaces[0]?.id || "";
+          if (nextId) window.localStorage.setItem("ordanly.activeWorkspaceId", nextId);
+          return nextId;
         });
-        setProjects(result.data.projects);
         setProjectsStatus("success");
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -53,17 +68,21 @@ export function DashboardPage() {
       }
     }
 
-    loadProjects();
+    loadWorkspace();
     return () => controller.abort();
   }, [reloadKey]);
 
+  const workspaceProjects = useMemo(
+    () => projects.filter((project) => project.workspaceId === activeWorkspaceId),
+    [activeWorkspaceId, projects],
+  );
   const activeProjects = useMemo(
-    () => projects.filter((project) => !project.archivedAt),
-    [projects],
+    () => workspaceProjects.filter((project) => !project.archivedAt),
+    [workspaceProjects],
   );
   const archivedProjects = useMemo(
-    () => projects.filter((project) => Boolean(project.archivedAt)),
-    [projects],
+    () => workspaceProjects.filter((project) => Boolean(project.archivedAt)),
+    [workspaceProjects],
   );
   const visibleProjects =
     projectView === "active" ? activeProjects : archivedProjects;
@@ -71,6 +90,20 @@ export function DashboardPage() {
   function openCreateDialog() {
     setEditingProject(null);
     setIsProjectDialogOpen(true);
+  }
+
+  function selectWorkspace(event) {
+    const workspaceId = event.target.value;
+    setActiveWorkspaceId(workspaceId);
+    window.localStorage.setItem("ordanly.activeWorkspaceId", workspaceId);
+    setProjectView("active");
+  }
+
+  function handleWorkspaceSaved(workspace) {
+    setWorkspaces((current) => [...current, workspace]);
+    setActiveWorkspaceId(workspace.id);
+    window.localStorage.setItem("ordanly.activeWorkspaceId", workspace.id);
+    setIsWorkspaceDialogOpen(false);
   }
 
   function openEditDialog(project) {
@@ -166,6 +199,18 @@ export function DashboardPage() {
             <span className="brand-logo brand-logo--light">O</span>
             <span>Ordanly</span>
           </Link>
+          <div className="workspace-switcher">
+            <label htmlFor="active-workspace">Workspace</label>
+            <select id="active-workspace" onChange={selectWorkspace} value={activeWorkspaceId}>
+              {workspaces.map((workspace) => (
+                <option key={workspace.id} value={workspace.id}>{workspace.name}</option>
+              ))}
+            </select>
+            <button onClick={() => setIsWorkspaceDialogOpen(true)} type="button">New team workspace</button>
+            {activeWorkspaceId ? (
+              <Link to={`/app/workspaces/${activeWorkspaceId}/settings`}>Members and roles</Link>
+            ) : null}
+          </div>
           <nav className="workspace-nav" aria-label="Workspace navigation">
             <Link className="workspace-nav__item workspace-nav__item--active" to="/app">Projects</Link>
             <Link className="workspace-nav__item" to="/app/today">Today</Link>
@@ -185,7 +230,7 @@ export function DashboardPage() {
 
       <main className="workspace-main">
         <header className="workspace-header">
-          <div><p className="eyebrow">Your workspace</p><h1>Projects</h1></div>
+          <div><p className="eyebrow">{workspaces.find(({ id }) => id === activeWorkspaceId)?.name || "Your workspace"}</p><h1>Projects</h1></div>
           <button className="button button--green" onClick={openCreateDialog} type="button">New project</button>
         </header>
 
@@ -206,7 +251,7 @@ export function DashboardPage() {
             </div>
           )}
 
-          {projectsStatus === "success" && projects.length === 0 && (
+          {projectsStatus === "success" && workspaceProjects.length === 0 && (
             <div className="empty-state">
               <span className="empty-state__number">01</span><h2>Create your first project</h2>
               <p>Projects give your work a clear home. Add one, then break the work into focused tasks.</p>
@@ -214,7 +259,7 @@ export function DashboardPage() {
             </div>
           )}
 
-          {projectsStatus === "success" && projects.length > 0 && (
+          {projectsStatus === "success" && workspaceProjects.length > 0 && (
             <>
               <div className="project-view-bar">
                 <div className="project-view-tabs" role="tablist" aria-label="Project status">
@@ -267,7 +312,11 @@ export function DashboardPage() {
       </main>
 
       {isProjectDialogOpen && (
-        <ProjectDialog onClose={() => { setIsProjectDialogOpen(false); setEditingProject(null); }} onSaved={handleProjectSaved} project={editingProject} />
+        <ProjectDialog onClose={() => { setIsProjectDialogOpen(false); setEditingProject(null); }} onSaved={handleProjectSaved} project={editingProject} workspaceId={activeWorkspaceId} />
+      )}
+
+      {isWorkspaceDialogOpen && (
+        <WorkspaceDialog onClose={() => setIsWorkspaceDialogOpen(false)} onSaved={handleWorkspaceSaved} />
       )}
 
       {projectToDelete && (

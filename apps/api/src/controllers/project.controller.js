@@ -1,8 +1,32 @@
 import prisma from "../lib/prisma.js";
+import {
+  findAccessibleProject,
+  getWorkspaceMembership,
+  sendWorkspaceForbidden,
+  workspaceMembershipWhere,
+  workspaceWriteRoles,
+} from "../lib/workspace-access.js";
 
 export async function createProject(request, response, next) {
   try {
-    const { title, description, color } = request.body;
+    const { title, description, color, workspaceId } = request.body;
+
+    const membership = workspaceId
+      ? await getWorkspaceMembership(workspaceId, request.user.id)
+      : await prisma.workspaceMember.findFirst({
+          where: { userId: request.user.id, workspace: { type: "PERSONAL" } },
+          include: { workspace: true },
+        });
+
+    if (!membership) {
+      return response.status(404).json({
+        success: false,
+        error: { code: "WORKSPACE_NOT_FOUND", message: "Workspace not found." },
+      });
+    }
+    if (!workspaceWriteRoles.includes(membership.role)) {
+      return sendWorkspaceForbidden(response);
+    }
 
     const project = await prisma.project.create({
       data: {
@@ -10,6 +34,7 @@ export async function createProject(request, response, next) {
         description,
         color,
         ownerId: request.user.id,
+        workspaceId: membership.workspaceId,
       },
     });
 
@@ -25,7 +50,10 @@ export async function createProject(request, response, next) {
 export async function getProjects(request, response, next) {
   try {
     const projects = await prisma.project.findMany({
-      where: { ownerId: request.user.id },
+      where: { workspace: workspaceMembershipWhere(request.user.id) },
+      include: {
+        workspace: { select: { id: true, name: true, type: true } },
+      },
       orderBy: { updatedAt: "desc" },
     });
 
@@ -42,12 +70,7 @@ export async function getProjectById(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
 
-    const project = await prisma.project.findFirst({
-      where: {
-        id: projectId,
-        ownerId: request.user.id,
-      },
-    });
+    const project = await findAccessibleProject(projectId, request.user.id);
 
     if (!project) {
       return response.status(404).json({
@@ -72,12 +95,11 @@ export async function updateProject(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
 
-    const existingProject = await prisma.project.findFirst({
-      where: {
-        id: projectId,
-        ownerId: request.user.id,
-      },
-    });
+    const existingProject = await findAccessibleProject(
+      projectId,
+      request.user.id,
+      workspaceWriteRoles,
+    );
 
     if (!existingProject) {
       return response.status(404).json({
@@ -113,14 +135,13 @@ export async function deleteProject(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
 
-    const result = await prisma.project.deleteMany({
-      where: {
-        id: projectId,
-        ownerId: request.user.id,
-      },
-    });
+    const project = await findAccessibleProject(
+      projectId,
+      request.user.id,
+      ["OWNER", "ADMIN"],
+    );
 
-    if (result.count === 0) {
+    if (!project) {
       return response.status(404).json({
         success: false,
         error: {
@@ -130,6 +151,7 @@ export async function deleteProject(request, response, next) {
       });
     }
 
+    await prisma.project.delete({ where: { id: projectId } });
     return response.status(204).send();
   } catch (error) {
     next(error);

@@ -1,22 +1,18 @@
 import prisma from "../lib/prisma.js";
-
-async function findOwnedProject(projectId, ownerId) {
-  return prisma.project.findFirst({
-    where: {
-      id: projectId,
-      ownerId,
-    },
-    select: {
-      id: true,
-    },
-  });
-}
+import {
+  findAccessibleProject,
+  workspaceWriteRoles,
+} from "../lib/workspace-access.js";
 
 export async function createTask(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
 
-    const project = await findOwnedProject(projectId, request.user.id);
+    const project = await findAccessibleProject(
+      projectId,
+      request.user.id,
+      workspaceWriteRoles,
+    );
 
     if (!project) {
       return response.status(404).json({
@@ -51,7 +47,7 @@ export async function getTasks(request, response, next) {
     const { projectId } = request.validatedParams;
     const { status, priority, search, page, limit } = request.validatedQuery;
 
-    const project = await findOwnedProject(projectId, request.user.id);
+    const project = await findAccessibleProject(projectId, request.user.id);
 
     if (!project) {
       return response.status(404).json({
@@ -133,7 +129,9 @@ export async function getTaskById(request, response, next) {
         id: taskId,
         projectId,
         project: {
-          ownerId: request.user.id,
+          workspace: {
+            members: { some: { userId: request.user.id } },
+          },
         },
       },
       include: {
@@ -180,7 +178,11 @@ export async function updateTask(request, response, next) {
         id: taskId,
         projectId,
         project: {
-          ownerId: request.user.id,
+          workspace: {
+            members: {
+              some: { userId: request.user.id, role: { in: workspaceWriteRoles } },
+            },
+          },
         },
       },
     });
@@ -221,7 +223,11 @@ export async function deleteTask(request, response, next) {
         id: taskId,
         projectId,
         project: {
-          ownerId: request.user.id,
+          workspace: {
+            members: {
+              some: { userId: request.user.id, role: { in: workspaceWriteRoles } },
+            },
+          },
         },
       },
     });

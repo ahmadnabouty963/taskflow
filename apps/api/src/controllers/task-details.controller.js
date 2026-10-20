@@ -1,11 +1,18 @@
 import prisma from "../lib/prisma.js";
+import { workspaceWriteRoles } from "../lib/workspace-access.js";
 
-async function findOwnedTask(taskId, projectId, ownerId) {
+async function findOwnedTask(taskId, projectId, userId) {
   return prisma.task.findFirst({
     where: {
       id: taskId,
       projectId,
-      project: { ownerId },
+      project: {
+        workspace: {
+          members: {
+            some: { userId, role: { in: workspaceWriteRoles } },
+          },
+        },
+      },
     },
     select: { id: true },
   });

@@ -18,6 +18,7 @@ export const createProjectSchema = z.object({
     .optional(),
 
   color: projectColorSchema.optional(),
+  workspaceId: z.string().min(1, "Workspace ID is required.").optional(),
 });
 
 export const projectIdParamsSchema = z.object({

@@ -25,18 +25,24 @@ export async function register(request, response, next) {
       type: argon2.argon2id,
     });
 
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-      },
+    const user = await prisma.$transaction(async (transaction) => {
+      const createdUser = await transaction.user.create({
+        data: { name, email, passwordHash },
+        select: { id: true, name: true, email: true, createdAt: true },
+      });
+
+      await transaction.workspace.create({
+        data: {
+          name: `${createdUser.name}'s workspace`,
+          type: "PERSONAL",
+          ownerId: createdUser.id,
+          members: {
+            create: { userId: createdUser.id, role: "OWNER" },
+          },
+        },
+      });
+
+      return createdUser;
     });
 
     return response.status(201).json({

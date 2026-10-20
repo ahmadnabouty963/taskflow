@@ -15,8 +15,10 @@ export async function getGlobalTasks(request, response, next) {
 
     const where = {
       project: {
-        ownerId: request.user.id,
         archivedAt: null,
+        workspace: {
+          members: { some: { userId: request.user.id } },
+        },
       },
       ...(from || to
         ? {
