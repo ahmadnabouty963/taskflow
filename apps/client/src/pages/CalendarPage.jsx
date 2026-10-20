@@ -246,15 +246,26 @@ export function CalendarPage() {
         </header>
 
         <section className="calendar-toolbar" aria-label="Calendar controls">
-          <div>
+          <div className="calendar-toolbar__title">
+            <span className="calendar-toolbar__label">
+              {calendarView === "month" ? "Month overview" : "Week overview"}
+            </span>
+            <h2>{visibleTitle}</h2>
+          </div>
+
+          <div className="calendar-toolbar__actions">
             <button
               aria-label="Previous period"
               onClick={() => movePeriod(-1)}
               type="button"
             >
-              ←
+              Previous
             </button>
-            <button onClick={showToday} type="button">
+            <button
+              className="calendar-today-button"
+              onClick={showToday}
+              type="button"
+            >
               Today
             </button>
             <button
@@ -262,11 +273,14 @@ export function CalendarPage() {
               onClick={() => movePeriod(1)}
               type="button"
             >
-              →
+              Next
             </button>
           </div>
-          <h2>{visibleTitle}</h2>
-          <span>{tasks.length} scheduled tasks</span>
+
+          <p className="calendar-toolbar__meta">
+            <strong>{tasks.length}</strong>{" "}
+            {tasks.length === 1 ? "task" : "tasks"} scheduled
+          </p>
         </section>
 
         {error && (
@@ -336,6 +350,10 @@ export function CalendarPage() {
                     </header>
 
                     <div className="calendar-day__tasks">
+                      {calendarView === "week" && visibleTasks.length === 0 && (
+                        <span className="calendar-day__empty">No tasks scheduled</span>
+                      )}
+
                       {visibleTasks.map((task) => (
                         <Link
                           className={
@@ -343,6 +361,10 @@ export function CalendarPage() {
                             task.status.toLowerCase().replace("_", "-")
                           }
                           key={task.id}
+                          style={{
+                            "--calendar-project-color":
+                              task.project.color ?? "var(--green)",
+                          }}
                           title={task.title + " — " + task.project.title}
                           to={"/app/projects/" + task.project.id}
                         >

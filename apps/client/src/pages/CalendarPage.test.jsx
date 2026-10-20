@@ -77,6 +77,12 @@ describe("Calendar", () => {
     expect(
       await screen.findByRole("region", { name: "Week calendar" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Previous period" }),
+    ).toHaveTextContent("Previous");
+    expect(screen.getByRole("button", { name: "Next period" })).toHaveTextContent(
+      "Next",
+    );
 
     await user.click(screen.getByRole("button", { name: "Next period" }));
 
