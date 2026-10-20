@@ -198,7 +198,7 @@ describe("Projects API", () => {
       color: "blue",
     });
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(422);
     expect(response.body.error.code).toBe("VALIDATION_ERROR");
   });
 
