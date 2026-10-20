@@ -1,5 +1,5 @@
 :root {
-  font-family: "Poppins Variable", Poppins, system-ui, sans-serif;
+  font-family: "Poppins", system-ui, sans-serif;
   color: var(--ink, #181b18);
   background: var(--paper, #f5f2e9);
   font-synthesis: none;

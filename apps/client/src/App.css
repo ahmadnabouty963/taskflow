@@ -13,7 +13,7 @@
   --danger: #9b362e;
   --danger-soft: #f7e3df;
   --shadow: 10px 10px 0 var(--ink);
-  --serif: "Poppins Variable", Poppins, system-ui, sans-serif;
+  --serif: "Poppins", system-ui, sans-serif;
 }
 
 :root[data-theme="dark"] {
