@@ -1947,3 +1947,152 @@ input:focus-visible {
     bottom: 12px;
   }
 }
+
+
+/* Legal pages */
+
+.legal-page {
+  min-height: 100vh;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.legal-header {
+  width: min(920px, calc(100% - 40px));
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.legal-main {
+  width: min(760px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 80px 0 100px;
+}
+
+.legal-main > h1 {
+  margin: 16px 0 20px;
+  font-family: var(--serif);
+  font-size: clamp(3.4rem, 8vw, 6.6rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.legal-intro {
+  max-width: 650px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.legal-content {
+  display: grid;
+  gap: 0;
+  margin-top: 58px;
+  border-top: 1px solid var(--line);
+}
+
+.legal-content section {
+  padding: 30px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.legal-content h2 {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+}
+
+.legal-content p,
+.legal-content li,
+.legal-content address {
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.legal-content p {
+  margin: 0;
+}
+
+.legal-content p + p {
+  margin-top: 14px;
+}
+
+.legal-content ul {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding-left: 22px;
+}
+
+.legal-content address {
+  display: grid;
+  gap: 5px;
+  font-style: normal;
+}
+
+.legal-content address strong {
+  color: var(--ink);
+}
+
+.legal-content a,
+.legal-links a {
+  color: var(--green);
+  font-weight: 700;
+  text-underline-offset: 4px;
+}
+
+.legal-notice {
+  margin: 0;
+  padding: 24px !important;
+  border: 1px solid var(--orange) !important;
+  background: var(--orange-soft);
+}
+
+.legal-updated {
+  margin-top: 32px !important;
+  font-size: 0.76rem;
+}
+
+.legal-footer {
+  width: min(920px, calc(100% - 40px));
+}
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+@media (max-width: 680px) {
+  .legal-header,
+  .legal-main,
+  .legal-footer {
+    width: min(100% - 28px, 920px);
+  }
+
+  .legal-header {
+    min-height: 68px;
+  }
+
+  .legal-header .text-link {
+    font-size: 0.76rem;
+  }
+
+  .legal-main {
+    padding: 56px 0 72px;
+  }
+
+  .legal-main > h1 {
+    font-size: clamp(2.8rem, 15vw, 4.4rem);
+  }
+
+  .legal-content {
+    margin-top: 42px;
+  }
+}

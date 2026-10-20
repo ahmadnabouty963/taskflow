@@ -132,7 +132,11 @@ export function LandingPage() {
 
       <footer className="site-footer">
         <span>© 2026 Ordanly</span>
-        <span>Clear work. Calm teams.</span>
+
+        <nav className="legal-links" aria-label="Legal information">
+          <Link to="/impressum">Impressum</Link>
+          <Link to="/datenschutz">Datenschutz</Link>
+        </nav>
       </footer>
     </div>
   );

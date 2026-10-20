@@ -14,6 +14,14 @@ function getPageTitle(pathname) {
     return "Create account — Ordanly";
   }
 
+  if (pathname === "/impressum") {
+    return "Impressum — Ordanly";
+  }
+
+  if (pathname === "/datenschutz") {
+    return "Datenschutz — Ordanly";
+  }
+
   if (pathname === "/app") {
     return "Projects — Ordanly";
   }
