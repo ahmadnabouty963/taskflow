@@ -222,4 +222,85 @@ describe("Workspace pages", () => {
       );
     });
   });
+
+  it("switches to list view and updates a task status", async () => {
+    const user = userEvent.setup();
+
+    apiRequest.mockImplementation((path, options = {}) => {
+      if (path === "/api/projects/project-1") {
+        return Promise.resolve({
+          data: {
+            project: {
+              id: "project-1",
+              title: "Product launch",
+              description: "Prepare the launch.",
+            },
+          },
+        });
+      }
+
+      if (
+        path === "/api/projects/project-1/tasks/task-1" &&
+        options.method === "PATCH"
+      ) {
+        return Promise.resolve({
+          data: {
+            task: {
+              id: "task-1",
+              title: "Move me",
+              status: "IN_PROGRESS",
+              priority: "HIGH",
+              dueDate: null,
+            },
+          },
+        });
+      }
+
+      if (path.includes("/api/projects/project-1/tasks?")) {
+        return Promise.resolve({
+          data: {
+            tasks: [
+              {
+                id: "task-1",
+                title: "Move me",
+                description: "",
+                status: "TODO",
+                priority: "HIGH",
+                dueDate: null,
+              },
+            ],
+            pagination: {
+              total: path.includes("status=DONE") ? 0 : 1,
+            },
+          },
+        });
+      }
+
+      return Promise.reject(new Error(`Unexpected request: ${path}`));
+    });
+
+    renderProject();
+
+    expect(
+      await screen.findByRole("heading", { name: "Move me" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "List" }));
+    expect(screen.getByRole("list", { name: "Task list" })).toBeInTheDocument();
+
+    await user.selectOptions(
+      screen.getByLabelText("Change status for Move me"),
+      "IN_PROGRESS",
+    );
+
+    await waitFor(() => {
+      expect(apiRequest).toHaveBeenCalledWith(
+        "/api/projects/project-1/tasks/task-1",
+        {
+          method: "PATCH",
+          body: JSON.stringify({ status: "IN_PROGRESS" }),
+        },
+      );
+    });
+  });
 });

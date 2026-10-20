@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { TaskDialog } from "../components/TaskDialog.jsx";
+import { TaskCard } from "../components/TaskCard.jsx";
 import { useAuth } from "../context/auth-context.js";
 import { apiRequest } from "../lib/api.js";
 
@@ -22,20 +23,6 @@ const taskColumns = [
     number: "03",
   },
 ];
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-});
-
-function formatStatus(status) {
-  return status.toLowerCase().replace("_", "-");
-}
-
-function formatPriority(priority) {
-  return priority.charAt(0) + priority.slice(1).toLowerCase();
-}
 
 export function ProjectPage() {
   const { projectId } = useParams();
@@ -72,6 +59,11 @@ export function ProjectPage() {
 
   const [logoutError, setLogoutError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [viewMode, setViewMode] = useState("board");
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dropStatus, setDropStatus] = useState(null);
+  const [movingTaskId, setMovingTaskId] = useState(null);
+  const [moveError, setMoveError] = useState("");
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -285,6 +277,77 @@ export function ProjectPage() {
     }
   }
 
+  async function moveTask(task, nextStatus) {
+    if (task.status === nextStatus || movingTaskId === task.id) {
+      return;
+    }
+
+    const previousTask = task;
+    setMoveError("");
+    setMovingTaskId(task.id);
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) =>
+        currentTask.id === task.id
+          ? { ...currentTask, status: nextStatus }
+          : currentTask,
+      ),
+    );
+
+    try {
+      await apiRequest(`/api/projects/${projectId}/tasks/${task.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: nextStatus }),
+      });
+
+      setReloadKey((key) => key + 1);
+    } catch (error) {
+      setTasks((currentTasks) =>
+        currentTasks.map((currentTask) =>
+          currentTask.id === task.id ? previousTask : currentTask,
+        ),
+      );
+      setMoveError(error.message);
+    } finally {
+      setMovingTaskId(null);
+    }
+  }
+
+  function handleDragStart(event, task) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", task.id);
+    setDraggedTaskId(task.id);
+  }
+
+  function handleDragEnd() {
+    setDraggedTaskId(null);
+    setDropStatus(null);
+  }
+
+  function handleDragOver(event, status) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDropStatus(status);
+  }
+
+  function handleDragLeave(event) {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setDropStatus(null);
+    }
+  }
+
+  function handleDrop(event, status) {
+    event.preventDefault();
+    const taskId = event.dataTransfer.getData("text/plain") || draggedTaskId;
+    const task = tasks.find((currentTask) => currentTask.id === taskId);
+
+    setDraggedTaskId(null);
+    setDropStatus(null);
+
+    if (task) {
+      moveTask(task, status);
+    }
+  }
+
   async function handleLogout() {
     setLogoutError("");
     setIsLoggingOut(true);
@@ -343,6 +406,9 @@ export function ProjectPage() {
             <span className="workspace-nav__item workspace-nav__item--active">
               Current project
             </span>
+            <Link className="workspace-nav__item" to="/app/settings">
+              Settings
+            </Link>
           </nav>
         </div>
 
@@ -475,7 +541,32 @@ export function ProjectPage() {
               Clear filters
             </button>
           )}
+
+          <div className="view-toggle" role="group" aria-label="Task view">
+            <button
+              aria-pressed={viewMode === "board"}
+              className={viewMode === "board" ? "view-toggle__active" : ""}
+              onClick={() => setViewMode("board")}
+              type="button"
+            >
+              Board
+            </button>
+            <button
+              aria-pressed={viewMode === "list"}
+              className={viewMode === "list" ? "view-toggle__active" : ""}
+              onClick={() => setViewMode("list")}
+              type="button"
+            >
+              List
+            </button>
+          </div>
         </section>
+
+        {moveError && (
+          <div className="form-message form-message--error" role="alert">
+            {moveError}
+          </div>
+        )}
 
         {tasksStatus === "error" && (
           <div className="content-error" role="alert">
@@ -514,10 +605,20 @@ export function ProjectPage() {
             </div>
           )}
 
-        {tasksStatus === "success" && (
-          <section className="task-board" aria-label="Project tasks">
+        {tasksStatus === "success" && viewMode === "board" && (
+          <section className="task-board" aria-label="Kanban board">
             {taskColumns.map((column) => (
-              <article className="task-column" key={column.status}>
+              <article
+                className={`task-column${
+                  dropStatus === column.status
+                    ? " task-column--drop-target"
+                    : ""
+                }`}
+                key={column.status}
+                onDragLeave={handleDragLeave}
+                onDragOver={(event) => handleDragOver(event, column.status)}
+                onDrop={(event) => handleDrop(event, column.status)}
+              >
                 <header className="task-column__header">
                   <div>
                     <span>{column.number}</span>
@@ -527,61 +628,19 @@ export function ProjectPage() {
                 </header>
 
                 <div className="task-column__body">
-                  {tasksByStatus[column.status].map((task) => {
-                    const isOverdue =
-                      task.dueDate &&
-                      task.status !== "DONE" &&
-                      new Date(task.dueDate) < new Date();
-
-                    return (
-                      <article className="task-card" key={task.id}>
-                        <header>
-                          <span
-                            className={`priority-badge priority-badge--${task.priority.toLowerCase()}`}
-                          >
-                            {formatPriority(task.priority)}
-                          </span>
-
-                          <span
-                            className={`status-dot status-dot--${formatStatus(task.status)}`}
-                            aria-label={column.label}
-                          />
-                        </header>
-
-                        <h3>{task.title}</h3>
-
-                        {task.description && <p>{task.description}</p>}
-
-                        <footer>
-                          <span
-                            className={isOverdue ? "task-due--overdue" : ""}
-                          >
-                            {task.dueDate
-                              ? `${isOverdue ? "Overdue" : "Due"} ${dateFormatter.format(
-                                  new Date(task.dueDate),
-                                )}`
-                              : "No due date"}
-                          </span>
-
-                          <div>
-                            <button
-                              onClick={() => openEditDialog(task)}
-                              type="button"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="project-delete"
-                              onClick={() => requestTaskDeletion(task)}
-                              type="button"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </footer>
-                      </article>
-                    );
-                  })}
+                  {tasksByStatus[column.status].map((task) => (
+                    <TaskCard
+                      isMoving={movingTaskId === task.id}
+                      key={task.id}
+                      onDelete={requestTaskDeletion}
+                      onDragEnd={handleDragEnd}
+                      onDragStart={handleDragStart}
+                      onEdit={openEditDialog}
+                      onStatusChange={moveTask}
+                      statusLabel={column.label}
+                      task={task}
+                    />
+                  ))}
 
                   {tasksByStatus[column.status].length === 0 && (
                     <button
@@ -594,6 +653,28 @@ export function ProjectPage() {
                   )}
                 </div>
               </article>
+            ))}
+          </section>
+        )}
+
+        {tasksStatus === "success" && viewMode === "list" && (
+          <section aria-label="Task list" className="task-list" role="list">
+            {tasks.map((task) => (
+              <TaskCard
+                isListView
+                isMoving={movingTaskId === task.id}
+                key={task.id}
+                onDelete={requestTaskDeletion}
+                onDragEnd={handleDragEnd}
+                onDragStart={handleDragStart}
+                onEdit={openEditDialog}
+                onStatusChange={moveTask}
+                statusLabel={
+                  taskColumns.find((column) => column.status === task.status)
+                    ?.label ?? task.status
+                }
+                task={task}
+              />
             ))}
           </section>
         )}
