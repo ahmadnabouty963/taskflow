@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router";
 import { ErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { AuthProvider } from "./context/AuthProvider.jsx";
 import App from "./App.jsx";
+import "@fontsource-variable/poppins";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(

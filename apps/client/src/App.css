@@ -13,7 +13,25 @@
   --danger: #9b362e;
   --danger-soft: #f7e3df;
   --shadow: 10px 10px 0 var(--ink);
-  --serif: Georgia, "Times New Roman", serif;
+  --serif: "Poppins Variable", Poppins, system-ui, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #f1efe8;
+  --muted: #adb5ad;
+  --paper: #111612;
+  --surface: #1a211c;
+  --line: #39423b;
+  --green: #8bc2a3;
+  --green-dark: #153526;
+  --orange: #f09a72;
+  --blue-soft: #273743;
+  --green-soft: #253a2d;
+  --orange-soft: #432d25;
+  --danger: #f08d83;
+  --danger-soft: #3c2523;
+  --shadow: 10px 10px 0 #070a08;
 }
 
 a {
@@ -1808,5 +1826,108 @@ input:focus-visible {
     align-items: flex-start;
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+
+/* Theme */
+
+.theme-toggle {
+  position: fixed;
+  z-index: 200;
+  right: 18px;
+  bottom: 18px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.16);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.theme-toggle svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+:root[data-theme="dark"] body {
+  color: var(--ink);
+  background: var(--paper);
+}
+
+:root[data-theme="dark"] .button--dark {
+  color: #111612;
+  border-color: #f1efe8;
+  background: #f1efe8;
+}
+
+:root[data-theme="dark"] .button--dark:hover {
+  background: #d9ddd6;
+}
+
+:root[data-theme="dark"] .form-field input,
+:root[data-theme="dark"] .form-field textarea {
+  border-color: var(--line);
+  color: var(--ink);
+  background: var(--surface);
+}
+
+:root[data-theme="dark"] .form-field input::placeholder,
+:root[data-theme="dark"] .form-field textarea::placeholder {
+  color: #899188;
+}
+
+:root[data-theme="dark"] .task-column {
+  background: #161c18;
+}
+
+:root[data-theme="dark"] .projects-loading span {
+  background: linear-gradient(
+    90deg,
+    #1a211c 25%,
+    #273029 50%,
+    #1a211c 75%
+  );
+  background-size: 200% 100%;
+}
+
+:root[data-theme="dark"] .content-error > p:not(.eyebrow) {
+  color: #efb4ae;
+}
+
+:root[data-theme="dark"] .product-preview,
+:root[data-theme="dark"] .dialog-card,
+:root[data-theme="dark"] .project-card,
+:root[data-theme="dark"] .task-card {
+  color: var(--ink);
+}
+
+@media (max-width: 680px) {
+  .theme-toggle {
+    right: 12px;
+    bottom: 12px;
   }
 }

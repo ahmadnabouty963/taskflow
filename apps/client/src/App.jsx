@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router";
 import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
+import { ThemeToggle } from "./components/ThemeToggle.jsx";
 import { DashboardPage } from "./pages/DashboardPage.jsx";
 import { LandingPage } from "./pages/LandingPage.jsx";
 import { LoginPage } from "./pages/LoginPage.jsx";
@@ -12,8 +13,8 @@ import "./App.css";
 function App() {
   return (
     <>
-      {" "}
       <PageTitle />
+      <ThemeToggle />
       <Routes>
         <Route index element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />

@@ -1,8 +1,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 import { PageTitle } from "./PageTitle.jsx";
+import { ThemeToggle } from "./ThemeToggle.jsx";
 
 function BrokenComponent() {
   throw new Error("Test application error");
@@ -10,6 +12,8 @@ function BrokenComponent() {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  window.localStorage.clear();
+  delete document.documentElement.dataset.theme;
 });
 
 describe("Application safety", () => {
@@ -45,5 +49,26 @@ describe("Application safety", () => {
     await waitFor(() => {
       expect(document.title).toBe("Log in — Ordanly");
     });
+  });
+
+  it("switches and remembers the visual theme", async () => {
+    const user = userEvent.setup();
+
+    render(<ThemeToggle />);
+
+    const toggle = screen.getByRole("button", {
+      name: "Switch to dark mode",
+    });
+
+    await user.click(toggle);
+
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+    expect(window.localStorage.getItem("ordanly.theme.v1")).toBe("dark");
+
+    expect(
+      screen.getByRole("button", {
+        name: "Switch to light mode",
+      }),
+    ).toBeInTheDocument();
   });
 });
