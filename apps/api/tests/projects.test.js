@@ -152,4 +152,54 @@ describe("Projects API", () => {
     expect(ownerResponse.statusCode).toBe(200);
     expect(ownerResponse.body.data.project.title).toBe("Private Project");
   });
+
+  it("stores project colors and archives projects without deleting them", async () => {
+    const createResponse = await ownerAgent.post("/api/projects").send({
+      title: "Brand refresh",
+      description: "A colorful project",
+      color: "#0EA5E9",
+    });
+
+    expect(createResponse.statusCode).toBe(201);
+    expect(createResponse.body.data.project).toEqual(
+      expect.objectContaining({
+        color: "#0EA5E9",
+        archivedAt: null,
+      }),
+    );
+
+    const projectId = createResponse.body.data.project.id;
+    const archiveResponse = await ownerAgent
+      .patch(`/api/projects/${projectId}`)
+      .send({ archived: true });
+
+    expect(archiveResponse.statusCode).toBe(200);
+    expect(archiveResponse.body.data.project.archivedAt).not.toBeNull();
+
+    const listResponse = await ownerAgent.get("/api/projects");
+    expect(listResponse.body.data.projects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: projectId, color: "#0EA5E9" }),
+      ]),
+    );
+
+    const restoreResponse = await ownerAgent
+      .patch(`/api/projects/${projectId}`)
+      .send({ archived: false, color: "#22C55E" });
+
+    expect(restoreResponse.statusCode).toBe(200);
+    expect(restoreResponse.body.data.project.archivedAt).toBeNull();
+    expect(restoreResponse.body.data.project.color).toBe("#22C55E");
+  });
+
+  it("rejects invalid project colors", async () => {
+    const response = await ownerAgent.post("/api/projects").send({
+      title: "Invalid color",
+      color: "blue",
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.error.code).toBe("VALIDATION_ERROR");
+  });
+
 });

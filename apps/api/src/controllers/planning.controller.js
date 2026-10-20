@@ -16,6 +16,7 @@ export async function getGlobalTasks(request, response, next) {
     const where = {
       project: {
         ownerId: request.user.id,
+        archivedAt: null,
       },
       ...(from || to
         ? {
@@ -62,6 +63,7 @@ export async function getGlobalTasks(request, response, next) {
             select: {
               id: true,
               title: true,
+              color: true,
             },
           },
         },

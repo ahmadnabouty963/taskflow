@@ -2,21 +2,20 @@ import prisma from "../lib/prisma.js";
 
 export async function createProject(request, response, next) {
   try {
-    const { title, description } = request.body;
+    const { title, description, color } = request.body;
 
     const project = await prisma.project.create({
       data: {
         title,
         description,
+        color,
         ownerId: request.user.id,
       },
     });
 
     return response.status(201).json({
       success: true,
-      data: {
-        project,
-      },
+      data: { project },
     });
   } catch (error) {
     next(error);
@@ -26,24 +25,19 @@ export async function createProject(request, response, next) {
 export async function getProjects(request, response, next) {
   try {
     const projects = await prisma.project.findMany({
-      where: {
-        ownerId: request.user.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: { ownerId: request.user.id },
+      orderBy: { updatedAt: "desc" },
     });
 
     return response.status(200).json({
       success: true,
-      data: {
-        projects,
-      },
+      data: { projects },
     });
   } catch (error) {
     next(error);
   }
 }
+
 export async function getProjectById(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
@@ -67,14 +61,13 @@ export async function getProjectById(request, response, next) {
 
     return response.status(200).json({
       success: true,
-      data: {
-        project,
-      },
+      data: { project },
     });
   } catch (error) {
     next(error);
   }
 }
+
 export async function updateProject(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
@@ -96,23 +89,26 @@ export async function updateProject(request, response, next) {
       });
     }
 
+    const { archived, ...projectFields } = request.body;
     const project = await prisma.project.update({
-      where: {
-        id: projectId,
+      where: { id: projectId },
+      data: {
+        ...projectFields,
+        ...(archived !== undefined && {
+          archivedAt: archived ? new Date() : null,
+        }),
       },
-      data: request.body,
     });
 
     return response.status(200).json({
       success: true,
-      data: {
-        project,
-      },
+      data: { project },
     });
   } catch (error) {
     next(error);
   }
 }
+
 export async function deleteProject(request, response, next) {
   try {
     const { projectId } = request.validatedParams;

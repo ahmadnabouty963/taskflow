@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+const projectColorSchema = z
+  .string()
+  .regex(/^#[0-9a-f]{6}$/i, "Project color must be a valid hex color.");
+
 export const createProjectSchema = z.object({
   title: z
     .string()
@@ -12,10 +16,14 @@ export const createProjectSchema = z.object({
     .trim()
     .max(1000, "Description must not exceed 1000 characters.")
     .optional(),
+
+  color: projectColorSchema.optional(),
 });
+
 export const projectIdParamsSchema = z.object({
   projectId: z.string().uuid("Project ID must be a valid UUID."),
 });
+
 export const updateProjectSchema = z
   .object({
     title: z
@@ -31,6 +39,9 @@ export const updateProjectSchema = z
       .max(1000, "Description must not exceed 1000 characters.")
       .nullable()
       .optional(),
+
+    color: projectColorSchema.optional(),
+    archived: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided.",

@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../lib/api.js";
 
+const projectColors = [
+  { label: "Violet", value: "#6D5EF5" },
+  { label: "Blue", value: "#2563EB" },
+  { label: "Sky", value: "#0EA5E9" },
+  { label: "Green", value: "#16A34A" },
+  { label: "Amber", value: "#D97706" },
+  { label: "Rose", value: "#E11D48" },
+];
+
 export function ProjectDialog({ project, onClose, onSaved }) {
-  const isEditing = Boolean(project);
+  const isEditing = Boolean(project?.id);
 
   const [form, setForm] = useState({
     title: project?.title ?? "",
     description: project?.description ?? "",
+    color: project?.color ?? projectColors[0].value,
   });
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,11 +39,7 @@ export function ProjectDialog({ project, onClose, onSaved }) {
 
   function handleChange(event) {
     const { name, value } = event.target;
-
-    setForm((currentForm) => ({
-      ...currentForm,
-      [name]: value,
-    }));
+    setForm((currentForm) => ({ ...currentForm, [name]: value }));
   }
 
   async function handleSubmit(event) {
@@ -44,6 +50,7 @@ export function ProjectDialog({ project, onClose, onSaved }) {
     const payload = {
       title: form.title.trim(),
       description: form.description.trim(),
+      color: form.color,
     };
 
     try {
@@ -125,11 +132,33 @@ export function ProjectDialog({ project, onClose, onSaved }) {
               name="description"
               onChange={handleChange}
               placeholder="What should this project achieve?"
-              rows="5"
+              rows="4"
               value={form.description}
             />
             <small>{form.description.length}/1000 characters</small>
           </label>
+
+          <fieldset className="project-color-field">
+            <legend>Project color</legend>
+            <div className="project-color-options">
+              {projectColors.map((color) => (
+                <label key={color.value} title={color.label}>
+                  <input
+                    checked={form.color === color.value}
+                    name="color"
+                    onChange={handleChange}
+                    type="radio"
+                    value={color.value}
+                  />
+                  <span
+                    aria-label={color.label}
+                    className="project-color-swatch"
+                    style={{ "--swatch-color": color.value }}
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
           <footer className="dialog-actions">
             <button

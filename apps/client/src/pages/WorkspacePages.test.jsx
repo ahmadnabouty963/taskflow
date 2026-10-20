@@ -303,4 +303,53 @@ describe("Workspace pages", () => {
       );
     });
   });
+
+  it("archives and restores colored projects", async () => {
+    const user = userEvent.setup();
+    const activeProject = {
+      id: "project-color",
+      title: "Brand system",
+      description: "Polish the visual identity.",
+      color: "#E11D48",
+      archivedAt: null,
+      updatedAt: "2026-10-20T12:00:00.000Z",
+    };
+
+    apiRequest.mockImplementation((path, options = {}) => {
+      if (path === "/api/projects" && !options.method) {
+        return Promise.resolve({ data: { projects: [activeProject] } });
+      }
+      if (path === "/api/projects/project-color" && options.method === "PATCH") {
+        return Promise.resolve({
+          data: {
+            project: {
+              ...activeProject,
+              archivedAt: "2026-10-20T13:00:00.000Z",
+            },
+          },
+        });
+      }
+      return Promise.reject(new Error(`Unexpected request: ${path}`));
+    });
+
+    renderDashboard();
+    expect(await screen.findByRole("heading", { name: "Brand system" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Archive" }));
+    expect(await screen.findByText("Brand system was archived.")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Brand system" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /Archived 1/i }));
+    expect(screen.getByRole("heading", { name: "Brand system" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Restore" })).toBeInTheDocument();
+
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/api/projects/project-color",
+      {
+        method: "PATCH",
+        body: JSON.stringify({ archived: true }),
+      },
+    );
+  });
+
 });
