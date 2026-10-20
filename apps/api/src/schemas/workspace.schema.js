@@ -17,11 +17,6 @@ export const memberParamsSchema = workspaceIdParamsSchema.extend({
   userId: z.string().uuid("User ID must be a valid UUID."),
 });
 
-export const addMemberSchema = z.object({
-  email: z.string().trim().toLowerCase().email("A valid email is required."),
-  role: z.enum(["ADMIN", "MEMBER", "VIEWER"]).default("MEMBER"),
-});
-
 export const updateMemberRoleSchema = z.object({
   role: z.enum(["ADMIN", "MEMBER", "VIEWER"]),
 });

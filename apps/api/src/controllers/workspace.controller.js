@@ -121,55 +121,6 @@ export async function getMembers(request, response, next) {
   }
 }
 
-export async function addMember(request, response, next) {
-  try {
-    const manager = await requireManager(request, response);
-    if (!manager) return;
-
-    const user = await prisma.user.findUnique({
-      where: { email: request.body.email },
-      select: { id: true, name: true, email: true },
-    });
-    if (!user) {
-      return response.status(404).json({
-        success: false,
-        error: {
-          code: "USER_NOT_FOUND",
-          message: "No Ordanly account uses this email address.",
-        },
-      });
-    }
-
-    const existing = await prisma.workspaceMember.findUnique({
-      where: {
-        workspaceId_userId: {
-          workspaceId: manager.workspaceId,
-          userId: user.id,
-        },
-      },
-    });
-    if (existing) {
-      return response.status(409).json({
-        success: false,
-        error: { code: "MEMBER_EXISTS", message: "This user is already a member." },
-      });
-    }
-
-    const member = await prisma.workspaceMember.create({
-      data: {
-        workspaceId: manager.workspaceId,
-        userId: user.id,
-        role: request.body.role,
-      },
-      include: { user: { select: { id: true, name: true, email: true } } },
-    });
-
-    return response.status(201).json({ success: true, data: { member } });
-  } catch (error) {
-    next(error);
-  }
-}
-
 export async function updateMemberRole(request, response, next) {
   try {
     const manager = await requireManager(request, response);

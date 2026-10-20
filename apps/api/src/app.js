@@ -8,6 +8,7 @@ import taskRouter from "./routes/task.routes.js";
 import planningRouter from "./routes/planning.routes.js";
 import eventRouter from "./routes/event.routes.js";
 import workspaceRouter from "./routes/workspace.routes.js";
+import invitationRouter from "./routes/invitation.routes.js";
 import { apiLimiter } from "./middleware/rateLimiters.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
@@ -48,6 +49,7 @@ app.use("/api", apiLimiter);
 
 app.use("/api/auth", authRouter);
 app.use("/api/workspaces", workspaceRouter);
+app.use("/api/invitations", invitationRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/tasks", planningRouter);
 app.use("/api/events", eventRouter);

@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { AuthLayout } from "../components/AuthLayout.jsx";
 import { useAuth } from "../context/auth-context.js";
+import { getSafeAuthDestination } from "../lib/auth-navigation.js";
 
 export function RegisterPage() {
   const { user, isLoading, register } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: "",
-    email: "",
+    email: location.state?.email ?? "",
     password: "",
     confirmPassword: "",
   });
@@ -18,7 +20,7 @@ export function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isLoading && user) {
-    return <Navigate to="/app" replace />;
+    return <Navigate to={getSafeAuthDestination(location)} replace />;
   }
 
   function handleChange(event) {
@@ -48,7 +50,7 @@ export function RegisterPage() {
         password: form.password,
       });
 
-      navigate("/app", { replace: true });
+      navigate(getSafeAuthDestination(location), { replace: true });
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -63,7 +65,7 @@ export function RegisterPage() {
       description="Set up your personal workspace in less than a minute."
       footer={
         <p>
-          Already have an account? <Link to="/login">Log in</Link>
+          Already have an account? <Link state={location.state} to="/login">Log in</Link>
         </p>
       }
     >

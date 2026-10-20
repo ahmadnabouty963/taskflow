@@ -24,6 +24,9 @@ Aktuell umgesetzt:
 - geschützte Frontend-Routen
 - vollständiges CRUD für Projekte
 - vollständiges CRUD für Aufgaben
+- persönliche und gemeinsame Team-Arbeitsbereiche
+- Rollen `OWNER`, `ADMIN`, `MEMBER` und `VIEWER`
+- sichere Team-Einladungen per E-Mail mit sieben Tagen Gültigkeit
 - Aufgabenstatus: `TODO`, `IN_PROGRESS`, `DONE`
 - Aufgabenprioritäten: `LOW`, `MEDIUM`, `HIGH`
 - Suche in Aufgabentitel und Beschreibung
@@ -253,6 +256,9 @@ NODE_ENV=development
 CLIENT_ORIGINS=http://localhost:5173,http://localhost:5500,http://localhost:5501
 API_RATE_LIMIT_MAX=100
 AUTH_RATE_LIMIT_MAX=10
+RESEND_API_KEY="re_your_resend_key"
+EMAIL_FROM="Ordanly <hello@ordanly.com>"
+CLIENT_APP_URL=http://localhost:5173
 ```
 
 Datenbankmigrationen und Prisma Client:
@@ -383,6 +389,9 @@ NODE_ENV=production
 CLIENT_ORIGINS=...
 API_RATE_LIMIT_MAX=100
 AUTH_RATE_LIMIT_MAX=10
+RESEND_API_KEY=...
+EMAIL_FROM="Ordanly <hello@ordanly.com>"
+CLIENT_APP_URL=https://ordanly.com
 ```
 
 `DATABASE_URL` enthält vertrauliche Zugangsdaten und wird nicht im Repository gespeichert. `PORT` wird von Render automatisch bereitgestellt.
@@ -413,7 +422,6 @@ Diese Funktionen gehören nicht zum aktuellen MVP und sind für spätere Version
 - Login mit Google und GitHub
 - Progressive Web App
 - optionale native App
-- Team-Arbeitsbereiche und Einladungen
 
 ## Dokumentation
 

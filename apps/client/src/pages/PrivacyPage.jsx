@@ -31,6 +31,7 @@ export function PrivacyPage() {
           <li>sicher gehashter Passwortwert</li>
           <li>Session- und Anmeldedaten</li>
           <li>vom Benutzer erstellte Projekte und Aufgaben</li>
+          <li>E-Mail-Adressen und Rollen für Team-Einladungen</li>
           <li>technische Verbindungs- und Sicherheitsdaten</li>
         </ul>
       </section>
@@ -67,7 +68,19 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>6. Speicherdauer</h2>
+        <h2>6. Transaktions-E-Mails</h2>
+        <p>
+          Ordanly verwendet Resend für den Versand notwendiger E-Mails, etwa
+          für Einladungen zu Team-Arbeitsbereichen. Hierfür werden insbesondere
+          Empfängeradresse, Absenderinformationen und der Inhalt der jeweiligen
+          Nachricht an Resend übermittelt. Einladungslinks sind zeitlich
+          begrenzt und enthalten ein zufälliges, serverseitig nur gehasht
+          gespeichertes Token.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. Speicherdauer</h2>
         <p>
           Kontodaten, Projekte und Aufgaben werden grundsätzlich gespeichert,
           solange das Benutzerkonto besteht oder ihre Verarbeitung für die
@@ -78,7 +91,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>7. Keine Analyse- oder Werbe-Cookies</h2>
+        <h2>8. Keine Analyse- oder Werbe-Cookies</h2>
         <p>
           Ordanly verwendet derzeit keine Webanalyse, kein Werbetracking und
           keine personalisierte Werbung.
@@ -86,7 +99,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>8. Rechte betroffener Personen</h2>
+        <h2>9. Rechte betroffener Personen</h2>
         <p>
           Betroffene Personen haben im Rahmen der gesetzlichen Voraussetzungen
           insbesondere das Recht auf Auskunft, Berichtigung, Löschung,
@@ -102,7 +115,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>9. Sicherheit</h2>
+        <h2>10. Sicherheit</h2>
         <p>
           Ordanly verwendet HTTPS, gehashte Passwörter, sichere Session-Cookies,
           serverseitige Validierung, Zugriffskontrollen und Rate Limits.
@@ -110,7 +123,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>10. Änderungen</h2>
+        <h2>11. Änderungen</h2>
         <p>
           Diese Datenschutzerklärung wird aktualisiert, wenn sich Funktionen,
           Anbieter oder gesetzliche Anforderungen ändern.

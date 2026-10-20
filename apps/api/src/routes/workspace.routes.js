@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  addMember,
   createWorkspace,
   getMembers,
   getWorkspaces,
@@ -8,17 +7,26 @@ import {
   updateMemberRole,
   updateWorkspace,
 } from "../controllers/workspace.controller.js";
+import {
+  createInvitation,
+  listInvitations,
+  resendInvitation,
+  revokeInvitation,
+} from "../controllers/invitation.controller.js";
 import { authenticate } from "../middleware/authenticate.js";
 import { validateBody } from "../middleware/validateBody.js";
 import { validateParams } from "../middleware/validateParams.js";
 import {
-  addMemberSchema,
   createWorkspaceSchema,
   memberParamsSchema,
   updateMemberRoleSchema,
   updateWorkspaceSchema,
   workspaceIdParamsSchema,
 } from "../schemas/workspace.schema.js";
+import {
+  createInvitationSchema,
+  invitationIdParamsSchema,
+} from "../schemas/invitation.schema.js";
 
 const router = Router();
 router.use(authenticate);
@@ -36,11 +44,26 @@ router.get(
   validateParams(workspaceIdParamsSchema),
   getMembers,
 );
-router.post(
-  "/:workspaceId/members",
+router.get(
+  "/:workspaceId/invitations",
   validateParams(workspaceIdParamsSchema),
-  validateBody(addMemberSchema),
-  addMember,
+  listInvitations,
+);
+router.post(
+  "/:workspaceId/invitations",
+  validateParams(workspaceIdParamsSchema),
+  validateBody(createInvitationSchema),
+  createInvitation,
+);
+router.post(
+  "/:workspaceId/invitations/:invitationId/resend",
+  validateParams(invitationIdParamsSchema),
+  resendInvitation,
+);
+router.delete(
+  "/:workspaceId/invitations/:invitationId",
+  validateParams(invitationIdParamsSchema),
+  revokeInvitation,
 );
 router.patch(
   "/:workspaceId/members/:userId",

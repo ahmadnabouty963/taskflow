@@ -26,8 +26,11 @@ beforeEach(() => {
     if (path === "/api/workspaces/workspace-1/members" && !options.method) {
       return Promise.resolve({ data: { currentRole: "OWNER", members: [{ workspaceId: "workspace-1", userId: "user-1", role: "OWNER", user: { id: "user-1", name: "Ahmad Nabouty", email: "ahmad@example.com" } }] } });
     }
-    if (path === "/api/workspaces/workspace-1/members" && options.method === "POST") {
-      return Promise.resolve({ data: { member: { workspaceId: "workspace-1", userId: "user-2", role: "MEMBER", user: { id: "user-2", name: "Team Member", email: "member@example.com" } } } });
+    if (path === "/api/workspaces/workspace-1/invitations" && !options.method) {
+      return Promise.resolve({ data: { invitations: [] } });
+    }
+    if (path === "/api/workspaces/workspace-1/invitations" && options.method === "POST") {
+      return Promise.resolve({ data: { invitation: { id: "invite-1", email: "member@example.com", role: "MEMBER", expiresAt: "2026-10-27T20:00:00.000Z" } } });
     }
     return Promise.reject(new Error(`Unexpected request: ${path}`));
   });
@@ -41,15 +44,16 @@ describe("Workspace settings", () => {
     expect(screen.getByText("Owner")).toBeInTheDocument();
   });
 
-  it("adds an existing Ordanly account", async () => {
+  it("sends an expiring email invitation", async () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByRole("heading", { name: "Product team" });
     await user.type(screen.getByLabelText("Email address"), "member@example.com");
-    await user.click(screen.getByRole("button", { name: "Add member" }));
-    expect(await screen.findByText("Team Member")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Send invitation" }));
+    expect(await screen.findByText("Invitation sent to member@example.com.")).toBeInTheDocument();
+    expect(screen.getByText("member@example.com")).toBeInTheDocument();
     expect(apiRequest).toHaveBeenCalledWith(
-      "/api/workspaces/workspace-1/members",
+      "/api/workspaces/workspace-1/invitations",
       { method: "POST", body: JSON.stringify({ email: "member@example.com", role: "MEMBER" }) },
     );
   });

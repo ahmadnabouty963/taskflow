@@ -29,6 +29,13 @@ async function registerAndLogin(user) {
   return agent;
 }
 
+async function addWorkspaceMember(workspaceId, email, role) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  return prisma.workspaceMember.create({
+    data: { workspaceId, userId: user.id, role },
+  });
+}
+
 beforeEach(cleanup);
 afterEach(cleanup);
 afterAll(() => prisma.$disconnect());
@@ -44,7 +51,7 @@ describe("Workspaces API", () => {
     ]);
   });
 
-  it("creates a team and lets the owner add an existing account", async () => {
+  it("shares team projects with workspace members", async () => {
     const ownerAgent = await registerAndLogin(owner);
     const memberAgent = await registerAndLogin(teammate);
 
@@ -54,11 +61,7 @@ describe("Workspaces API", () => {
     expect(createResponse.statusCode).toBe(201);
     const workspaceId = createResponse.body.data.workspace.id;
 
-    const addResponse = await ownerAgent
-      .post(`/api/workspaces/${workspaceId}/members`)
-      .send({ email: teammate.email, role: "MEMBER" });
-    expect(addResponse.statusCode).toBe(201);
-    expect(addResponse.body.data.member.role).toBe("MEMBER");
+    await addWorkspaceMember(workspaceId, teammate.email, "MEMBER");
 
     const memberList = await memberAgent.get("/api/workspaces");
     expect(memberList.body.data.workspaces).toEqual(
@@ -92,10 +95,7 @@ describe("Workspaces API", () => {
       .send({ name: "Read only team" });
     const workspaceId = created.body.data.workspace.id;
 
-    await ownerAgent
-      .post(`/api/workspaces/${workspaceId}/members`)
-      .send({ email: teammate.email, role: "VIEWER" })
-      .expect(201);
+    await addWorkspaceMember(workspaceId, teammate.email, "VIEWER");
 
     const forbidden = await viewerAgent.post("/api/projects").send({
       title: "Viewer project",
@@ -116,10 +116,7 @@ describe("Workspaces API", () => {
       .send({ name: "Operations" });
     const workspaceId = created.body.data.workspace.id;
 
-    await ownerAgent
-      .post(`/api/workspaces/${workspaceId}/members`)
-      .send({ email: teammate.email, role: "MEMBER" })
-      .expect(201);
+    await addWorkspaceMember(workspaceId, teammate.email, "MEMBER");
 
     const update = await ownerAgent
       .patch(`/api/workspaces/${workspaceId}/members/${teammateUser.id}`)

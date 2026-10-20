@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { AuthLayout } from "../components/AuthLayout.jsx";
 import { useAuth } from "../context/auth-context.js";
+import { getSafeAuthDestination } from "../lib/auth-navigation.js";
 
 export function LoginPage() {
   const { user, isLoading, login } = useAuth();
@@ -9,7 +10,7 @@ export function LoginPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    email: "",
+    email: location.state?.email ?? "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +18,7 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isLoading && user) {
-    return <Navigate to="/app" replace />;
+    return <Navigate to={getSafeAuthDestination(location)} replace />;
   }
 
   function handleChange(event) {
@@ -40,7 +41,7 @@ export function LoginPage() {
         password: form.password,
       });
 
-      const destination = location.state?.from ?? "/app";
+      const destination = getSafeAuthDestination(location);
       navigate(destination, { replace: true });
     } catch (error) {
       setErrorMessage(error.message);
@@ -56,7 +57,7 @@ export function LoginPage() {
       description="Continue where you left off."
       footer={
         <p>
-          New to Ordanly? <Link to="/register">Create an account</Link>
+          New to Ordanly? <Link state={location.state} to="/register">Create an account</Link>
         </p>
       }
     >

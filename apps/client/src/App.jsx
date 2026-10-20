@@ -13,6 +13,7 @@ import { SettingsPage } from "./pages/SettingsPage.jsx";
 import { PlanningPage } from "./pages/PlanningPage.jsx";
 import { CalendarPage } from "./pages/CalendarPage.jsx";
 import { WorkspaceSettingsPage } from "./pages/WorkspaceSettingsPage.jsx";
+import { InvitationPage } from "./pages/InvitationPage.jsx";
 import { PageTitle } from "./components/PageTitle.jsx";
 import "./App.css";
 
@@ -25,6 +26,7 @@ function App() {
         <Route index element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/invite/:token" element={<InvitationPage />} />
         <Route path="/impressum" element={<ImpressumPage />} />
         <Route path="/datenschutz" element={<PrivacyPage />} />
         <Route

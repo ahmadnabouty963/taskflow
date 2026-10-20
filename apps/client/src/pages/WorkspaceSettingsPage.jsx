@@ -1,19 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { apiRequest } from "../lib/api.js";
 
 const editableRoles = ["ADMIN", "MEMBER", "VIEWER"];
+const invitationDateFormatter = new Intl.DateTimeFormat("en", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
 
 export function WorkspaceSettingsPage() {
   const { workspaceId } = useParams();
   const [workspace, setWorkspace] = useState(null);
   const [members, setMembers] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [currentRole, setCurrentRole] = useState("");
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("MEMBER");
-  const [isAdding, setIsAdding] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
+  const [pendingInvitationId, setPendingInvitationId] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -31,6 +38,17 @@ export function WorkspaceSettingsPage() {
         );
         setMembers(memberResult.data.members);
         setCurrentRole(memberResult.data.currentRole);
+        const managerRoles = ["OWNER", "ADMIN"];
+        if (
+          managerRoles.includes(memberResult.data.currentRole) &&
+          workspaceResult.data.workspaces.find(({ id }) => id === workspaceId)?.type === "TEAM"
+        ) {
+          const invitationResult = await apiRequest(
+            `/api/workspaces/${workspaceId}/invitations`,
+            { signal: controller.signal },
+          );
+          setInvitations(invitationResult.data.invitations);
+        }
         setStatus("success");
       } catch (requestError) {
         if (requestError.name !== "AbortError") {
@@ -43,27 +61,71 @@ export function WorkspaceSettingsPage() {
     return () => controller.abort();
   }, [workspaceId]);
 
-  const canManage = useMemo(
-    () => currentRole === "OWNER" || currentRole === "ADMIN",
-    [currentRole],
-  );
+  const canManage = currentRole === "OWNER" || currentRole === "ADMIN";
 
-  async function addMember(event) {
+  async function sendInvitation(event) {
     event.preventDefault();
     setError("");
-    setIsAdding(true);
+    setSuccessMessage("");
+    setIsInviting(true);
     try {
-      const result = await apiRequest(`/api/workspaces/${workspaceId}/members`, {
+      const result = await apiRequest(`/api/workspaces/${workspaceId}/invitations`, {
         method: "POST",
         body: JSON.stringify({ email: email.trim().toLowerCase(), role }),
       });
-      setMembers((current) => [...current, result.data.member]);
+      setInvitations((current) => [
+        result.data.invitation,
+        ...current.filter(({ id }) => id !== result.data.invitation.id),
+      ]);
       setEmail("");
       setRole("MEMBER");
+      setSuccessMessage(`Invitation sent to ${result.data.invitation.email}.`);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
-      setIsAdding(false);
+      setIsInviting(false);
+    }
+  }
+
+  async function resendInvitation(invitationId) {
+    setError("");
+    setSuccessMessage("");
+    setPendingInvitationId(invitationId);
+    try {
+      const result = await apiRequest(
+        `/api/workspaces/${workspaceId}/invitations/${invitationId}/resend`,
+        { method: "POST" },
+      );
+      setInvitations((current) =>
+        current.map((invitation) =>
+          invitation.id === invitationId ? result.data.invitation : invitation,
+        ),
+      );
+      setSuccessMessage(`Invitation resent to ${result.data.invitation.email}.`);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setPendingInvitationId("");
+    }
+  }
+
+  async function revokeInvitation(invitationId) {
+    setError("");
+    setSuccessMessage("");
+    setPendingInvitationId(invitationId);
+    try {
+      await apiRequest(
+        `/api/workspaces/${workspaceId}/invitations/${invitationId}`,
+        { method: "DELETE" },
+      );
+      setInvitations((current) =>
+        current.filter((invitation) => invitation.id !== invitationId),
+      );
+      setSuccessMessage("Invitation revoked.");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setPendingInvitationId("");
     }
   }
 
@@ -111,15 +173,35 @@ export function WorkspaceSettingsPage() {
       </header>
 
       {error ? <div className="form-message form-message--error" role="alert">{error}</div> : null}
+      {successMessage ? <div className="form-message form-message--success" role="status">{successMessage}</div> : null}
 
       {canManage && workspace.type === "TEAM" ? (
-        <section className="workspace-settings-card" aria-labelledby="add-member-title">
-          <div><p className="eyebrow">Add an existing account</p><h2 id="add-member-title">Add a team member</h2><p>Email invitations with expiring links come in the next release. For now, the person needs an Ordanly account.</p></div>
-          <form className="member-add-form" onSubmit={addMember}>
+        <section className="workspace-settings-card" aria-labelledby="invite-member-title">
+          <div><p className="eyebrow">Team invitation</p><h2 id="invite-member-title">Invite a team member</h2><p>We send a private link that expires after seven days. The person can create an account after opening it.</p></div>
+          <form className="member-add-form" onSubmit={sendInvitation}>
             <label className="form-field"><span>Email address</span><input onChange={(event) => setEmail(event.target.value)} placeholder="teammate@example.com" required type="email" value={email} /></label>
             <label className="form-field"><span>Role</span><select onChange={(event) => setRole(event.target.value)} value={role}>{editableRoles.map((item) => <option key={item} value={item}>{item.charAt(0) + item.slice(1).toLowerCase()}</option>)}</select></label>
-            <button className="button button--green" disabled={isAdding} type="submit">{isAdding ? "Adding..." : "Add member"}</button>
+            <button className="button button--green" disabled={isInviting} type="submit">{isInviting ? "Sending..." : "Send invitation"}</button>
           </form>
+        </section>
+      ) : null}
+
+      {canManage && workspace.type === "TEAM" ? (
+        <section className="workspace-settings-card" aria-labelledby="pending-invitations-title">
+          <div><p className="eyebrow">Waiting for a response</p><h2 id="pending-invitations-title">Pending invitations</h2><p>Resending creates a new secure link and invalidates the previous one.</p></div>
+          {invitations.length > 0 ? (
+            <div className="invitation-list">
+              {invitations.map((invitation) => (
+                <article className="pending-invitation" key={invitation.id}>
+                  <div><strong>{invitation.email}</strong><span>{invitation.role.charAt(0) + invitation.role.slice(1).toLowerCase()} · expires {invitationDateFormatter.format(new Date(invitation.expiresAt))}</span></div>
+                  <div className="pending-invitation__actions">
+                    <button disabled={pendingInvitationId === invitation.id} onClick={() => resendInvitation(invitation.id)} type="button">Resend</button>
+                    <button className="text-action--danger" disabled={pendingInvitationId === invitation.id} onClick={() => revokeInvitation(invitation.id)} type="button">Revoke</button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : <p className="empty-inline">No pending invitations.</p>}
         </section>
       ) : null}
 

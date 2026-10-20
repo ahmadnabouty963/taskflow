@@ -14,6 +14,10 @@ function getPageTitle(pathname) {
     return "Create account — Ordanly";
   }
 
+  if (pathname.startsWith("/invite/")) {
+    return "Team invitation — Ordanly";
+  }
+
   if (pathname === "/impressum") {
     return "Impressum — Ordanly";
   }
