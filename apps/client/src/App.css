@@ -1745,3 +1745,68 @@ input:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Project completion */
+
+.project-progress {
+  display: grid;
+  gap: 12px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.project-progress__summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.project-progress__summary > div {
+  display: grid;
+  gap: 4px;
+}
+
+.project-progress__summary span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-progress__summary strong {
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  font-weight: 400;
+}
+
+.project-progress__summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.project-progress__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.project-progress__track > span {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: var(--green);
+  transition: width 240ms ease;
+}
+
+@media (max-width: 680px) {
+  .project-progress__summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}

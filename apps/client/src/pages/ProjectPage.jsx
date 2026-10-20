@@ -50,6 +50,11 @@ export function ProjectPage() {
   const [tasksStatus, setTasksStatus] = useState("loading");
   const [tasksError, setTasksError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [projectProgress, setProjectProgress] = useState({
+    completed: 0,
+    total: 0,
+    status: "loading",
+  });
 
   const [filters, setFilters] = useState({
     search: "",
@@ -156,6 +161,55 @@ export function ProjectPage() {
     };
   }, [projectId, debouncedSearch, filters.status, filters.priority, reloadKey]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadProjectProgress() {
+      setProjectProgress((currentProgress) => ({
+        ...currentProgress,
+        status: "loading",
+      }));
+
+      try {
+        const [allTasksResult, completedTasksResult] = await Promise.all([
+          apiRequest(
+            `/api/projects/${projectId}/tasks?page=1&limit=1`,
+            { signal: controller.signal },
+          ),
+          apiRequest(
+            `/api/projects/${projectId}/tasks?status=DONE&page=1&limit=1`,
+            { signal: controller.signal },
+          ),
+        ]);
+
+        setProjectProgress({
+          completed: completedTasksResult.data.pagination.total,
+          total: allTasksResult.data.pagination.total,
+          status: "success",
+        });
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setProjectProgress((currentProgress) => ({
+            ...currentProgress,
+            status: "error",
+          }));
+        }
+      }
+    }
+
+    loadProjectProgress();
+
+    return () => {
+      controller.abort();
+    };
+  }, [projectId, reloadKey]);
+
+  const completionPercentage =
+    projectProgress.total === 0
+      ? 0
+      : Math.round(
+          (projectProgress.completed / projectProgress.total) * 100,
+        );
   const tasksByStatus = useMemo(() => {
     return taskColumns.reduce((groups, column) => {
       groups[column.status] = tasks.filter(
@@ -223,6 +277,7 @@ export function ProjectPage() {
         currentTasks.filter((task) => task.id !== taskToDelete.id),
       );
       setTaskToDelete(null);
+      setReloadKey((key) => key + 1);
     } catch (error) {
       setDeleteError(error.message);
     } finally {
@@ -334,6 +389,36 @@ export function ProjectPage() {
             New task
           </button>
         </header>
+
+        {projectProgress.status === "success" && (
+          <section
+            aria-label="Project completion"
+            className="project-progress"
+          >
+            <div className="project-progress__summary">
+              <div>
+                <span>Project progress</span>
+                <strong>{completionPercentage}% complete</strong>
+              </div>
+
+              <p>
+                {projectProgress.completed} of {projectProgress.total} tasks
+                completed
+              </p>
+            </div>
+
+            <div
+              aria-label="Project completion"
+              aria-valuemax="100"
+              aria-valuemin="0"
+              aria-valuenow={completionPercentage}
+              className="project-progress__track"
+              role="progressbar"
+            >
+              <span style={{ width: `${completionPercentage}%` }} />
+            </div>
+          </section>
+        )}
 
         {logoutError && (
           <div className="form-message form-message--error" role="alert">

@@ -152,6 +152,12 @@ describe("Workspace pages", () => {
                 dueDate: null,
               },
             ],
+            pagination: {
+              total:
+                path.includes("status=DONE") && path.includes("limit=1")
+                  ? 1
+                  : 2,
+            },
           },
         });
       }
@@ -178,6 +184,14 @@ describe("Workspace pages", () => {
         name: "Publish documentation",
       }),
     ).toBeInTheDocument();
+
+    expect(
+      await screen.findByRole("progressbar", {
+        name: "Project completion",
+      }),
+    ).toHaveAttribute("aria-valuenow", "50");
+
+    expect(screen.getByText(/1 of 2 tasks completed/i)).toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", {
