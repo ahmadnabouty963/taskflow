@@ -220,6 +220,12 @@ export function SettingsPage() {
             <Link className="workspace-nav__item" to="/app">
               Projects
             </Link>
+            <Link className="workspace-nav__item" to="/app/today">
+              Today
+            </Link>
+            <Link className="workspace-nav__item" to="/app/upcoming">
+              Upcoming
+            </Link>
             <Link
               className="workspace-nav__item workspace-nav__item--active"
               to="/app/settings"

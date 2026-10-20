@@ -10,6 +10,7 @@ import { ProjectPage } from "./pages/ProjectPage.jsx";
 import { ImpressumPage } from "./pages/ImpressumPage.jsx";
 import { PrivacyPage } from "./pages/PrivacyPage.jsx";
 import { SettingsPage } from "./pages/SettingsPage.jsx";
+import { PlanningPage } from "./pages/PlanningPage.jsx";
 import { PageTitle } from "./components/PageTitle.jsx";
 import "./App.css";
 
@@ -29,6 +30,22 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/app/today"
+          element={
+            <ProtectedRoute>
+              <PlanningPage mode="today" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/app/upcoming"
+          element={
+            <ProtectedRoute>
+              <PlanningPage mode="upcoming" />
             </ProtectedRoute>
           }
         />

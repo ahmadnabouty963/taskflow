@@ -5,6 +5,7 @@ import helmet from "helmet";
 import authRouter from "./routes/auth.routes.js";
 import projectRouter from "./routes/project.routes.js";
 import taskRouter from "./routes/task.routes.js";
+import planningRouter from "./routes/planning.routes.js";
 import { apiLimiter } from "./middleware/rateLimiters.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
@@ -45,6 +46,7 @@ app.use("/api", apiLimiter);
 
 app.use("/api/auth", authRouter);
 app.use("/api/projects", projectRouter);
+app.use("/api/tasks", planningRouter);
 app.use("/api/projects/:projectId/tasks", taskRouter);
 app.use(notFound);
 app.use(errorHandler);

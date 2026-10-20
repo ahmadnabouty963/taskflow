@@ -142,6 +142,12 @@ export function DashboardPage() {
             >
               Projects
             </Link>
+            <Link className="workspace-nav__item" to="/app/today">
+              Today
+            </Link>
+            <Link className="workspace-nav__item" to="/app/upcoming">
+              Upcoming
+            </Link>
             <Link className="workspace-nav__item" to="/app/settings">
               Settings
             </Link>

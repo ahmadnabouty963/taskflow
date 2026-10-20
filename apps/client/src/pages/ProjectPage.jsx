@@ -406,6 +406,12 @@ export function ProjectPage() {
             <span className="workspace-nav__item workspace-nav__item--active">
               Current project
             </span>
+            <Link className="workspace-nav__item" to="/app/today">
+              Today
+            </Link>
+            <Link className="workspace-nav__item" to="/app/upcoming">
+              Upcoming
+            </Link>
             <Link className="workspace-nav__item" to="/app/settings">
               Settings
             </Link>
