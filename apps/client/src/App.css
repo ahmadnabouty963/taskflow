@@ -3329,3 +3329,63 @@ input:focus-visible {
 :root[data-theme="dark"] .inline-create-form button:hover:not(:disabled) {
   color: #f1efe8;
 }
+
+
+/* Interactive calendar days */
+.calendar-day--interactive {
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.calendar-day--interactive:hover {
+  background: color-mix(in srgb, var(--green-soft) 28%, var(--surface));
+}
+
+.calendar-day--outside.calendar-day--interactive:hover {
+  background: color-mix(in srgb, var(--green-soft) 20%, var(--paper));
+}
+
+.calendar-day__date-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendar-day__weekday {
+  margin-right: auto;
+}
+
+.calendar-day__add-label {
+  margin-left: auto;
+  color: var(--green);
+  font-size: 0.63rem;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.calendar-day:hover .calendar-day__add-label,
+.calendar-day__date-button:focus-visible .calendar-day__add-label {
+  opacity: 1;
+}
+
+.calendar-day__date-button:focus-visible {
+  border-radius: 7px;
+  outline: 3px solid color-mix(in srgb, var(--green) 28%, transparent);
+  outline-offset: 2px;
+}
+
+@media (hover: none) {
+  .calendar-day__add-label {
+    opacity: 0.8;
+  }
+}

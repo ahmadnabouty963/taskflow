@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { TaskDialog } from "../components/TaskDialog.jsx";
 import { useAuth } from "../context/auth-context.js";
 import { apiRequest } from "../lib/api.js";
 
@@ -15,6 +16,13 @@ const dayFormatter = new Intl.DateTimeFormat(undefined, {
 const weekRangeFormatter = new Intl.DateTimeFormat(undefined, {
   day: "2-digit",
   month: "short",
+});
+
+const fullDateFormatter = new Intl.DateTimeFormat(undefined, {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
 });
 
 function startOfDay(date) {
@@ -63,8 +71,11 @@ export function CalendarPage() {
   const [calendarView, setCalendarView] = useState("month");
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [tasks, setTasks] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
+  const [createError, setCreateError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -94,6 +105,28 @@ export function CalendarPage() {
 
   useEffect(() => {
     document.title = "Calendar — Ordanly";
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadProjects() {
+      try {
+        const result = await apiRequest("/api/projects", {
+          signal: controller.signal,
+        });
+        setProjects(
+          result.data.projects.filter((project) => !project.archivedAt),
+        );
+      } catch (requestError) {
+        if (requestError.name !== "AbortError") {
+          setCreateError("Projects could not be loaded. Try refreshing the page.");
+        }
+      }
+    }
+
+    loadProjects();
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -147,6 +180,36 @@ export function CalendarPage() {
 
   function showToday() {
     setAnchorDate(new Date());
+  }
+
+  function openTaskDialog(day) {
+    setCreateError("");
+
+    if (projects.length === 0) {
+      setCreateError(
+        "Create an active project before scheduling a task in the calendar.",
+      );
+      return;
+    }
+
+    setSelectedDate(dateKey(day));
+  }
+
+  function handleTaskCreated(task) {
+    const project = projects.find((item) => item.id === task.projectId);
+
+    setTasks((currentTasks) => [
+      ...currentTasks,
+      {
+        ...task,
+        project: {
+          id: project.id,
+          title: project.title,
+          color: project.color,
+        },
+      },
+    ]);
+    setSelectedDate(null);
   }
 
   async function handleLogout() {
@@ -223,7 +286,7 @@ export function CalendarPage() {
           <div>
             <p className="eyebrow">All projects</p>
             <h1>Calendar</h1>
-            <p>See every scheduled task in one place.</p>
+            <p>Select a day to schedule a task in one of your projects.</p>
           </div>
           <div className="calendar-view-toggle" role="group" aria-label="Calendar view">
             <button
@@ -289,6 +352,12 @@ export function CalendarPage() {
           </div>
         )}
 
+        {createError && (
+          <div className="form-message form-message--error" role="alert">
+            {createError}
+          </div>
+        )}
+
         {status === "loading" && (
           <div className="board-loading" aria-live="polite">
             Loading calendar...
@@ -336,17 +405,34 @@ export function CalendarPage() {
                 return (
                   <article
                     className={
-                      "calendar-day" +
+                      "calendar-day calendar-day--interactive" +
                       (outsideMonth ? " calendar-day--outside" : "") +
                       (isSameDay(day, new Date()) ? " calendar-day--today" : "")
                     }
                     key={key}
+                    onClick={(event) => {
+                      if (!event.target.closest("a, button")) {
+                        openTaskDialog(day);
+                      }
+                    }}
                   >
                     <header>
-                      <time dateTime={key}>{day.getDate()}</time>
-                      {calendarView === "week" && (
-                        <span>{dayFormatter.format(day)}</span>
-                      )}
+                      <button
+                        aria-label={
+                          "Add task on " + fullDateFormatter.format(day)
+                        }
+                        className="calendar-day__date-button"
+                        onClick={() => openTaskDialog(day)}
+                        type="button"
+                      >
+                        <time dateTime={key}>{day.getDate()}</time>
+                        {calendarView === "week" && (
+                          <span className="calendar-day__weekday">
+                            {dayFormatter.format(day)}
+                          </span>
+                        )}
+                        <span className="calendar-day__add-label">Add task</span>
+                      </button>
                     </header>
 
                     <div className="calendar-day__tasks">
@@ -388,6 +474,15 @@ export function CalendarPage() {
           </div>
         )}
       </main>
+
+      {selectedDate && (
+        <TaskDialog
+          initialDueDate={selectedDate}
+          onClose={() => setSelectedDate(null)}
+          onSaved={handleTaskCreated}
+          projects={projects}
+        />
+      )}
     </div>
   );
 }

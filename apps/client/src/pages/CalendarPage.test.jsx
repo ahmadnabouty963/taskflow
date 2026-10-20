@@ -30,22 +30,63 @@ function renderCalendar() {
 }
 
 beforeEach(() => {
-  apiRequest.mockReset().mockResolvedValue({
-    data: {
-      tasks: [
-        {
-          id: "task-1",
-          title: "Present Ordanly",
-          status: "IN_PROGRESS",
-          priority: "HIGH",
-          dueDate: new Date().toISOString(),
-          project: {
-            id: "project-1",
-            title: "Ordanly launch",
+  apiRequest.mockReset().mockImplementation((path, options = {}) => {
+    if (path === "/api/projects") {
+      return Promise.resolve({
+        data: {
+          projects: [
+            {
+              id: "project-1",
+              title: "Ordanly launch",
+              color: "#2f6049",
+              archivedAt: null,
+            },
+          ],
+        },
+      });
+    }
+
+    if (path.startsWith("/api/tasks?")) {
+      return Promise.resolve({
+        data: {
+          tasks: [
+            {
+              id: "task-1",
+              title: "Present Ordanly",
+              status: "IN_PROGRESS",
+              priority: "HIGH",
+              dueDate: new Date().toISOString(),
+              project: {
+                id: "project-1",
+                title: "Ordanly launch",
+                color: "#2f6049",
+              },
+            },
+          ],
+        },
+      });
+    }
+
+    if (
+      path === "/api/projects/project-1/tasks" &&
+      options.method === "POST"
+    ) {
+      return Promise.resolve({
+        data: {
+          task: {
+            id: "task-2",
+            projectId: "project-1",
+            title: "Prepare calendar demo",
+            description: "",
+            status: "TODO",
+            priority: "MEDIUM",
+            dueDate: JSON.parse(options.body).dueDate,
           },
         },
-      ],
-    },
+      });
+    }
+
+    throw new Error("Unexpected API request: " + path);
   });
   authValue.logout.mockReset();
 });
@@ -64,7 +105,40 @@ describe("Calendar", () => {
       "aria-pressed",
       "true",
     );
-    expect(apiRequest.mock.calls[0][0]).toContain("/api/tasks?");
+    expect(apiRequest).toHaveBeenCalledWith(
+      expect.stringContaining("/api/tasks?"),
+      expect.objectContaining({ signal: expect.anything() }),
+    );
+  });
+
+  it("creates a task by selecting a calendar day", async () => {
+    const user = userEvent.setup();
+    renderCalendar();
+
+    await screen.findByText("Present Ordanly");
+    await user.click(
+      screen.getAllByRole("button", { name: /add task on/i })[0],
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Create a task" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Project")).toHaveValue("project-1");
+    expect(screen.getByLabelText("Due date")).not.toHaveValue("");
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Task title" }),
+      "Prepare calendar demo",
+    );
+    await user.click(screen.getByRole("button", { name: "Create task" }));
+
+    await waitFor(() => {
+      expect(apiRequest).toHaveBeenCalledWith(
+        "/api/projects/project-1/tasks",
+        expect.objectContaining({ method: "POST" }),
+      );
+    });
+    expect(await screen.findByText("Prepare calendar demo")).toBeInTheDocument();
   });
 
   it("switches to week view and navigates periods", async () => {

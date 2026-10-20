@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../lib/api.js";
 
+const EMPTY_PROJECTS = [];
+
 function getDateInputValue(date) {
   if (!date) {
     return "";
@@ -17,15 +19,23 @@ function getIsoDate(date) {
   return new Date(`${date}T12:00:00.000Z`).toISOString();
 }
 
-export function TaskDialog({ projectId, task, onClose, onSaved }) {
+export function TaskDialog({
+  projectId,
+  projects = EMPTY_PROJECTS,
+  initialDueDate = "",
+  task,
+  onClose,
+  onSaved,
+}) {
   const isEditing = Boolean(task?.id);
 
   const [form, setForm] = useState({
+    projectId: projectId ?? projects[0]?.id ?? "",
     title: task?.title ?? "",
     description: task?.description ?? "",
     status: task?.status ?? "TODO",
     priority: task?.priority ?? "MEDIUM",
-    dueDate: getDateInputValue(task?.dueDate),
+    dueDate: getDateInputValue(task?.dueDate ?? initialDueDate),
   });
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,7 +79,8 @@ export function TaskDialog({ projectId, task, onClose, onSaved }) {
     };
 
     try {
-      const basePath = `/api/projects/${projectId}/tasks`;
+      const selectedProjectId = projectId ?? form.projectId;
+      const basePath = `/api/projects/${selectedProjectId}/tasks`;
       const result = await apiRequest(
         isEditing ? `${basePath}/${task.id}` : basePath,
         {
@@ -123,6 +134,24 @@ export function TaskDialog({ projectId, task, onClose, onSaved }) {
             <div className="form-message form-message--error" role="alert">
               {errorMessage}
             </div>
+          )}
+
+          {!isEditing && projects.length > 0 && (
+            <label className="form-field">
+              <span>Project</span>
+              <select
+                name="projectId"
+                onChange={handleChange}
+                required
+                value={form.projectId}
+              >
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.title}
+                  </option>
+                ))}
+              </select>
+            </label>
           )}
 
           <label className="form-field">
