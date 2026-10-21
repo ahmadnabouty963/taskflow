@@ -31,6 +31,7 @@ const eventFields = {
     .string()
     .regex(/^#[0-9A-F]{6}$/i, "Color must be a valid hex color.")
     .default("#2F6049"),
+  workspaceId: z.string().min(1, "Calendar is required.").optional(),
 };
 
 function endsAfterStart(data) {

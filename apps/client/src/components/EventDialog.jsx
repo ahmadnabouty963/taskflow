@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../lib/api.js";
+import { calendarName } from "../lib/calendars.js";
 
 const EVENT_COLORS = ["#2F6049", "#DF6B43", "#3B6F92", "#7C5AA6", "#B64D5C"];
 
@@ -35,9 +36,15 @@ export function EventDialog({
   onClose,
   onRequestDelete,
   onSaved,
+  readOnly = false,
+  workspaces = [],
 }) {
   const isEditing = Boolean(event?.id);
+  const defaultWorkspace =
+    workspaces.find((workspace) => workspace.type === "PERSONAL") ??
+    workspaces[0];
   const [form, setForm] = useState({
+    workspaceId: event?.workspaceId ?? defaultWorkspace?.id ?? "",
     title: event?.title ?? "",
     description: event?.description ?? "",
     location: event?.location ?? "",
@@ -100,6 +107,7 @@ export function EventDialog({
             endsAt,
             allDay: form.allDay,
             color: form.color,
+            ...(form.workspaceId && { workspaceId: form.workspaceId }),
           }),
         },
       );
@@ -127,8 +135,13 @@ export function EventDialog({
           <div>
             <p className="eyebrow">{isEditing ? "Calendar event" : "New appointment"}</p>
             <h2 id="event-dialog-title">
-              {isEditing ? "Edit event" : "Create an event"}
+              {readOnly ? "Event details" : isEditing ? "Edit event" : "Create an event"}
             </h2>
+            {isEditing && event.owner && (
+              <p className="event-dialog__meta">
+                {calendarName(event.workspace)} · Created by {event.owner.name}
+              </p>
+            )}
           </div>
           <button
             aria-label="Close dialog"
@@ -143,99 +156,126 @@ export function EventDialog({
 
         <form className="dialog-form" onSubmit={handleSubmit}>
           {error && <div className="form-message form-message--error" role="alert">{error}</div>}
-
-          <label className="form-field">
-            <span>Event title</span>
-            <input
-              autoFocus
-              maxLength="120"
-              name="title"
-              onChange={handleChange}
-              placeholder="e.g. IHK presentation"
-              required
-              type="text"
-              value={form.title}
-            />
-          </label>
-
-          <div className="form-grid">
-            <label className="form-field">
-              <span>Date</span>
-              <input name="date" onChange={handleChange} required type="date" value={form.date} />
-            </label>
-            <label className="event-all-day">
-              <input checked={form.allDay} name="allDay" onChange={handleChange} type="checkbox" />
-              <span>All day</span>
-            </label>
-          </div>
-
-          {!form.allDay && (
-            <div className="form-grid">
-              <label className="form-field">
-                <span>Start time</span>
-                <input name="startTime" onChange={handleChange} required type="time" value={form.startTime} />
-              </label>
-              <label className="form-field">
-                <span>End time</span>
-                <input name="endTime" onChange={handleChange} required type="time" value={form.endTime} />
-              </label>
-            </div>
+          {readOnly && (
+            <p className="form-message">
+              Only the creator or a calendar admin can change this event.
+            </p>
           )}
 
-          <label className="form-field">
-            <span>Location</span>
-            <input
-              maxLength="200"
-              name="location"
-              onChange={handleChange}
-              placeholder="Room, address or meeting link"
-              type="text"
-              value={form.location}
-            />
-          </label>
+          <fieldset className="event-dialog__fields" disabled={readOnly}>
+            {workspaces.length > 0 && !readOnly && (
+              <label className="form-field">
+                <span>Calendar</span>
+                <select name="workspaceId" onChange={handleChange} value={form.workspaceId}>
+                  {workspaces.map((workspace) => (
+                    <option key={workspace.id} value={workspace.id}>
+                      {calendarName(workspace)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
-          <label className="form-field">
-            <span>Description</span>
-            <textarea
-              maxLength="2000"
-              name="description"
-              onChange={handleChange}
-              placeholder="Notes for this appointment"
-              rows="3"
-              value={form.description}
-            />
-          </label>
+            <label className="form-field">
+              <span>Event title</span>
+              <input
+                autoFocus
+                maxLength="120"
+                name="title"
+                onChange={handleChange}
+                placeholder="e.g. IHK presentation"
+                required
+                type="text"
+                value={form.title}
+              />
+            </label>
 
-          <fieldset className="event-color-field">
-            <legend>Color</legend>
-            <div>
-              {EVENT_COLORS.map((color) => (
-                <label key={color} style={{ "--event-choice-color": color }}>
-                  <input checked={form.color === color} name="color" onChange={handleChange} type="radio" value={color} />
-                  <span aria-hidden="true" />
-                  <span className="sr-only">{color}</span>
-                </label>
-              ))}
+            <div className="form-grid">
+              <label className="form-field">
+                <span>Date</span>
+                <input name="date" onChange={handleChange} required type="date" value={form.date} />
+              </label>
+              <label className="event-all-day">
+                <input checked={form.allDay} name="allDay" onChange={handleChange} type="checkbox" />
+                <span>All day</span>
+              </label>
             </div>
+
+            {!form.allDay && (
+              <div className="form-grid">
+                <label className="form-field">
+                  <span>Start time</span>
+                  <input name="startTime" onChange={handleChange} required type="time" value={form.startTime} />
+                </label>
+                <label className="form-field">
+                  <span>End time</span>
+                  <input name="endTime" onChange={handleChange} required type="time" value={form.endTime} />
+                </label>
+              </div>
+            )}
+
+            <label className="form-field">
+              <span>Location</span>
+              <input
+                maxLength="200"
+                name="location"
+                onChange={handleChange}
+                placeholder="Room, address or meeting link"
+                type="text"
+                value={form.location}
+              />
+            </label>
+
+            <label className="form-field">
+              <span>Description</span>
+              <textarea
+                maxLength="2000"
+                name="description"
+                onChange={handleChange}
+                placeholder="Notes for this appointment"
+                rows="3"
+                value={form.description}
+              />
+            </label>
+
+            <fieldset className="event-color-field">
+              <legend>Color</legend>
+              <div>
+                {EVENT_COLORS.map((color) => (
+                  <label key={color} style={{ "--event-choice-color": color }}>
+                    <input checked={form.color === color} name="color" onChange={handleChange} type="radio" value={color} />
+                    <span aria-hidden="true" />
+                    <span className="sr-only">{color}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </fieldset>
 
-          <footer className="dialog-actions event-dialog__actions">
-            {isEditing && (
-              <button
-                className="button button--danger event-delete-button"
-                disabled={isSubmitting}
-                onClick={() => onRequestDelete(event)}
-                type="button"
-              >
-                Delete
+          {readOnly ? (
+            <footer className="dialog-actions event-dialog__actions">
+              <span className="event-dialog__spacer" />
+              <button className="button button--dark" onClick={onClose} type="button">Close</button>
+            </footer>
+          ) : (
+            <footer className="dialog-actions event-dialog__actions">
+              {isEditing && (
+                <button
+                  className="button button--danger event-delete-button"
+                  disabled={isSubmitting}
+                  onClick={() => onRequestDelete(event)}
+                  type="button"
+                >
+                  Delete
+                </button>
+              )}
+              <span className="event-dialog__spacer" />
+              <button className="button button--ghost" disabled={isSubmitting} onClick={onClose} type="button">Cancel</button>
+              <button className="button button--dark" disabled={isSubmitting} type="submit">
+                {isSubmitting ? "Saving..." : isEditing ? "Save changes" : "Create event"}
               </button>
-            )}
-            <span className="event-dialog__spacer" />
-            <button className="button button--ghost" disabled={isSubmitting} onClick={onClose} type="button">Cancel</button>
-            <button className="button button--dark" disabled={isSubmitting} type="submit">
-              {isSubmitting ? "Saving..." : isEditing ? "Save changes" : "Create event"}
-            </button>
-          </footer>
+            </footer>
+          )}
         </form>
       </section>
     </div>

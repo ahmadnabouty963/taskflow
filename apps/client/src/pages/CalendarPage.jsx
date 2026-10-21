@@ -7,6 +7,7 @@ import { EventDialog } from "../components/EventDialog.jsx";
 import { TaskDialog } from "../components/TaskDialog.jsx";
 import { useAuth } from "../context/auth-context.js";
 import { apiRequest } from "../lib/api.js";
+import { calendarName, canEditEvent, isSharedEvent, writableCalendars } from "../lib/calendars.js";
 
 const monthFormatter = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 const dayFormatter = new Intl.DateTimeFormat(undefined, { weekday: "short" });
@@ -57,6 +58,8 @@ export function CalendarPage() {
   const [tasks, setTasks] = useState([]);
   const [events, setEvents] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [workspaces, setWorkspaces] = useState([]);
+  const [hiddenWorkspaceIds, setHiddenWorkspaceIds] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [createMode, setCreateMode] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -86,6 +89,9 @@ export function CalendarPage() {
     const controller = new AbortController();
     apiRequest("/api/projects", { signal: controller.signal })
       .then((result) => setProjects(result.data.projects.filter((project) => !project.archivedAt)))
+      .catch((requestError) => requestError.name !== "AbortError" && setError(requestError.message));
+    apiRequest("/api/workspaces", { signal: controller.signal })
+      .then((result) => setWorkspaces(result.data.workspaces))
       .catch((requestError) => requestError.name !== "AbortError" && setError(requestError.message));
     return () => controller.abort();
   }, []);
@@ -117,7 +123,15 @@ export function CalendarPage() {
   }, [range.end, range.start, reloadKey]);
 
   const tasksByDay = useMemo(() => groupByDay(tasks, (task) => new Date(task.dueDate)), [tasks]);
-  const eventsByDay = useMemo(() => groupByDay(events, (event) => new Date(event.startsAt)), [events]);
+  const shownEvents = useMemo(() => events.filter((event) => !hiddenWorkspaceIds.includes(event.workspaceId)), [events, hiddenWorkspaceIds]);
+  const eventsByDay = useMemo(() => groupByDay(shownEvents, (event) => new Date(event.startsAt)), [shownEvents]);
+  const eventCalendars = useMemo(() => writableCalendars(workspaces), [workspaces]);
+
+  function toggleCalendar(workspaceId) {
+    setHiddenWorkspaceIds((current) => current.includes(workspaceId)
+      ? current.filter((id) => id !== workspaceId)
+      : [...current, workspaceId]);
+  }
 
   function movePeriod(direction) {
     setAnchorDate((current) => calendarView === "week" ? addDays(current, direction * 7) : addMonths(current, direction));
@@ -207,8 +221,20 @@ export function CalendarPage() {
             <button className="calendar-today-button" onClick={() => setAnchorDate(new Date())} type="button">Today</button>
             <button aria-label="Next period" onClick={() => movePeriod(1)} type="button">Next</button>
           </div>
-          <p className="calendar-toolbar__meta"><strong>{tasks.length}</strong> tasks · <strong>{events.length}</strong> events</p>
+          <p className="calendar-toolbar__meta"><strong>{tasks.length}</strong> tasks · <strong>{shownEvents.length}</strong> events</p>
         </section>
+
+        {workspaces.length > 1 && (
+          <section className="calendar-filters" aria-label="Calendars">
+            <span className="calendar-filters__label">Calendars</span>
+            {workspaces.map((workspace) => (
+              <label className="calendar-filter" key={workspace.id}>
+                <input checked={!hiddenWorkspaceIds.includes(workspace.id)} onChange={() => toggleCalendar(workspace.id)} type="checkbox" />
+                <span>{calendarName(workspace)}</span>
+              </label>
+            ))}
+          </section>
+        )}
 
         {error && <div className="form-message form-message--error" role="alert">{error}</div>}
         {status === "loading" && <div className="board-loading" aria-live="polite">Loading calendar...</div>}
@@ -234,7 +260,7 @@ export function CalendarPage() {
                       {calendarView === "week" && dayEvents.length + dayTasks.length === 0 && <span className="calendar-day__empty">No entries</span>}
                       {visibleEvents.map((event) => (
                         <button className="calendar-event" key={event.id} onClick={() => setEditingEvent(event)} style={{ "--calendar-event-color": event.color }} type="button">
-                          <span>{event.title}</span><small>{event.allDay ? "All day" : timeFormatter.format(new Date(event.startsAt))}{event.location ? ` · ${event.location}` : ""}</small>
+                          <span>{event.title}</span><small>{event.allDay ? "All day" : timeFormatter.format(new Date(event.startsAt))}{event.location ? ` · ${event.location}` : ""}{isSharedEvent(event) && event.owner ? ` · ${event.owner.name}` : ""}</small>
                         </button>
                       ))}
                       {visibleTasks.map((task) => <Link className={"calendar-task calendar-task--" + task.status.toLowerCase().replace("_", "-")} key={task.id} style={{ "--calendar-project-color": task.project.color ?? "var(--green)" }} title={task.title + " — " + task.project.title} to={"/app/projects/" + task.project.id}><span>{task.title}</span>{calendarView === "week" && <small>{task.project.title}</small>}</Link>)}
@@ -250,8 +276,8 @@ export function CalendarPage() {
 
       {selectedDate && createMode === "choose" && <CalendarEntryDialog canCreateTask={projects.length > 0} date={selectedDate} onClose={closeCreateFlow} onEvent={() => setCreateMode("event")} onTask={() => setCreateMode("task")} />}
       {selectedDate && createMode === "task" && <TaskDialog initialDueDate={selectedDate} onClose={closeCreateFlow} onSaved={handleTaskCreated} projects={projects} />}
-      {selectedDate && createMode === "event" && <EventDialog initialDate={selectedDate} onClose={closeCreateFlow} onRequestDelete={() => {}} onSaved={handleEventSaved} />}
-      {editingEvent && <EventDialog event={editingEvent} initialDate={dateKey(new Date(editingEvent.startsAt))} onClose={() => setEditingEvent(null)} onRequestDelete={(event) => { setEditingEvent(null); setEventToDelete(event); }} onSaved={handleEventSaved} />}
+      {selectedDate && createMode === "event" && <EventDialog initialDate={selectedDate} onClose={closeCreateFlow} onRequestDelete={() => {}} onSaved={handleEventSaved} workspaces={eventCalendars} />}
+      {editingEvent && <EventDialog event={editingEvent} initialDate={dateKey(new Date(editingEvent.startsAt))} onClose={() => setEditingEvent(null)} onRequestDelete={(event) => { setEditingEvent(null); setEventToDelete(event); }} onSaved={handleEventSaved} readOnly={!canEditEvent(editingEvent, user.id, workspaces)} workspaces={eventCalendars} />}
       {eventToDelete && <ConfirmDialog confirmLabel="Delete event" errorMessage={deleteError} isWorking={isDeleting} message={`“${eventToDelete.title}” will be permanently deleted.`} onCancel={() => { setEventToDelete(null); setDeleteError(""); }} onConfirm={handleEventDeletion} title="Delete this event?" />}
     </div>
   );

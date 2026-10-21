@@ -69,17 +69,18 @@ model User {
 }
 
 model Workspace {
-  id          String                @id @default(uuid())
-  name        String
-  type        WorkspaceType         @default(TEAM)
-  ownerId     String
-  owner       User                  @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members     WorkspaceMember[]
-  invitations WorkspaceInvitation[]
-  labels      Label[]
-  projects    Project[]
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  id             String                @id @default(uuid())
+  name           String
+  type           WorkspaceType         @default(TEAM)
+  ownerId        String
+  owner          User                  @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members        WorkspaceMember[]
+  invitations    WorkspaceInvitation[]
+  labels         Label[]
+  projects       Project[]
+  calendarEvents CalendarEvent[]
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
 
   @@index([ownerId])
 }
@@ -203,21 +204,24 @@ model Comment {
 }
 
 model CalendarEvent {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String?
   location    String?
   startsAt    DateTime
   endsAt      DateTime
-  allDay      Boolean  @default(false)
-  color       String   @default("#2F6049")
+  allDay      Boolean   @default(false)
+  color       String    @default("#2F6049")
   ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([ownerId, startsAt])
   @@index([ownerId, endsAt])
+  @@index([workspaceId, startsAt])
 }
 
 model AuthToken {

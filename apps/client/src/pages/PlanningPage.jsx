@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/auth-context.js";
 import { apiRequest } from "../lib/api.js";
+import { calendarName, isSharedEvent } from "../lib/calendars.js";
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   weekday: "long",
@@ -391,9 +392,17 @@ export function PlanningPage({ mode }) {
 
                       <div className="planning-task__content">
                         <h3>{event.title}</h3>
-                        {event.location && (
+                        {(event.location || isSharedEvent(event)) && (
                           <p className="planning-event__location">
-                            {event.location}
+                            {[
+                              isSharedEvent(event) &&
+                                calendarName(event.workspace) +
+                                  " · by " +
+                                  event.owner.name,
+                              event.location,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
                           </p>
                         )}
                       </div>

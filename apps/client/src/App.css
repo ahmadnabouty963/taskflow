@@ -3443,6 +3443,11 @@ input:focus-visible {
 .event-color-field input:checked + span { box-shadow: 0 0 0 3px var(--ink); }
 .event-dialog__actions { display: flex; }
 .event-dialog__spacer { flex: 1; }
+.event-dialog__fields { display: contents; }
+.event-dialog__meta { margin: 4px 0 0; color: var(--muted); font-size: 0.8rem; }
+.calendar-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-bottom: 1rem; }
+.calendar-filters__label { color: var(--muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.calendar-filter { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.7rem; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--surface); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
 .calendar-event { --calendar-event-color: var(--orange); display: grid; width: 100%; gap: 2px; overflow: hidden; padding: 7px 8px; border: 1px solid color-mix(in srgb, var(--calendar-event-color) 42%, var(--line)); border-left: 4px solid var(--calendar-event-color); border-radius: 6px; color: var(--ink); background: color-mix(in srgb, var(--calendar-event-color) 14%, var(--surface)); font: inherit; font-size: 0.69rem; line-height: 1.35; text-align: left; cursor: pointer; }
 .calendar-event:hover { border-color: var(--calendar-event-color); background: color-mix(in srgb, var(--calendar-event-color) 21%, var(--surface)); }
 .calendar-event span, .calendar-event small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

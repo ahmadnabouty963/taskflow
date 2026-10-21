@@ -111,6 +111,30 @@ describe("Planning pages", () => {
     expect(requestPathFor("/api/events?")).toContain("from=");
   });
 
+  it("shows the calendar and creator of shared events", async () => {
+    mockAgenda({
+      events: [
+        {
+          id: "event-1",
+          title: "Family dinner",
+          location: "Home",
+          startsAt: daysFromNow(0, 18).toISOString(),
+          endsAt: daysFromNow(0, 19).toISOString(),
+          allDay: false,
+          color: "#3B6F92",
+          owner: { id: "user-2", name: "Sara" },
+          workspace: { id: "family-1", name: "Family", type: "TEAM" },
+        },
+      ],
+    });
+
+    renderPlanningPage("today");
+
+    expect(
+      await screen.findByText("Family · by Sara · Home"),
+    ).toBeInTheDocument();
+  });
+
   it("loads the next seven days for Upcoming", async () => {
     mockAgenda();
 
