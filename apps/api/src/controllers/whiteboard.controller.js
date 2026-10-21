@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import { createDownloadUrl, isStorageConfigured } from "../lib/storage.js";
 import {
   getWorkspaceMembership,
   sendWorkspaceForbidden,
@@ -39,6 +40,21 @@ async function findProjectRole(projectId, userId, response) {
   return membership.role;
 }
 
+async function whiteboardFiles(projectId) {
+  if (!isStorageConfigured()) return [];
+  const attachments = await prisma.attachment.findMany({
+    where: { projectId, kind: "WHITEBOARD", status: "READY" },
+    select: { whiteboardFileId: true, contentType: true, storageKey: true, fileName: true },
+  });
+  return Promise.all(
+    attachments.map(async (attachment) => ({
+      fileId: attachment.whiteboardFileId,
+      mimeType: attachment.contentType,
+      url: await createDownloadUrl({ key: attachment.storageKey, fileName: attachment.fileName, inline: true }),
+    })),
+  );
+}
+
 async function currentWhiteboard(projectId) {
   return (
     (await prisma.whiteboard.findUnique({
@@ -58,7 +74,9 @@ export async function getWhiteboard(request, response, next) {
       success: true,
       data: {
         whiteboard: await currentWhiteboard(projectId),
+        files: await whiteboardFiles(projectId),
         canEdit: workspaceWriteRoles.includes(role),
+        uploadsEnabled: isStorageConfigured() && workspaceWriteRoles.includes(role),
       },
     });
   } catch (error) {

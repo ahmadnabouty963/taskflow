@@ -18,6 +18,8 @@ import {
   updateTaskSchema,
 } from "../schemas/task.schema.js";
 import { validateQuery } from "../middleware/validateQuery.js";
+import { listTaskAttachments, requestTaskUpload } from "../controllers/attachment.controller.js";
+import { requestTaskUploadSchema } from "../schemas/attachment.schema.js";
 import {
   createComment,
   createSubtask,
@@ -81,4 +83,11 @@ taskRouter.patch(
   updateTask,
 );
 taskRouter.delete("/:taskId", validateParams(taskIdParamsSchema), deleteTask);
+taskRouter.get("/:taskId/attachments", validateParams(taskIdParamsSchema), listTaskAttachments);
+taskRouter.post(
+  "/:taskId/attachments",
+  validateParams(taskIdParamsSchema),
+  validateBody(requestTaskUploadSchema),
+  requestTaskUpload,
+);
 export default taskRouter;

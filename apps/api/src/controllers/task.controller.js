@@ -1,3 +1,4 @@
+import { removeAttachmentFiles, storageKeysWhere } from "../lib/attachments.js";
 import prisma from "../lib/prisma.js";
 import { findAccessibleProject, workspaceWriteRoles } from "../lib/workspace-access.js";
 
@@ -202,7 +203,9 @@ export async function deleteTask(request, response, next) {
       where: { id: taskId, projectId, project: { workspace: { members: { some: { userId: request.user.id, role: { in: workspaceWriteRoles } } } } } },
     });
     if (!existingTask) return response.status(404).json({ success: false, error: { code: "TASK_NOT_FOUND", message: "Task not found." } });
+    const storageKeys = await storageKeysWhere({ taskId });
     await prisma.task.delete({ where: { id: taskId } });
+    await removeAttachmentFiles(storageKeys);
     return response.status(204).send();
   } catch (error) { next(error); }
 }

@@ -1,4 +1,5 @@
 import argon2 from "argon2";
+import { removeAttachmentFiles, storageKeysWhere } from "../lib/attachments.js";
 import prisma from "../lib/prisma.js";
 import {
   createAuthToken,
@@ -402,7 +403,10 @@ export async function deleteAccount(request, response, next) {
         error: { code: "INVALID_PASSWORD", message: "Password is incorrect." },
       });
     }
+    // Owned workspaces are deleted with the account, and with them every file.
+    const storageKeys = await storageKeysWhere({ workspace: { ownerId: request.user.id } });
     await prisma.user.delete({ where: { id: request.user.id } });
+    await removeAttachmentFiles(storageKeys);
     response.clearCookie("session_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

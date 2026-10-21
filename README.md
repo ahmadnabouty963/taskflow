@@ -272,6 +272,12 @@ AUTH_RATE_LIMIT_MAX=10
 RESEND_API_KEY="re_your_resend_key"
 EMAIL_FROM="Ordanly <hello@ordanly.com>"
 CLIENT_APP_URL=http://localhost:5173
+# Cloudflare R2 for file uploads (separate dev bucket and token)
+R2_ACCOUNT_ID=your_account_id
+R2_ACCESS_KEY_ID=your_dev_access_key_id
+R2_SECRET_ACCESS_KEY=your_dev_secret_access_key
+R2_BUCKET=ordanly-uploads-dev
+R2_JURISDICTION=eu
 ```
 
 Datenbankmigrationen und Prisma Client:
@@ -400,14 +406,21 @@ Die Produktionsumgebung verwendet unter anderem:
 DATABASE_URL=...
 NODE_ENV=production
 CLIENT_ORIGINS=...
-API_RATE_LIMIT_MAX=100
+API_RATE_LIMIT_MAX=300
 AUTH_RATE_LIMIT_MAX=10
 RESEND_API_KEY=...
 EMAIL_FROM="Ordanly <hello@ordanly.com>"
 CLIENT_APP_URL=https://ordanly.com
+R2_ACCOUNT_ID=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET=ordanly-uploads
+R2_JURISDICTION=eu
 ```
 
-`DATABASE_URL` enthält vertrauliche Zugangsdaten und wird nicht im Repository gespeichert. `PORT` wird von Render automatisch bereitgestellt.
+`DATABASE_URL` und die `R2_*`-Schlüssel enthalten vertrauliche Zugangsdaten und werden nicht im Repository gespeichert. Die R2-Tokens sind jeweils nur für einen Bucket mit „Object Read & Write“ berechtigt. Beide Buckets brauchen eine CORS-Regel für `GET` und `PUT` von den App-Domains, weil der Browser Dateien direkt hochlädt.
+
+Die API vertraut genau einem Proxy (`TRUST_PROXY_HOPS=1`, Standard), damit Render-Anfragen pro Besucher-IP gezählt werden. `PORT` wird von Render automatisch bereitgestellt.
 
 Der kostenlose Render Web Service kann nach längerer Inaktivität herunterfahren. Deshalb kann die erste API-Anfrage kurzzeitig länger dauern.
 

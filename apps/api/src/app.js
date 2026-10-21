@@ -9,6 +9,7 @@ import planningRouter from "./routes/planning.routes.js";
 import eventRouter from "./routes/event.routes.js";
 import workspaceRouter from "./routes/workspace.routes.js";
 import invitationRouter from "./routes/invitation.routes.js";
+import attachmentRouter from "./routes/attachment.routes.js";
 import whiteboardRouter, {
   whiteboardBodyParser,
 } from "./routes/whiteboard.routes.js";
@@ -25,6 +26,10 @@ const allowedOrigins = (
   .map((origin) => origin.trim());
 
 app.disable("x-powered-by");
+
+// Render forwards every request through one proxy. Trusting exactly that hop
+// gives rate limits the visitor's IP instead of the proxy's shared address.
+app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS ?? 1));
 
 app.use(helmet());
 
@@ -59,6 +64,7 @@ app.use("/api/tasks", planningRouter);
 app.use("/api/events", eventRouter);
 app.use("/api/projects/:projectId/tasks", taskRouter);
 app.use("/api/projects/:projectId/whiteboard", whiteboardRouter);
+app.use("/api/attachments", attachmentRouter);
 app.use(notFound);
 app.use(errorHandler);
 

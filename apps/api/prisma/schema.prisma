@@ -43,6 +43,16 @@ enum AuthTokenType {
   PASSWORD_RESET
 }
 
+enum AttachmentKind {
+  TASK
+  WHITEBOARD
+}
+
+enum AttachmentStatus {
+  PENDING
+  READY
+}
+
 enum Language {
   EN
   DE
@@ -65,6 +75,7 @@ model User {
   workspaceMemberships     WorkspaceMember[]
   sentWorkspaceInvitations WorkspaceInvitation[] @relation("WorkspaceInvitationSender")
   updatedWhiteboards       Whiteboard[]
+  uploadedAttachments      Attachment[]
   createdAt                DateTime              @default(now())
   updatedAt                DateTime              @updatedAt
 }
@@ -80,6 +91,7 @@ model Workspace {
   labels         Label[]
   projects       Project[]
   calendarEvents CalendarEvent[]
+  attachments    Attachment[]
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
 
@@ -118,19 +130,20 @@ model WorkspaceMember {
 }
 
 model Project {
-  id          String      @id @default(uuid())
+  id          String       @id @default(uuid())
   title       String
   description String?
-  color       String      @default("#6D5EF5")
+  color       String       @default("#6D5EF5")
   archivedAt  DateTime?
   ownerId     String
-  owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   workspaceId String
-  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   tasks       Task[]
   whiteboard  Whiteboard?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  attachments Attachment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([ownerId, archivedAt])
   @@index([workspaceId, archivedAt])
@@ -156,6 +169,7 @@ model Task {
   recurringFromId  String?        @unique
   recurringFrom    Task?          @relation("TaskRecurrence", fields: [recurringFromId], references: [id], onDelete: SetNull)
   nextOccurrence   Task?          @relation("TaskRecurrence")
+  attachments      Attachment[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
@@ -236,6 +250,31 @@ model Whiteboard {
   updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Attachment {
+  id               String           @id @default(uuid())
+  kind             AttachmentKind
+  status           AttachmentStatus @default(PENDING)
+  fileName         String
+  contentType      String
+  size             Int
+  storageKey       String           @unique
+  workspaceId      String
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projectId        String
+  project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskId           String?
+  task             Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  whiteboardFileId String?
+  uploadedById     String?
+  uploadedBy       User?            @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([projectId, whiteboardFileId])
+  @@index([taskId, status])
+  @@index([workspaceId, status])
 }
 
 model AuthToken {

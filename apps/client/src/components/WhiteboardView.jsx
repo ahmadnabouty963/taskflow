@@ -3,16 +3,46 @@ import "@excalidraw/excalidraw/index.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
+import { uploadFile } from "../lib/uploads.js";
 
 // Fonts are copied to public/ at build time, so nothing loads from a CDN.
 window.EXCALIDRAW_ASSET_PATH = "/excalidraw-assets/";
 
 const AUTOSAVE_DELAY_MS = 4000;
-const unsupportedTypes = new Set(["image", "embeddable", "iframe"]);
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const embedTypes = new Set(["embeddable", "iframe"]);
 
-function savableElements(elements) {
+// Images are only kept when uploads work; otherwise they could not be stored.
+function savableElements(elements, allowImages) {
   return elements.filter(
-    (element) => !element.isDeleted && !unsupportedTypes.has(element.type),
+    (element) =>
+      !element.isDeleted &&
+      !embedTypes.has(element.type) &&
+      (allowImages || element.type !== "image"),
+  );
+}
+
+async function toDataUrl(url) {
+  const blob = await (await fetch(url)).blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(reader.result));
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function loadFiles(files) {
+  const results = await Promise.allSettled(
+    files.map(async (file) => ({
+      id: file.fileId,
+      mimeType: file.mimeType,
+      dataURL: await toDataUrl(file.url),
+      created: Date.now(),
+    })),
+  );
+  return Object.fromEntries(
+    results.filter((result) => result.status === "fulfilled").map(({ value }) => [value.id, value]),
   );
 }
 
@@ -51,6 +81,11 @@ export default function WhiteboardView({ projectId }) {
   const [saveError, setSaveError] = useState("");
   const [updatedBy, setUpdatedBy] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [uploadsEnabled, setUploadsEnabled] = useState(false);
+  const [imageError, setImageError] = useState("");
+  const [uploadingCount, setUploadingCount] = useState(0);
+  const storedFileIdsRef = useRef(new Set());
+  const uploadingFileIdsRef = useRef(new Set());
 
   const versionRef = useRef(0);
   const savedSignatureRef = useRef("");
@@ -66,12 +101,17 @@ export default function WhiteboardView({ projectId }) {
     const controller = new AbortController();
 
     apiRequest(path, { signal: controller.signal })
-      .then((result) => {
+      .then(async (result) => {
+        const files = result.data.files ?? [];
+        const loadedFiles = await loadFiles(files);
+        if (controller.signal.aborted) return;
+        storedFileIdsRef.current = new Set(files.map(({ fileId }) => fileId));
+        setUploadsEnabled(Boolean(result.data.uploadsEnabled));
         const { whiteboard } = result.data;
         versionRef.current = whiteboard.version;
         savedSignatureRef.current = signature(whiteboard.elements);
         conflictRef.current = false;
-        setInitialData({ elements: whiteboard.elements, scrollToContent: true });
+        setInitialData({ elements: whiteboard.elements, files: loadedFiles, scrollToContent: true });
         setCanEdit(result.data.canEdit);
         setUpdatedBy(whiteboard.updatedBy);
         setSaveState("saved");
@@ -144,9 +184,40 @@ export default function WhiteboardView({ projectId }) {
     saveRef.current = save;
   }, [save]);
 
-  function handleChange(elements) {
+  async function uploadImage(fileId, file) {
+    uploadingFileIdsRef.current.add(fileId);
+    setUploadingCount((count) => count + 1);
+    setImageError("");
+    try {
+      const blob = await (await fetch(file.dataURL)).blob();
+      if (blob.size > MAX_IMAGE_BYTES) throw new Error(t("whiteboard.imageTooLarge"));
+      const extension = file.mimeType.split("/")[1] ?? "png";
+      await uploadFile({
+        requestPath: `${path}/files`,
+        file: new File([blob], `whiteboard-image.${extension}`, { type: file.mimeType }),
+        extra: { fileId },
+      });
+      storedFileIdsRef.current.add(fileId);
+    } catch (error) {
+      if (error.code === "WHITEBOARD_FILE_EXISTS") storedFileIdsRef.current.add(fileId);
+      else setImageError(t("whiteboard.imageFailed", { message: error.message }));
+    } finally {
+      uploadingFileIdsRef.current.delete(fileId);
+      setUploadingCount((count) => count - 1);
+    }
+  }
+
+  function handleChange(elements, appState, files = {}) {
     if (!canEdit || conflictRef.current) return;
-    const nextElements = savableElements(elements);
+    if (uploadsEnabled) {
+      for (const element of elements) {
+        const file = element.type === "image" && !element.isDeleted ? files[element.fileId] : null;
+        if (file?.dataURL && !storedFileIdsRef.current.has(element.fileId) && !uploadingFileIdsRef.current.has(element.fileId)) {
+          uploadImage(element.fileId, file);
+        }
+      }
+    }
+    const nextElements = savableElements(elements, uploadsEnabled);
     if (signature(nextElements) === savedSignatureRef.current) return;
 
     pendingElementsRef.current = nextElements;
@@ -212,7 +283,9 @@ export default function WhiteboardView({ projectId }) {
           )}
         </div>
       </div>
-      <p className="whiteboard__hint">{t("whiteboard.imagesHint")}</p>
+      {!uploadsEnabled && canEdit && <p className="whiteboard__hint">{t("whiteboard.imagesHint")}</p>}
+      {uploadingCount > 0 && <p className="whiteboard__hint" role="status">{t("whiteboard.imageUploading")}</p>}
+      {imageError && <p className="field-error" role="alert">{imageError}</p>}
       <div className="whiteboard__canvas" lang={locale}>
         <Excalidraw
           initialData={initialData}
@@ -222,7 +295,7 @@ export default function WhiteboardView({ projectId }) {
           theme={theme === "dark" ? "dark" : "light"}
           UIOptions={{
             canvasActions: { loadScene: false, saveToActiveFile: false },
-            tools: { image: false },
+            tools: { image: uploadsEnabled },
           }}
           viewModeEnabled={!canEdit}
         />

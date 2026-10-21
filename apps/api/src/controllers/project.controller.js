@@ -1,3 +1,4 @@
+import { removeAttachmentFiles, storageKeysWhere } from "../lib/attachments.js";
 import prisma from "../lib/prisma.js";
 import {
   findAccessibleProject,
@@ -151,7 +152,9 @@ export async function deleteProject(request, response, next) {
       });
     }
 
+    const storageKeys = await storageKeysWhere({ projectId });
     await prisma.project.delete({ where: { id: projectId } });
+    await removeAttachmentFiles(storageKeys);
     return response.status(204).send();
   } catch (error) {
     next(error);

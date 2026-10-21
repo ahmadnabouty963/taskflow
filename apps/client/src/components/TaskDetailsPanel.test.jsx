@@ -7,6 +7,9 @@ import { TaskDetailsPanel } from "./TaskDetailsPanel.jsx";
 vi.mock("../lib/api.js", () => ({ apiRequest: vi.fn() }));
 
 const task = { id: "task-1", title: "Prepare presentation" };
+const noAttachments = {
+  data: { attachments: [], uploadsEnabled: false, limits: { maxBytes: 10485760, contentTypes: [] } },
+};
 const details = {
   ...task,
   description: "Explain the product clearly.",
@@ -19,12 +22,15 @@ const details = {
   comments: [],
 };
 
-beforeEach(() => apiRequest.mockReset());
+beforeEach(() => {
+  apiRequest.mockReset();
+});
 
 describe("Task details panel", () => {
   it("loads details and completes a subtask", async () => {
     const user = userEvent.setup();
     apiRequest.mockImplementation((path, options = {}) => {
+      if (path.endsWith("/attachments")) return Promise.resolve(noAttachments);
       if (!options.method) return Promise.resolve({ data: { task: details } });
       if (path.endsWith("/subtasks/subtask-1")) {
         return Promise.resolve({
@@ -50,6 +56,7 @@ describe("Task details panel", () => {
   it("adds a comment", async () => {
     const user = userEvent.setup();
     apiRequest.mockImplementation((path, options = {}) => {
+      if (path.endsWith("/attachments")) return Promise.resolve(noAttachments);
       if (!options.method) return Promise.resolve({ data: { task: details } });
       if (path.endsWith("/comments")) {
         return Promise.resolve({

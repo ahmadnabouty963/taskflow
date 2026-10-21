@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
+import { TaskAttachments } from "./TaskAttachments.jsx";
 
 function formatMinutes(minutes, t) {
   if (!minutes) return t("taskDetails.notRecorded");
@@ -190,6 +191,8 @@ export function TaskDetailsPanel({ projectId, task, onClose }) {
               </div>
               {details.labels?.length ? <div className="task-card__labels task-detail-labels" aria-label={t("task.labelsLabel")}>{details.labels.map((label) => <span key={label.id} style={{ "--label-color": label.color }}>{label.name}</span>)}</div> : null}
             </section>
+
+            <TaskAttachments basePath={basePath} />
 
             <section className="task-detail-section">
               <div className="task-detail-section__heading">

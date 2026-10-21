@@ -123,16 +123,21 @@ describe("Whiteboards API", () => {
     expect(write.statusCode).toBe(404);
   });
 
-  it("rejects images and unsafe links", async () => {
-    const image = await ownerAgent
+  it("rejects embedded pages and unsafe links but accepts images", async () => {
+    const embed = await ownerAgent
       .put(path)
-      .send({ elements: [{ id: "image-1", type: "image" }], baseVersion: 0 });
+      .send({ elements: [{ id: "embed-1", type: "embeddable" }], baseVersion: 0 });
     const script = await ownerAgent
       .put(path)
       .send({ elements: [{ ...rectangle, link: "javascript:alert(1)" }], baseVersion: 0 });
 
-    expect(image.statusCode).toBe(422);
+    const image = await ownerAgent
+      .put(path)
+      .send({ elements: [{ id: "image-1", type: "image", fileId: "file-1" }], baseVersion: 0 });
+
+    expect(embed.statusCode).toBe(422);
     expect(script.statusCode).toBe(422);
+    expect(image.statusCode).toBe(200);
   });
 
   it("accepts drawings larger than the normal request limit", async () => {

@@ -4255,3 +4255,100 @@ input:focus-visible {
     left: auto;
   }
 }
+
+/* Large display headings use tight tracking on desktop. On narrow screens
+   that tracking makes neighbouring words run together. */
+@media (max-width: 680px) {
+  .hero-copy h1,
+  .workflow-section h2,
+  .landing-section-heading h2,
+  .landing-calendar-copy h2,
+  .landing-cta-section h2,
+  .auth-brand-copy h2,
+  .auth-form-container > h1,
+  .legal-main > h1,
+  .legal-main > .legal-title--long {
+    letter-spacing: -0.015em;
+    word-spacing: 0.08em;
+    line-height: 1.1;
+  }
+}
+
+/* Long project names break at syllables instead of mid-word. */
+.project-header h1 {
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+/* Task attachments */
+.task-attachments { transition: outline-color 120ms ease; outline: 2px dashed transparent; outline-offset: 4px; }
+.task-attachments--dragging { outline-color: var(--accent); }
+.task-attachments__add { cursor: pointer; padding: 0.45rem 0.85rem; font-size: 0.78rem; }
+.task-attachments__add:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.task-attachments__hint { margin: 0.4rem 0 0; color: var(--text); font-size: 0.74rem; line-height: 1.5; }
+.task-attachments__progress { display: grid; gap: 0.35rem; margin-top: 0.75rem; font-size: 0.78rem; }
+.task-attachments__list { list-style: none; margin: 1rem 0 0; padding: 0; }
+.task-attachments__list li {
+  align-items: center;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+}
+.task-attachments__file {
+  align-items: center;
+  color: var(--text-h);
+  display: flex;
+  flex: 1;
+  gap: 0.75rem;
+  min-width: 0;
+  text-decoration: none;
+}
+.task-attachments__file:hover strong { color: var(--accent); text-decoration: underline; }
+.task-attachments__thumb,
+.task-attachments__icon {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex: 0 0 auto;
+  height: 48px;
+  width: 48px;
+}
+.task-attachments__thumb { background: var(--code-bg); object-fit: cover; }
+.task-attachments__icon {
+  align-items: center;
+  background: var(--code-bg);
+  color: var(--text);
+  display: inline-flex;
+  font-size: 0.62rem;
+  font-weight: 800;
+  justify-content: center;
+  letter-spacing: 0.04em;
+}
+.task-attachments__meta { display: grid; gap: 0.15rem; min-width: 0; }
+.task-attachments__meta strong { font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task-attachments__meta small { color: var(--text); font-size: 0.72rem; }
+.task-attachments__list li > button,
+.task-attachments__confirm button {
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+.task-attachments__list li > button { font-size: 1.2rem; }
+.task-attachments__confirm { display: flex; flex: 0 0 auto; gap: 0.6rem; font-size: 0.78rem; font-weight: 700; }
+.task-attachments__confirm .text-action--danger { color: var(--danger); }
+
+/* Keep task detail cards inside the panel on narrow screens instead of
+   letting the widest card stretch the whole column. */
+.task-detail-content { grid-template-columns: minmax(0, 1fr); }
+.task-detail-meta strong { overflow-wrap: anywhere; }
+.inline-create-form { grid-template-columns: minmax(0, 1fr) auto; }
+.inline-create-form input { min-width: 0; }
+
+/* Open dialogs and panels get the screen to themselves. */
+body:has(.dialog-backdrop, .task-detail-backdrop) .theme-toggle,
+body:has(.dialog-backdrop, .task-detail-backdrop) .language-switcher-wrapper {
+  display: none;
+}
