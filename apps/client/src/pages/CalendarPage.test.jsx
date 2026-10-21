@@ -17,6 +17,7 @@ function renderCalendar() {
 beforeEach(() => {
   apiRequest.mockReset().mockImplementation((path, options = {}) => {
     if (path === "/api/projects") return Promise.resolve({ data: { projects: [{ id: "project-1", title: "Ordanly launch", color: "#2F6049", archivedAt: null }] } });
+    if (path === "/api/projects/project-1/tasks/options") return Promise.resolve({ data: { workspaceId: "workspace-1", members: [], labels: [], canCreateLabels: true } });
     if (path.startsWith("/api/tasks?")) return Promise.resolve({ data: { tasks: [{ id: "task-1", title: "Present Ordanly", status: "IN_PROGRESS", priority: "HIGH", dueDate: new Date().toISOString(), project: { id: "project-1", title: "Ordanly launch", color: "#2F6049" } }] } });
     if (path.startsWith("/api/events?")) return Promise.resolve({ data: { events: [{ id: "event-1", title: "Teacher meeting", description: null, location: "Meet", startsAt: new Date().toISOString(), endsAt: new Date(Date.now() + 3600000).toISOString(), allDay: false, color: "#DF6B43" }] } });
     if (path === "/api/projects/project-1/tasks" && options.method === "POST") return Promise.resolve({ data: { task: { id: "task-2", projectId: "project-1", title: "Prepare calendar demo", description: "", status: "TODO", priority: "MEDIUM", dueDate: JSON.parse(options.body).dueDate } } });
