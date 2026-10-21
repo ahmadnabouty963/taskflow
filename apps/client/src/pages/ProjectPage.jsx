@@ -1,6 +1,6 @@
 import { AppNavigation } from "../components/AppNavigation.jsx";
 import { BrandLogo } from "../components/BrandLogo.jsx";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { TaskDialog } from "../components/TaskDialog.jsx";
@@ -8,6 +8,9 @@ import { TaskDetailsPanel } from "../components/TaskDetailsPanel.jsx";
 import { TaskCard } from "../components/TaskCard.jsx";
 import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
+
+// Excalidraw is large, so it only loads when the whiteboard is opened.
+const WhiteboardView = lazy(() => import("../components/WhiteboardView.jsx"));
 
 const taskColumns = [
   {
@@ -450,7 +453,7 @@ export function ProjectPage() {
           </div>
         )}
 
-        <section className="task-filters" aria-label={t("project.filtersLabel")}>
+        <section className={"task-filters" + (viewMode === "whiteboard" ? " task-filters--whiteboard" : "")} aria-label={t("project.filtersLabel")}>
           <label className="task-search">
             <span className="visually-hidden">{t("project.search")}</span>
             <input
@@ -521,6 +524,14 @@ export function ProjectPage() {
             >
               {t("project.list")}
             </button>
+            <button
+              aria-pressed={viewMode === "whiteboard"}
+              className={viewMode === "whiteboard" ? "view-toggle__active" : ""}
+              onClick={() => setViewMode("whiteboard")}
+              type="button"
+            >
+              {t("project.whiteboard")}
+            </button>
           </div>
         </section>
 
@@ -530,7 +541,7 @@ export function ProjectPage() {
           </div>
         )}
 
-        {tasksStatus === "error" && (
+        {tasksStatus === "error" && viewMode !== "whiteboard" && (
           <div className="content-error" role="alert">
             <p className="eyebrow eyebrow--danger">{t("project.tasksError")}</p>
             <h2>{t("errorBoundary.title")}</h2>
@@ -545,13 +556,14 @@ export function ProjectPage() {
           </div>
         )}
 
-        {tasksStatus === "loading" && (
+        {tasksStatus === "loading" && viewMode !== "whiteboard" && (
           <div className="board-loading" aria-live="polite">
             {t("project.loadingTasks")}
           </div>
         )}
 
         {tasksStatus === "success" &&
+          viewMode !== "whiteboard" &&
           tasks.length === 0 &&
           filtersAreActive && (
             <div className="filtered-empty-state">
@@ -638,6 +650,12 @@ export function ProjectPage() {
               />
             ))}
           </section>
+        )}
+
+        {viewMode === "whiteboard" && (
+          <Suspense fallback={<div className="board-loading" aria-live="polite">{t("whiteboard.loading")}</div>}>
+            <WhiteboardView projectId={projectId} />
+          </Suspense>
         )}
       </main>
 

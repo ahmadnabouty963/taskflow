@@ -25,3 +25,5 @@ dist-ssr
 .vercel
 .env*
 !.env.example
+# Copied from node_modules at build time
+public/excalidraw-assets/

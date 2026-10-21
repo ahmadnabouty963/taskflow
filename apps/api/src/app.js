@@ -9,6 +9,9 @@ import planningRouter from "./routes/planning.routes.js";
 import eventRouter from "./routes/event.routes.js";
 import workspaceRouter from "./routes/workspace.routes.js";
 import invitationRouter from "./routes/invitation.routes.js";
+import whiteboardRouter, {
+  whiteboardBodyParser,
+} from "./routes/whiteboard.routes.js";
 import { apiLimiter } from "./middleware/rateLimiters.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
@@ -32,6 +35,7 @@ app.use(
   }),
 );
 
+app.use("/api/projects/:projectId/whiteboard", whiteboardBodyParser);
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
@@ -54,6 +58,7 @@ app.use("/api/projects", projectRouter);
 app.use("/api/tasks", planningRouter);
 app.use("/api/events", eventRouter);
 app.use("/api/projects/:projectId/tasks", taskRouter);
+app.use("/api/projects/:projectId/whiteboard", whiteboardRouter);
 app.use(notFound);
 app.use(errorHandler);
 

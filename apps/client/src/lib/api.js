@@ -20,7 +20,10 @@ export async function apiRequest(path, options = {}) {
   const body = await response.json();
 
   if (!response.ok) {
-    throw new Error(body?.error?.message ?? "An unexpected error occurred.");
+    const error = new Error(body?.error?.message ?? "An unexpected error occurred.");
+    error.status = response.status;
+    error.code = body?.error?.code;
+    throw error;
   }
 
   return body;
