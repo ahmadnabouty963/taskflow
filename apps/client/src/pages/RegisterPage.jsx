@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { AuthLayout } from "../components/AuthLayout.jsx";
 import { useAuth } from "../context/auth-context.js";
+import { useLanguage } from "../context/language-context.js";
 import { getSafeAuthDestination } from "../lib/auth-navigation.js";
 
 export function RegisterPage() {
   const { user, isLoading, register } = useAuth();
+  const { language, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,7 +39,7 @@ export function RegisterPage() {
     setErrorMessage("");
 
     if (form.password !== form.confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+      setErrorMessage(t("register.mismatch"));
       return;
     }
 
@@ -48,6 +50,7 @@ export function RegisterPage() {
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
+        language: language.toUpperCase(),
       });
 
       navigate("/check-email", {
@@ -63,12 +66,12 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
-      eyebrow="Start with clarity"
-      title="Create your account"
-      description="Set up your personal workspace in less than a minute."
+      eyebrow={t("register.eyebrow")}
+      title={t("register.title")}
+      description={t("register.description")}
       footer={
         <p>
-          Already have an account? <Link state={location.state} to="/login">Log in</Link>
+          {t("register.existing")} <Link state={location.state} to="/login">{t("common.login")}</Link>
         </p>
       }
     >
@@ -80,14 +83,14 @@ export function RegisterPage() {
         )}
 
         <label className="form-field">
-          <span>Full name</span>
+          <span>{t("register.fullName")}</span>
           <input
             autoComplete="name"
             maxLength="80"
             minLength="2"
             name="name"
             onChange={handleChange}
-            placeholder="Your name"
+            placeholder={t("register.namePlaceholder")}
             required
             type="text"
             value={form.name}
@@ -95,7 +98,7 @@ export function RegisterPage() {
         </label>
 
         <label className="form-field">
-          <span>Email address</span>
+          <span>{t("common.email")}</span>
           <input
             autoComplete="email"
             name="email"
@@ -108,7 +111,7 @@ export function RegisterPage() {
         </label>
 
         <label className="form-field">
-          <span>Password</span>
+          <span>{t("common.password")}</span>
           <div className="password-field">
             <input
               autoComplete="new-password"
@@ -121,19 +124,19 @@ export function RegisterPage() {
               value={form.password}
             />
             <button
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={`${showPassword ? t("common.hide") : t("common.show")} ${t("common.password")}`}
               className="password-toggle"
               onClick={() => setShowPassword((visible) => !visible)}
               type="button"
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? t("common.hide") : t("common.show")}
             </button>
           </div>
-          <small>Use at least 8 characters.</small>
+          <small>{t("register.passwordHint")}</small>
         </label>
 
         <label className="form-field">
-          <span>Confirm password</span>
+          <span>{t("register.confirm")}</span>
           <input
             autoComplete="new-password"
             maxLength="72"
@@ -151,7 +154,7 @@ export function RegisterPage() {
           disabled={isSubmitting}
           type="submit"
         >
-          {isSubmitting ? "Creating account..." : "Create account"}
+          {isSubmitting ? t("register.loading") : t("register.submit")}
         </button>
       </form>
     </AuthLayout>

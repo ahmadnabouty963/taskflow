@@ -2,13 +2,17 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 import { AuthContext } from "../context/auth-context.js";
+import { LanguageContext } from "../context/language-context.js";
+import { createLanguageValue } from "../test/language.js";
 import { LandingPage } from "./LandingPage.jsx";
 
-function renderLandingPage(authValue) {
+function renderLandingPage(authValue, language = "en") {
   return render(
     <MemoryRouter>
       <AuthContext.Provider value={authValue}>
-        <LandingPage />
+        <LanguageContext.Provider value={createLanguageValue(language)}>
+          <LandingPage />
+        </LanguageContext.Provider>
       </AuthContext.Provider>
     </MemoryRouter>,
   );
@@ -23,7 +27,7 @@ describe("LandingPage", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /make the next step unmistakably clear/i,
+        name: /know what matters today/i,
       }),
     ).toBeInTheDocument();
 
@@ -36,6 +40,16 @@ describe("LandingPage", () => {
       "href",
       "/register",
     );
+  });
+
+  it("shows the product homepage in German", () => {
+    renderLandingPage({ user: null, isLoading: false }, "de");
+
+    expect(
+      screen.getByRole("heading", { name: /wissen, was heute wichtig ist/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/task manager/i)).toBeInTheDocument();
+    expect(screen.getByText(/projektfristen und termine/i)).toBeInTheDocument();
   });
 
   it("shows the workspace link for an authenticated user", () => {

@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest } from "../lib/api.js";
+import { LanguageContext } from "../context/language-context.js";
+import { createLanguageValue } from "../test/language.js";
 import { ForgotPasswordPage } from "./ForgotPasswordPage.jsx";
 import { ResetPasswordPage } from "./ResetPasswordPage.jsx";
 import { VerifyEmailPage } from "./VerifyEmailPage.jsx";
@@ -11,13 +13,21 @@ vi.mock("../lib/api.js", () => ({ apiRequest: vi.fn() }));
 
 beforeEach(() => vi.clearAllMocks());
 
+function withLanguage(component) {
+  return (
+    <LanguageContext.Provider value={createLanguageValue()}>
+      {component}
+    </LanguageContext.Provider>
+  );
+}
+
 describe("Email verification and password recovery pages", () => {
   it("requests a reset link without exposing account existence", async () => {
     apiRequest.mockResolvedValue({
       data: { message: "If an account exists for this address, a reset link has been sent." },
     });
     const user = userEvent.setup();
-    render(<MemoryRouter><ForgotPasswordPage /></MemoryRouter>);
+    render(withLanguage(<MemoryRouter><ForgotPasswordPage /></MemoryRouter>));
     await user.type(screen.getByLabelText(/email address/i), "AHMAD@EXAMPLE.COM");
     await user.click(screen.getByRole("button", { name: /send reset link/i }));
     expect(apiRequest).toHaveBeenCalledWith("/api/auth/forgot-password", {
@@ -30,11 +40,13 @@ describe("Email verification and password recovery pages", () => {
   it("verifies the token from the URL", async () => {
     apiRequest.mockResolvedValue({ data: {} });
     render(
-      <MemoryRouter initialEntries={["/verify-email/private-verification-token-12345"]}>
-        <Routes>
-          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-        </Routes>
-      </MemoryRouter>,
+      withLanguage(
+        <MemoryRouter initialEntries={["/verify-email/private-verification-token-12345"]}>
+          <Routes>
+            <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+          </Routes>
+        </MemoryRouter>,
+      ),
     );
     await waitFor(() => expect(apiRequest).toHaveBeenCalledWith(
       "/api/auth/verify-email",
@@ -49,11 +61,13 @@ describe("Email verification and password recovery pages", () => {
   it("does not reset when the new passwords differ", async () => {
     const user = userEvent.setup();
     render(
-      <MemoryRouter initialEntries={["/reset-password/private-reset-token-123456789"]}>
-        <Routes>
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-        </Routes>
-      </MemoryRouter>,
+      withLanguage(
+        <MemoryRouter initialEntries={["/reset-password/private-reset-token-123456789"]}>
+          <Routes>
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          </Routes>
+        </MemoryRouter>,
+      ),
     );
     await user.type(screen.getByLabelText(/^new password$/i), "StrongPass123");
     await user.type(screen.getByLabelText(/confirm new password/i), "DifferentPass123");

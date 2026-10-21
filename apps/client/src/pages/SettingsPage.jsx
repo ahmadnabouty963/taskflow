@@ -2,6 +2,8 @@ import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/auth-context.js";
+import { useLanguage } from "../context/language-context.js";
+import { LanguageSwitcher } from "../components/LanguageSwitcher.jsx";
 
 const emptyPasswordForm = {
   currentPassword: "",
@@ -18,6 +20,7 @@ export function SettingsPage() {
     deleteAccount,
     logout,
   } = useAuth();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
 
   const [name, setName] = useState(user.name);
@@ -45,10 +48,6 @@ export function SettingsPage() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    document.title = "Account settings — Ordanly";
-  }, []);
 
   useEffect(() => {
     if (!deleteDialogOpen) {
@@ -271,6 +270,18 @@ export function SettingsPage() {
         </header>
 
         <div className="settings-grid">
+          <section className="settings-card settings-card--language" aria-labelledby="language-title">
+            <header>
+              <p className="eyebrow">{t("settings.language.eyebrow")}</p>
+              <h2 id="language-title">{t("settings.language.title")}</h2>
+              <p>{t("settings.language.copy")}</p>
+            </header>
+            <div className="settings-language-control">
+              <LanguageSwitcher compact />
+              <span>{language === "de" ? t("language.german") : t("language.english")}</span>
+            </div>
+          </section>
+
           <section className="settings-card" aria-labelledby="profile-title">
             <header>
               <p className="eyebrow">Profile</p>

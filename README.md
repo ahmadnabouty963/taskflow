@@ -19,11 +19,18 @@ Das Full-Stack-MVP ist implementiert, getestet und öffentlich verfügbar.
 Aktuell umgesetzt:
 
 - Registrierung mit Name, E-Mail-Adresse und Passwort
+- E-Mail-Bestätigung sowie sichere Passwort-Wiederherstellung
 - Login und Logout
 - persistente Session-Authentifizierung mit sicherem Cookie
 - geschützte Frontend-Routen
 - vollständiges CRUD für Projekte
 - vollständiges CRUD für Aufgaben
+- Listen- und Kanban-Ansicht mit verschiebbaren Aufgaben
+- Unteraufgaben, Kommentare, Labels und verantwortliche Personen
+- wiederkehrende Aufgaben und Zeiterfassung
+- Heute-, Demnächst-, Monats- und Wochenkalenderansicht
+- unabhängige Kalendertermine ohne Projektzuordnung
+- Projektfarben, Archivierung und Fortschrittsanzeige
 - persönliche und gemeinsame Team-Arbeitsbereiche
 - Rollen `OWNER`, `ADMIN`, `MEMBER` und `VIEWER`
 - sichere Team-Einladungen per E-Mail mit sieben Tagen Gültigkeit
@@ -33,6 +40,9 @@ Aktuell umgesetzt:
 - Filterung nach Status und Priorität
 - Pagination auf API-Ebene
 - responsive Benutzeroberfläche für Desktop, Tablet und Smartphone
+- deutsche und englische öffentliche Oberfläche mit gespeicherter Sprachwahl
+- Dark Mode und eigene Ordanly-Wortmarke mit App-Icon und Favicons
+- technische SEO-Basis mit Canonical-URL, strukturierten Daten, Sitemap und `robots.txt`
 - Autorisierung und Trennung der Daten nach Benutzerkonto
 - strukturierte Validierungs- und Fehlerantworten
 - automatisierte Integrations- und Sicherheitstests
@@ -48,6 +58,8 @@ Aktuell umgesetzt:
 - CSS
 - Fetch API
 - ESLint
+- Vitest
+- Testing Library
 
 ### Backend
 
@@ -70,6 +82,7 @@ Aktuell umgesetzt:
 - Render für die REST-API
 - Neon PostgreSQL für die Produktionsdatenbank
 - Git und GitHub
+- GitHub Actions
 
 ## Projektstruktur
 

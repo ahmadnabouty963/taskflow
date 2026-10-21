@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router";
 import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 import { ThemeToggle } from "./components/ThemeToggle.jsx";
+import { LanguageSwitcher } from "./components/LanguageSwitcher.jsx";
 import { DashboardPage } from "./pages/DashboardPage.jsx";
 import { LandingPage } from "./pages/LandingPage.jsx";
 import { LoginPage } from "./pages/LoginPage.jsx";
@@ -25,6 +26,7 @@ function App() {
   return (
     <>
       <PageTitle />
+      <LanguageSwitcher />
       <ThemeToggle />
       <Routes>
         <Route index element={<LandingPage />} />

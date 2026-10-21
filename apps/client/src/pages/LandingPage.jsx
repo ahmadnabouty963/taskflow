@@ -1,143 +1,126 @@
-import { BrandLogo } from "../components/BrandLogo.jsx";
 import { Link } from "react-router";
+import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useAuth } from "../context/auth-context.js";
+import { useLanguage } from "../context/language-context.js";
+
+const featureKeys = ["workspaces", "tasks", "calendar", "details", "recurring", "account"];
+const workflowKeys = ["one", "two", "three"];
 
 export function LandingPage() {
   const { user, isLoading } = useAuth();
+  const { t } = useLanguage();
 
   return (
-    <div className="marketing-page">
+    <div className="marketing-page marketing-page--expanded">
       <header className="site-header">
-        <Link className="brand" to="/" aria-label="Ordanly home">
+        <Link aria-label="Ordanly home" className="brand" to="/">
           <BrandLogo />
         </Link>
 
-        <nav className="header-actions" aria-label="Main navigation">
+        <nav aria-label="Main navigation" className="marketing-navigation">
+          <a href="#features">{t("landing.nav.features")}</a>
+          <a href="#workflow">{t("landing.nav.workflow")}</a>
+        </nav>
+
+        <nav aria-label="Account navigation" className="header-actions">
           {!isLoading && user ? (
-            <Link className="button button--dark" to="/app">
-              Open workspace
-            </Link>
+            <Link className="button button--dark" to="/app">{t("common.openWorkspace")}</Link>
           ) : (
             <>
-              <Link className="text-link" to="/login">
-                Log in
-              </Link>
-              <Link className="button button--dark" to="/register">
-                Start free
-              </Link>
+              <Link className="text-link" to="/login">{t("common.login")}</Link>
+              <Link className="button button--dark" to="/register">{t("common.register")}</Link>
             </>
           )}
         </nav>
       </header>
 
       <main>
-        <section className="hero-section">
+        <section className="hero-section hero-section--expanded">
           <div className="hero-copy">
-            <p className="eyebrow">Built for focused teams</p>
-
-            <h1>
-              Make the next step <span> unmistakably clear.</span>
-            </h1>
-
-            <p className="hero-description">
-              Plan projects, organize tasks and keep priorities visible without
-              adding another complicated tool to your day.
-            </p>
-
+            <p className="eyebrow">{t("landing.eyebrow")}</p>
+            <h1>{t("landing.title")}</h1>
+            <p className="hero-description">{t("landing.description")}</p>
             <div className="hero-actions">
-              <Link
-                className="button button--dark button--large"
-                to="/register"
-              >
-                Create your workspace
-              </Link>
-              <a
-                className="button button--ghost button--large"
-                href="#workflow"
-              >
-                See how it works
-              </a>
+              <Link className="button button--dark button--large" to="/register">{t("landing.primary")}</Link>
+              <a className="button button--ghost button--large" href="#features">{t("landing.secondary")}</a>
             </div>
+            <ul className="landing-proof-list">
+              <li>{t("landing.proof.workspaces")}</li>
+              <li>{t("landing.proof.roles")}</li>
+              <li>{t("landing.proof.security")}</li>
+            </ul>
           </div>
 
-          <div className="product-preview" aria-label="Ordanly task preview">
+          <div aria-label="Ordanly task preview" className="product-preview product-preview--detailed">
             <div className="preview-toolbar">
               <img alt="" aria-hidden="true" className="preview-logo preview-logo--image" src="/ordanly-app-icon.svg" />
-              <span>Website launch</span>
-              <span className="preview-count">6 tasks</span>
+              <span>{t("landing.preview.project")}</span>
+              <span className="preview-count">{t("landing.preview.count")}</span>
             </div>
-
             <div className="preview-board">
-              <article>
-                <p>To do</p>
-                <div className="preview-task">
-                  <span className="task-label task-label--blue">Research</span>
-                  <strong>Review customer interviews</strong>
-                  <small>Due tomorrow</small>
-                </div>
-              </article>
-
-              <article>
-                <p>In progress</p>
-                <div className="preview-task preview-task--active">
-                  <span className="task-label task-label--orange">Design</span>
-                  <strong>Build the new landing page</strong>
-                  <small>68% complete</small>
-                </div>
-              </article>
-
-              <article>
-                <p>Done</p>
-                <div className="preview-task">
-                  <span className="task-label task-label--green">Planning</span>
-                  <strong>Define project milestones</strong>
-                  <small>Completed</small>
-                </div>
-              </article>
+              <article><p>{t("landing.preview.todo")}</p><div className="preview-task"><span className="task-label task-label--blue">{t("landing.preview.research")}</span><strong>{t("landing.preview.interviews")}</strong><small>{t("landing.preview.tomorrow")}</small></div></article>
+              <article><p>{t("landing.preview.progress")}</p><div className="preview-task preview-task--active"><span className="task-label task-label--orange">{t("landing.preview.design")}</span><strong>{t("landing.preview.page")}</strong><small>{t("landing.preview.percent")}</small></div></article>
+              <article><p>{t("landing.preview.done")}</p><div className="preview-task"><span className="task-label task-label--green">{t("landing.preview.planning")}</span><strong>{t("landing.preview.milestones")}</strong><small>{t("landing.preview.completed")}</small></div></article>
             </div>
           </div>
         </section>
 
-        <section className="workflow-section" id="workflow">
-          <div>
-            <p className="eyebrow">How it works</p>
-            <h2>From idea to done in three clear steps.</h2>
+        <section className="landing-feature-section" id="features">
+          <header className="landing-section-heading">
+            <p className="eyebrow">{t("landing.features.eyebrow")}</p>
+            <h2>{t("landing.features.title")}</h2>
+            <p>{t("landing.features.intro")}</p>
+          </header>
+          <div className="landing-feature-grid">
+            {featureKeys.map((feature, index) => (
+              <article key={feature}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{t(`landing.feature.${feature}.title`)}</h3>
+                <p>{t(`landing.feature.${feature}.copy`)}</p>
+              </article>
+            ))}
           </div>
+        </section>
 
+        <section className="landing-calendar-section">
+          <div className="landing-calendar-copy">
+            <p className="eyebrow">{t("landing.calendar.eyebrow")}</p>
+            <h2>{t("landing.calendar.title")}</h2>
+            <p>{t("landing.calendar.copy")}</p>
+            <Link className="text-link landing-inline-link" to="/register">{t("landing.primary")}</Link>
+          </div>
+          <div aria-label="Calendar feature preview" className="landing-calendar-preview">
+            <header><strong>{t("landing.calendar.month")}</strong><span>{t("landing.calendar.today")}</span></header>
+            <div className="landing-calendar-grid">
+              {[19, 20, 21, 22, 23, 24, 25].map((day) => (
+                <div className={day === 21 ? "is-today" : ""} key={day}>
+                  <time>{day}</time>
+                  {day === 21 ? <span className="calendar-preview-entry calendar-preview-entry--task"><small>{t("landing.calendar.task")}</small>{t("landing.calendar.taskExample")}</span> : null}
+                  {day === 23 ? <span className="calendar-preview-entry calendar-preview-entry--event"><small>{t("landing.calendar.event")}</small>{t("landing.calendar.eventExample")}</span> : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="workflow-section workflow-section--expanded" id="workflow">
+          <div><p className="eyebrow">{t("landing.workflow.eyebrow")}</p><h2>{t("landing.workflow.title")}</h2></div>
           <ol className="workflow-list">
-            <li>
-              <span>01</span>
-              <div>
-                <h3>Create a project</h3>
-                <p>Give the work a clear goal and a place to live.</p>
-              </div>
-            </li>
-            <li>
-              <span>02</span>
-              <div>
-                <h3>Break it into tasks</h3>
-                <p>Set status, priority and deadlines for every task.</p>
-              </div>
-            </li>
-            <li>
-              <span>03</span>
-              <div>
-                <h3>Keep progress visible</h3>
-                <p>Find blockers early and know what needs attention next.</p>
-              </div>
-            </li>
+            {workflowKeys.map((step, index) => (
+              <li key={step}><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{t(`landing.workflow.${step}.title`)}</h3><p>{t(`landing.workflow.${step}.copy`)}</p></div></li>
+            ))}
           </ol>
+        </section>
+
+        <section className="landing-cta-section">
+          <p className="eyebrow eyebrow--light">{t("landing.cta.eyebrow")}</p>
+          <h2>{t("landing.cta.title")}</h2>
+          <p>{t("landing.cta.copy")}</p>
+          <Link className="button landing-cta-button" to="/register">{t("landing.cta.button")}</Link>
         </section>
       </main>
 
-      <footer className="site-footer">
-        <span>© 2026 Ordanly</span>
-
-        <nav className="legal-links" aria-label="Legal information">
-          <Link to="/impressum">Impressum</Link>
-          <Link to="/datenschutz">Datenschutz</Link>
-        </nav>
-      </footer>
+      <footer className="site-footer"><span>© 2026 Ordanly</span><nav aria-label="Legal information" className="legal-links"><Link to="/impressum">Impressum</Link><Link to="/datenschutz">Datenschutz</Link></nav></footer>
     </div>
   );
 }

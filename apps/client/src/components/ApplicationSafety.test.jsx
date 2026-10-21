@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 import { PageTitle } from "./PageTitle.jsx";
 import { ThemeToggle } from "./ThemeToggle.jsx";
+import { LanguageContext } from "../context/language-context.js";
+import { createLanguageValue } from "../test/language.js";
 
 function BrokenComponent() {
   throw new Error("Test application error");
@@ -17,6 +19,14 @@ afterEach(() => {
 });
 
 describe("Application safety", () => {
+  function withLanguage(component) {
+    return (
+      <LanguageContext.Provider value={createLanguageValue()}>
+        {component}
+      </LanguageContext.Provider>
+    );
+  }
+
   it("shows a safe fallback when React cannot render", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -41,9 +51,11 @@ describe("Application safety", () => {
 
   it("updates the browser title for the current page", async () => {
     render(
-      <MemoryRouter initialEntries={["/login"]}>
-        <PageTitle />
-      </MemoryRouter>,
+      withLanguage(
+        <MemoryRouter initialEntries={["/login"]}>
+          <PageTitle />
+        </MemoryRouter>,
+      ),
     );
 
     await waitFor(() => {
@@ -54,7 +66,7 @@ describe("Application safety", () => {
   it("switches and remembers the visual theme", async () => {
     const user = userEvent.setup();
 
-    render(<ThemeToggle />);
+    render(withLanguage(<ThemeToggle />));
 
     const toggle = screen.getByRole("button", {
       name: "Switch to dark mode",

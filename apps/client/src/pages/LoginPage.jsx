@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { AuthLayout } from "../components/AuthLayout.jsx";
 import { useAuth } from "../context/auth-context.js";
+import { useLanguage } from "../context/language-context.js";
 import { getSafeAuthDestination } from "../lib/auth-navigation.js";
 
 export function LoginPage() {
   const { user, isLoading, login } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -52,12 +54,12 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      eyebrow="Welcome back"
-      title="Log in to Ordanly"
-      description="Continue where you left off."
+      eyebrow={t("login.eyebrow")}
+      title={t("login.title")}
+      description={t("login.description")}
       footer={
         <p>
-          New to Ordanly? <Link state={location.state} to="/register">Create an account</Link>
+          {t("login.new")} <Link state={location.state} to="/register">{t("login.create")}</Link>
         </p>
       }
     >
@@ -69,7 +71,7 @@ export function LoginPage() {
         )}
 
         <label className="form-field">
-          <span>Email address</span>
+          <span>{t("common.email")}</span>
           <input
             autoComplete="email"
             name="email"
@@ -82,7 +84,7 @@ export function LoginPage() {
         </label>
 
         <label className="form-field">
-          <span>Password</span>
+          <span>{t("common.password")}</span>
           <div className="password-field">
             <input
               autoComplete="current-password"
@@ -93,18 +95,18 @@ export function LoginPage() {
               value={form.password}
             />
             <button
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={`${showPassword ? t("common.hide") : t("common.show")} ${t("common.password")}`}
               className="password-toggle"
               onClick={() => setShowPassword((visible) => !visible)}
               type="button"
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? t("common.hide") : t("common.show")}
             </button>
           </div>
         </label>
 
         <div className="auth-link-row">
-          <Link to="/forgot-password">Forgot password?</Link>
+          <Link to="/forgot-password">{t("login.forgot")}</Link>
         </div>
 
         <button
@@ -112,7 +114,7 @@ export function LoginPage() {
           disabled={isSubmitting}
           type="submit"
         >
-          {isSubmitting ? "Logging in..." : "Log in"}
+          {isSubmitting ? t("login.loading") : t("common.login")}
         </button>
       </form>
     </AuthLayout>

@@ -3,12 +3,15 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsPage } from "./SettingsPage.jsx";
+import { LanguageContext } from "../context/language-context.js";
+import { createLanguageValue } from "../test/language.js";
 
 const auth = {
   user: {
     id: "user-1",
     name: "Ahmad Nabouti",
     email: "ahmad@example.com",
+    language: "EN",
   },
   updateProfile: vi.fn(),
   changePassword: vi.fn(),
@@ -24,7 +27,9 @@ vi.mock("../context/auth-context.js", () => ({
 function renderSettingsPage() {
   return render(
     <MemoryRouter>
-      <SettingsPage />
+      <LanguageContext.Provider value={createLanguageValue()}>
+        <SettingsPage />
+      </LanguageContext.Provider>
     </MemoryRouter>,
   );
 }
@@ -34,6 +39,7 @@ beforeEach(() => {
     id: "user-1",
     name: "Ahmad Nabouti",
     email: "ahmad@example.com",
+    language: "EN",
   };
   auth.updateProfile.mockReset().mockResolvedValue(auth.user);
   auth.changePassword.mockReset().mockResolvedValue(undefined);

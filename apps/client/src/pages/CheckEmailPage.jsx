@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { AuthLayout } from "../components/AuthLayout.jsx";
 import { apiRequest } from "../lib/api.js";
+import { useLanguage } from "../context/language-context.js";
 
 export function CheckEmailPage() {
   const location = useLocation();
+  const { t } = useLanguage();
   const [email, setEmail] = useState(location.state?.email ?? "");
   const [message, setMessage] = useState(
-    "We sent a private confirmation link. It remains valid for 24 hours.",
+    t("checkEmail.initial"),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,10 +31,10 @@ export function CheckEmailPage() {
 
   return (
     <AuthLayout
-      eyebrow="One last step"
-      title="Check your inbox"
-      description="Confirm your email before logging in to your workspace."
-      footer={<p>Already confirmed? <Link state={location.state} to="/login">Log in</Link></p>}
+      eyebrow={t("checkEmail.eyebrow")}
+      title={t("checkEmail.title")}
+      description={t("checkEmail.description")}
+      footer={<p>{t("checkEmail.confirmed")} <Link state={location.state} to="/login">{t("common.login")}</Link></p>}
     >
       <div className="auth-status-card" role="status">
         <span aria-hidden="true" className="auth-status-icon">@</span>
@@ -40,7 +42,7 @@ export function CheckEmailPage() {
       </div>
       <form className="auth-form" onSubmit={handleResend}>
         <label className="form-field">
-          <span>Email address</span>
+          <span>{t("common.email")}</span>
           <input
             autoComplete="email"
             onChange={(event) => setEmail(event.target.value)}
@@ -50,7 +52,7 @@ export function CheckEmailPage() {
           />
         </label>
         <button className="button button--ghost button--full" disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Sending..." : "Send a new confirmation link"}
+          {isSubmitting ? t("checkEmail.sending") : t("checkEmail.resend")}
         </button>
       </form>
     </AuthLayout>

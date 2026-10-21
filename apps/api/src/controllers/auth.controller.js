@@ -16,6 +16,7 @@ const publicUserSelect = {
   name: true,
   email: true,
   emailVerifiedAt: true,
+  language: true,
   createdAt: true,
 };
 
@@ -48,7 +49,7 @@ function sendAccepted(response, message) {
 
 export async function register(request, response, next) {
   try {
-    const { name, email, password } = request.body;
+    const { name, email, password, language } = request.body;
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return response.status(409).json({
@@ -67,6 +68,7 @@ export async function register(request, response, next) {
           name,
           email,
           passwordHash,
+          language,
           emailVerifiedAt: process.env.NODE_ENV === "test" ? new Date() : null,
         },
         select: publicUserSelect,
@@ -167,6 +169,7 @@ export async function login(request, response, next) {
           name: user.name,
           email: user.email,
           emailVerifiedAt: user.emailVerifiedAt,
+          language: user.language,
         },
       },
     });
@@ -339,7 +342,7 @@ export async function updateProfile(request, response, next) {
   try {
     const user = await prisma.user.update({
       where: { id: request.user.id },
-      data: { name: request.body.name },
+      data: request.body,
       select: publicUserSelect,
     });
     return response.status(200).json({ success: true, data: { user } });

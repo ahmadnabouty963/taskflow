@@ -27,6 +27,8 @@ export async function authenticate(request, response, next) {
             id: true,
             name: true,
             email: true,
+            emailVerifiedAt: true,
+            language: true,
             createdAt: true,
           },
         },

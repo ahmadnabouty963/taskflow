@@ -1,7 +1,10 @@
 import { BrandLogo } from "./BrandLogo.jsx";
 import { Link } from "react-router";
+import { useLanguage } from "../context/language-context.js";
 
 export function AuthLayout({ eyebrow, title, description, children, footer }) {
+  const { t } = useLanguage();
+
   return (
     <main className="auth-page">
       <section className="auth-brand-panel">
@@ -10,13 +13,13 @@ export function AuthLayout({ eyebrow, title, description, children, footer }) {
         </Link>
 
         <div className="auth-brand-copy">
-          <p className="eyebrow eyebrow--light">Work with intention</p>
-          <h2>Keep the work clear and the team moving.</h2>
-          <p>Projects, tasks and priorities in one calm, focused workspace.</p>
+          <p className="eyebrow eyebrow--light">{t("auth.panel.eyebrow")}</p>
+          <h2>{t("auth.panel.title")}</h2>
+          <p>{t("auth.panel.copy")}</p>
         </div>
 
         <p className="auth-brand-footer">
-          Designed for people who value clarity.
+          {t("auth.panel.footer")}
         </p>
       </section>
 

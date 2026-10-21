@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { AuthLayout } from "../components/AuthLayout.jsx";
 import { apiRequest } from "../lib/api.js";
+import { useLanguage } from "../context/language-context.js";
 
 export function ResetPasswordPage() {
   const { token } = useParams();
+  const { t } = useLanguage();
   const [form, setForm] = useState({ password: "", confirmation: "" });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +20,7 @@ export function ResetPasswordPage() {
     event.preventDefault();
     setError("");
     if (form.password !== form.confirmation) {
-      setError("Passwords do not match.");
+      setError(t("reset.mismatch"));
       return;
     }
     setIsSubmitting(true);
@@ -27,7 +29,7 @@ export function ResetPasswordPage() {
         method: "POST",
         body: JSON.stringify({ token, newPassword: form.password }),
       });
-      setMessage("Your password has been changed. All previous sessions were signed out.");
+      setMessage(t("reset.success"));
       setForm({ password: "", confirmation: "" });
     } catch (requestError) {
       setError(requestError.message);
@@ -38,10 +40,10 @@ export function ResetPasswordPage() {
 
   return (
     <AuthLayout
-      eyebrow="Account recovery"
-      title="Choose a new password"
-      description="The reset link expires after 60 minutes and can be used once."
-      footer={<p><Link to="/login">Back to login</Link></p>}
+      eyebrow={t("reset.eyebrow")}
+      title={t("reset.title")}
+      description={t("reset.description")}
+      footer={<p><Link to="/login">{t("common.backLogin")}</Link></p>}
     >
       {message ? (
         <div className="auth-recovery-success">
@@ -49,21 +51,21 @@ export function ResetPasswordPage() {
             <span aria-hidden="true" className="auth-status-icon">✓</span>
             <p>{message}</p>
           </div>
-          <Link className="button button--dark button--full" to="/login">Log in with new password</Link>
+          <Link className="button button--dark button--full" to="/login">{t("reset.login")}</Link>
         </div>
       ) : (
         <form className="auth-form" onSubmit={handleSubmit}>
           {error ? <div className="form-message form-message--error" role="alert">{error}</div> : null}
           <label className="form-field">
-            <span>New password</span>
+            <span>{t("reset.newPassword")}</span>
             <input autoComplete="new-password" minLength="8" name="password" onChange={handleChange} required type="password" value={form.password} />
           </label>
           <label className="form-field">
-            <span>Confirm new password</span>
+            <span>{t("reset.confirmPassword")}</span>
             <input autoComplete="new-password" minLength="8" name="confirmation" onChange={handleChange} required type="password" value={form.confirmation} />
           </label>
           <button className="button button--dark button--full" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Changing password..." : "Change password"}
+            {isSubmitting ? t("reset.changing") : t("reset.submit")}
           </button>
         </form>
       )}

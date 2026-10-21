@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 import { AuthContext } from "../context/auth-context.js";
+import { LanguageContext } from "../context/language-context.js";
+import { createLanguageValue } from "../test/language.js";
 import { LoginPage } from "./LoginPage.jsx";
 import { RegisterPage } from "./RegisterPage.jsx";
 
@@ -21,7 +23,9 @@ function renderWithAuth(component, overrides = {}) {
     user: userEvent.setup(),
     ...render(
       <AuthContext.Provider value={authValue}>
-        <MemoryRouter>{component}</MemoryRouter>
+        <LanguageContext.Provider value={createLanguageValue()}>
+          <MemoryRouter>{component}</MemoryRouter>
+        </LanguageContext.Provider>
       </AuthContext.Provider>,
     ),
   };

@@ -15,6 +15,7 @@ export const registerSchema = z.object({
   name: z.string().trim().min(2).max(80),
   email: emailSchema,
   password: newPasswordSchema,
+  language: z.enum(["EN", "DE"]).default("EN"),
 });
 
 export const loginSchema = z.object({
@@ -32,9 +33,15 @@ export const resetPasswordSchema = tokenSchema.extend({
   newPassword: newPasswordSchema,
 });
 
-export const updateProfileSchema = z.object({
-  name: z.string().trim().min(2).max(80),
-});
+export const updateProfileSchema = z
+  .object({
+    name: z.string().trim().min(2).max(80).optional(),
+    language: z.enum(["EN", "DE"]).optional(),
+  })
+  .strict()
+  .refine((data) => data.name !== undefined || data.language !== undefined, {
+    message: "At least one profile field is required.",
+  });
 
 export const changePasswordSchema = z
   .object({

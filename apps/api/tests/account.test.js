@@ -59,6 +59,20 @@ describe("Account settings API", () => {
     expect(response.body.data.user.passwordHash).toBeUndefined();
   });
 
+  it("stores the authenticated user's interface language", async () => {
+    const agent = await createLoggedInAgent();
+
+    const response = await agent.patch("/api/auth/me").send({
+      language: "DE",
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data.user).toMatchObject({
+      email: account.email,
+      language: "DE",
+    });
+  });
+
   it("rejects a wrong current password", async () => {
     const agent = await createLoggedInAgent();
 

@@ -1,4 +1,5 @@
 import { useLayoutEffect, useState } from "react";
+import { useLanguage } from "../context/language-context.js";
 
 const THEME_STORAGE_KEY = "ordanly.theme.v1";
 
@@ -17,6 +18,7 @@ function readInitialTheme() {
 }
 
 export function ThemeToggle() {
+  const { t } = useLanguage();
   const [theme, setTheme] = useState(readInitialTheme);
 
   useLayoutEffect(() => {
@@ -30,7 +32,9 @@ export function ThemeToggle() {
   }, [theme]);
 
   const nextTheme = theme === "light" ? "dark" : "light";
-  const accessibleLabel = `Switch to ${nextTheme} mode`;
+  const accessibleLabel = t(
+    nextTheme === "dark" ? "theme.switchDark" : "theme.switchLight",
+  );
 
   return (
     <button
@@ -55,7 +59,7 @@ export function ThemeToggle() {
         </svg>
       )}
 
-      <span>{theme === "light" ? "Dark" : "Light"}</span>
+      <span>{t(theme === "light" ? "theme.dark" : "theme.light")}</span>
     </button>
   );
 }
