@@ -3723,3 +3723,103 @@ input:focus-visible {
 @media (max-width: 460px) {
   .task-detail-meta { grid-template-columns: 1fr; }
 }
+
+
+/* Email verification and password recovery */
+.auth-link-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.35rem;
+}
+
+.auth-link-row a {
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-link-row a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.auth-status-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--green-soft) 45%, var(--surface));
+}
+
+.auth-status-card p { margin: 0; font-size: 0.82rem; line-height: 1.6; }
+.auth-status-card--error { background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
+.auth-status-card--success { background: color-mix(in srgb, var(--green-soft) 65%, var(--surface)); }
+
+.auth-status-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--green);
+  font-weight: 800;
+}
+
+.auth-status-card--error .auth-status-icon { background: var(--danger); }
+.auth-recovery-success { display: grid; gap: 1rem; }
+
+
+/* Official Ordanly identity */
+.brand-wordmark {
+  display: inline-flex;
+  width: clamp(116px, 11vw, 142px);
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.brand-wordmark__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.brand-wordmark__image--dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .brand-wordmark__image--light {
+  display: none;
+}
+
+:root[data-theme="dark"] .brand-wordmark__image--dark {
+  display: block;
+}
+
+.brand--light .brand-wordmark__image--light,
+.workspace-sidebar .brand-wordmark__image--light {
+  display: none;
+}
+
+.brand--light .brand-wordmark__image--dark,
+.workspace-sidebar .brand-wordmark__image--dark {
+  display: block;
+}
+
+.workspace-brand .brand-wordmark {
+  width: 128px;
+}
+
+.preview-logo--image {
+  object-fit: cover;
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .brand-wordmark {
+    width: 112px;
+  }
+}

@@ -1,3 +1,4 @@
+import { BrandLogo } from "./BrandLogo.jsx";
 import { Link } from "react-router";
 
 export function AuthLayout({ eyebrow, title, description, children, footer }) {
@@ -5,8 +6,7 @@ export function AuthLayout({ eyebrow, title, description, children, footer }) {
     <main className="auth-page">
       <section className="auth-brand-panel">
         <Link className="brand brand--light" to="/">
-          <span className="brand-logo brand-logo--light">O</span>
-          <span>Ordanly</span>
+          <BrandLogo />
         </Link>
 
         <div className="auth-brand-copy">

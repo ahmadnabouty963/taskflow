@@ -14,6 +14,10 @@ import { PlanningPage } from "./pages/PlanningPage.jsx";
 import { CalendarPage } from "./pages/CalendarPage.jsx";
 import { WorkspaceSettingsPage } from "./pages/WorkspaceSettingsPage.jsx";
 import { InvitationPage } from "./pages/InvitationPage.jsx";
+import { CheckEmailPage } from "./pages/CheckEmailPage.jsx";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage.jsx";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage.jsx";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage.jsx";
 import { PageTitle } from "./components/PageTitle.jsx";
 import "./App.css";
 
@@ -26,6 +30,10 @@ function App() {
         <Route index element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/check-email" element={<CheckEmailPage />} />
+        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="/invite/:token" element={<InvitationPage />} />
         <Route path="/impressum" element={<ImpressumPage />} />
         <Route path="/datenschutz" element={<PrivacyPage />} />

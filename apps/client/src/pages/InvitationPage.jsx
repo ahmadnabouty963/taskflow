@@ -1,3 +1,4 @@
+import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { useAuth } from "../context/auth-context.js";
@@ -77,8 +78,7 @@ export function InvitationPage() {
   return (
     <main className="invitation-page">
       <Link aria-label="Ordanly home" className="brand" to="/">
-        <span className="brand-logo">O</span>
-        <span>Ordanly</span>
+        <BrandLogo />
       </Link>
 
       <section className="invitation-card" aria-live="polite">

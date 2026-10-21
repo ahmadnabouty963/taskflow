@@ -1,0 +1,17 @@
+{
+  "name": "Ordanly",
+  "short_name": "Ordanly",
+  "description": "Projects, tasks and calendar planning in one focused workspace.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F5F2",
+  "theme_color": "#14201C",
+  "icons": [
+    {
+      "src": "/ordanly-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

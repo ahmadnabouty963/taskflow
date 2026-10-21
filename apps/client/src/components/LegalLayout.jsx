@@ -1,3 +1,4 @@
+import { BrandLogo } from "./BrandLogo.jsx";
 import { Link } from "react-router";
 
 export function LegalLayout({ eyebrow, title, intro, children }) {
@@ -5,8 +6,7 @@ export function LegalLayout({ eyebrow, title, intro, children }) {
     <div className="legal-page">
       <header className="legal-header">
         <Link className="brand" to="/" aria-label="Ordanly home">
-          <span className="brand-logo">O</span>
-          <span>Ordanly</span>
+          <BrandLogo />
         </Link>
 
         <Link className="text-link" to="/">

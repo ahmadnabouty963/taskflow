@@ -1,11 +1,11 @@
+import { BrandLogo } from "../components/BrandLogo.jsx";
 import { Link } from "react-router";
 
 export function NotFoundPage() {
   return (
     <main className="not-found-page">
       <Link className="brand" to="/">
-        <span className="brand-logo">O</span>
-        <span>Ordanly</span>
+        <BrandLogo />
       </Link>
 
       <div>

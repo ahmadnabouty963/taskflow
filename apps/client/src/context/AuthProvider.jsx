@@ -45,15 +45,12 @@ export function AuthProvider({ children }) {
   }
 
   async function register(account) {
-    await apiRequest("/api/auth/register", {
+    const result = await apiRequest("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(account),
     });
 
-    return login({
-      email: account.email,
-      password: account.password,
-    });
+    return result.data;
   }
 
   async function updateProfile(profile) {

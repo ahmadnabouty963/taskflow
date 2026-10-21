@@ -50,7 +50,10 @@ export function RegisterPage() {
         password: form.password,
       });
 
-      navigate(getSafeAuthDestination(location), { replace: true });
+      navigate("/check-email", {
+        replace: true,
+        state: { ...location.state, email: form.email.trim().toLowerCase() },
+      });
     } catch (error) {
       setErrorMessage(error.message);
     } finally {

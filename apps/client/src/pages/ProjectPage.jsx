@@ -1,3 +1,4 @@
+import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
@@ -389,8 +390,7 @@ export function ProjectPage() {
     return (
       <main className="project-error-page">
         <Link className="brand" to="/app">
-          <span className="brand-logo">O</span>
-          <span>Ordanly</span>
+          <BrandLogo />
         </Link>
 
         <div className="content-error" role="alert">
@@ -410,8 +410,7 @@ export function ProjectPage() {
       <aside className="workspace-sidebar">
         <div>
           <Link className="workspace-brand" to="/">
-            <span className="brand-logo brand-logo--light">O</span>
-            <span>Ordanly</span>
+            <BrandLogo />
           </Link>
 
           <nav className="workspace-nav" aria-label="Workspace navigation">

@@ -1,3 +1,4 @@
+import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { CalendarEntryDialog } from "../components/CalendarEntryDialog.jsx";
@@ -174,7 +175,7 @@ export function CalendarPage() {
     <div className="workspace-shell">
       <aside className="workspace-sidebar">
         <div>
-          <Link className="workspace-brand" to="/"><span className="brand-logo brand-logo--light">O</span><span>Ordanly</span></Link>
+          <Link className="workspace-brand" to="/"><BrandLogo /></Link>
           <nav className="workspace-nav" aria-label="Workspace navigation">
             <Link className="workspace-nav__item" to="/app">Projects</Link>
             <Link className="workspace-nav__item" to="/app/today">Today</Link>

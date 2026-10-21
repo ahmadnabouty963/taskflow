@@ -1,3 +1,4 @@
+import { BrandLogo } from "../components/BrandLogo.jsx";
 import { Link } from "react-router";
 import { useAuth } from "../context/auth-context.js";
 
@@ -8,8 +9,7 @@ export function LandingPage() {
     <div className="marketing-page">
       <header className="site-header">
         <Link className="brand" to="/" aria-label="Ordanly home">
-          <span className="brand-logo">O</span>
-          <span>Ordanly</span>
+          <BrandLogo />
         </Link>
 
         <nav className="header-actions" aria-label="Main navigation">
@@ -62,7 +62,7 @@ export function LandingPage() {
 
           <div className="product-preview" aria-label="Ordanly task preview">
             <div className="preview-toolbar">
-              <span className="preview-logo">O</span>
+              <img alt="" aria-hidden="true" className="preview-logo preview-logo--image" src="/ordanly-app-icon.svg" />
               <span>Website launch</span>
               <span className="preview-count">6 tasks</span>
             </div>

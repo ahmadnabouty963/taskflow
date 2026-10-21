@@ -14,6 +14,14 @@ function getPageTitle(pathname) {
     return "Create account — Ordanly";
   }
 
+  if (pathname === "/check-email" || pathname.startsWith("/verify-email/")) {
+    return "Verify email — Ordanly";
+  }
+
+  if (pathname === "/forgot-password" || pathname.startsWith("/reset-password/")) {
+    return "Password recovery — Ordanly";
+  }
+
   if (pathname.startsWith("/invite/")) {
     return "Team invitation — Ordanly";
   }

@@ -1,3 +1,4 @@
+import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/auth-context.js";
@@ -212,8 +213,7 @@ export function SettingsPage() {
       <aside className="workspace-sidebar">
         <div>
           <Link className="workspace-brand" to="/">
-            <span className="brand-logo brand-logo--light">O</span>
-            <span>Ordanly</span>
+            <BrandLogo />
           </Link>
 
           <nav className="workspace-nav" aria-label="Workspace navigation">

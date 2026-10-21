@@ -1,3 +1,4 @@
+import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
@@ -196,8 +197,7 @@ export function DashboardPage() {
       <aside className="workspace-sidebar">
         <div>
           <Link className="workspace-brand" to="/">
-            <span className="brand-logo brand-logo--light">O</span>
-            <span>Ordanly</span>
+            <BrandLogo />
           </Link>
           <div className="workspace-switcher">
             <label htmlFor="active-workspace">Workspace</label>

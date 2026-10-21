@@ -1,3 +1,4 @@
+import { BrandLogo } from "./BrandLogo.jsx";
 import { Component } from "react";
 
 export class ErrorBoundary extends Component {
@@ -20,8 +21,7 @@ export class ErrorBoundary extends Component {
       return (
         <main className="project-error-page">
           <a className="brand" href="/">
-            <span className="brand-logo">O</span>
-            <span>Ordanly</span>
+            <BrandLogo />
           </a>
 
           <div className="content-error" role="alert">

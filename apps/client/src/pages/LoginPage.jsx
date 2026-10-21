@@ -103,6 +103,10 @@ export function LoginPage() {
           </div>
         </label>
 
+        <div className="auth-link-row">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </div>
+
         <button
           className="button button--dark button--full"
           disabled={isSubmitting}
