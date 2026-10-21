@@ -29,6 +29,31 @@ function renderPlanningPage(mode) {
   );
 }
 
+function mockAgenda({ tasks = [], events = [] } = {}) {
+  apiRequest.mockImplementation((path) => {
+    if (path.startsWith("/api/tasks?")) {
+      return Promise.resolve({ data: { tasks } });
+    }
+
+    if (path.startsWith("/api/events?")) {
+      return Promise.resolve({ data: { events } });
+    }
+
+    return Promise.reject(new Error("Unexpected request: " + path));
+  });
+}
+
+function requestPathFor(prefix) {
+  return apiRequest.mock.calls.find(([path]) => path.startsWith(prefix))[0];
+}
+
+function daysFromNow(days, hours = 10) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  date.setHours(hours, 0, 0, 0);
+  return date;
+}
+
 beforeEach(() => {
   apiRequest.mockReset();
   authValue.logout.mockReset();
@@ -36,22 +61,20 @@ beforeEach(() => {
 
 describe("Planning pages", () => {
   it("shows today's tasks from multiple projects", async () => {
-    apiRequest.mockResolvedValue({
-      data: {
-        tasks: [
-          {
-            id: "task-1",
-            title: "Prepare presentation",
-            status: "TODO",
-            priority: "HIGH",
-            dueDate: new Date().toISOString(),
-            project: {
-              id: "project-1",
-              title: "Ordanly release",
-            },
+    mockAgenda({
+      tasks: [
+        {
+          id: "task-1",
+          title: "Prepare presentation",
+          status: "TODO",
+          priority: "HIGH",
+          dueDate: new Date().toISOString(),
+          project: {
+            id: "project-1",
+            title: "Ordanly release",
           },
-        ],
-      },
+        },
+      ],
     });
 
     renderPlanningPage("today");
@@ -60,16 +83,36 @@ describe("Planning pages", () => {
       await screen.findByRole("heading", { name: "Prepare presentation" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Ordanly release")).toBeInTheDocument();
-    expect(apiRequest.mock.calls[0][0]).toContain("/api/tasks?");
-    expect(apiRequest.mock.calls[0][0]).toContain("excludeStatus=DONE");
+    expect(requestPathFor("/api/tasks?")).toContain("excludeStatus=DONE");
+  });
+
+  it("shows today's calendar events", async () => {
+    mockAgenda({
+      events: [
+        {
+          id: "event-1",
+          title: "Dentist",
+          location: "Main Street 4",
+          startsAt: daysFromNow(0, 9).toISOString(),
+          endsAt: daysFromNow(0, 10).toISOString(),
+          allDay: false,
+          color: "#2F6049",
+        },
+      ],
+    });
+
+    renderPlanningPage("today");
+
+    expect(
+      await screen.findByRole("heading", { name: "Dentist" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Main Street 4")).toBeInTheDocument();
+    expect(screen.getByText("Events today")).toBeInTheDocument();
+    expect(requestPathFor("/api/events?")).toContain("from=");
   });
 
   it("loads the next seven days for Upcoming", async () => {
-    apiRequest.mockResolvedValue({
-      data: {
-        tasks: [],
-      },
-    });
+    mockAgenda();
 
     renderPlanningPage("upcoming");
 
@@ -77,9 +120,67 @@ describe("Planning pages", () => {
       await screen.findByRole("heading", { name: "A clear week ahead" }),
     ).toBeInTheDocument();
 
-    const requestPath = apiRequest.mock.calls[0][0];
-    expect(requestPath).toContain("from=");
-    expect(requestPath).toContain("to=");
+    for (const prefix of ["/api/tasks?", "/api/events?"]) {
+      const requestPath = requestPathFor(prefix);
+      expect(requestPath).toContain("from=");
+      expect(requestPath).toContain("to=");
+    }
+  });
+
+  it("groups upcoming events and tasks on the same day", async () => {
+    const day = daysFromNow(3);
+
+    mockAgenda({
+      tasks: [
+        {
+          id: "task-1",
+          title: "Send report",
+          status: "TODO",
+          priority: "LOW",
+          dueDate: day.toISOString(),
+          project: { id: "project-1", title: "Work" },
+        },
+      ],
+      events: [
+        {
+          id: "event-1",
+          title: "Parents evening",
+          location: null,
+          startsAt: day.toISOString(),
+          endsAt: daysFromNow(3, 11).toISOString(),
+          allDay: false,
+          color: "#2F6049",
+        },
+      ],
+    });
+
+    renderPlanningPage("upcoming");
+
+    const eventHeading = await screen.findByRole("heading", {
+      name: "Parents evening",
+    });
+    const group = eventHeading.closest("section");
+
+    expect(group).toContainElement(
+      screen.getByRole("heading", { name: "Send report" }),
+    );
+    expect(group.querySelector("header > span")).toHaveTextContent("2");
+  });
+
+  it("shows the error state when events fail to load", async () => {
+    apiRequest.mockImplementation((path) =>
+      path.startsWith("/api/events?")
+        ? Promise.reject(new Error("Network error"))
+        : Promise.resolve({ data: { tasks: [] } }),
+    );
+
+    renderPlanningPage("upcoming");
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Your agenda could not be loaded.",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("updates a task status from the planning list", async () => {
@@ -104,6 +205,10 @@ describe("Planning pages", () => {
             ],
           },
         });
+      }
+
+      if (path.startsWith("/api/events?")) {
+        return Promise.resolve({ data: { events: [] } });
       }
 
       if (

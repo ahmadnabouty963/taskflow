@@ -15,6 +15,11 @@ const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
   month: "short",
 });
 
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 const statuses = [
   { value: "TODO", label: "To do" },
   { value: "IN_PROGRESS", label: "In progress" },
@@ -43,10 +48,31 @@ function priorityLabel(priority) {
   return priority.charAt(0) + priority.slice(1).toLowerCase();
 }
 
+function eventTimeLabel(event) {
+  if (event.allDay) {
+    return "All day";
+  }
+
+  return (
+    timeFormatter.format(new Date(event.startsAt)) +
+    "–" +
+    timeFormatter.format(new Date(event.endsAt))
+  );
+}
+
+function byStartTime(first, second) {
+  if (first.allDay !== second.allDay) {
+    return first.allDay ? -1 : 1;
+  }
+
+  return new Date(first.startsAt) - new Date(second.startsAt);
+}
+
 export function PlanningPage({ mode }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
+  const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
@@ -64,28 +90,40 @@ export function PlanningPage({ mode }) {
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadTasks() {
+    async function loadAgenda() {
       setStatus("loading");
       setError("");
 
-      const query = new URLSearchParams({
+      const taskQuery = new URLSearchParams({
         excludeStatus: "DONE",
         limit: "100",
       });
+      const eventQuery = new URLSearchParams();
 
       if (mode === "today") {
-        query.set("from", new Date(0).toISOString());
-        query.set("to", tomorrowStart.toISOString());
+        taskQuery.set("from", new Date(0).toISOString());
+        taskQuery.set("to", tomorrowStart.toISOString());
+        eventQuery.set("from", todayStart.toISOString());
+        eventQuery.set("to", tomorrowStart.toISOString());
       } else {
-        query.set("from", tomorrowStart.toISOString());
-        query.set("to", addDays(tomorrowStart, 7).toISOString());
+        const rangeEnd = addDays(tomorrowStart, 7).toISOString();
+        taskQuery.set("from", tomorrowStart.toISOString());
+        taskQuery.set("to", rangeEnd);
+        eventQuery.set("from", tomorrowStart.toISOString());
+        eventQuery.set("to", rangeEnd);
       }
 
       try {
-        const result = await apiRequest("/api/tasks?" + query.toString(), {
-          signal: controller.signal,
-        });
-        setTasks(result.data.tasks);
+        const [taskResult, eventResult] = await Promise.all([
+          apiRequest("/api/tasks?" + taskQuery.toString(), {
+            signal: controller.signal,
+          }),
+          apiRequest("/api/events?" + eventQuery.toString(), {
+            signal: controller.signal,
+          }),
+        ]);
+        setTasks(taskResult.data.tasks);
+        setEvents(eventResult.data.events);
         setStatus("success");
       } catch (requestError) {
         if (requestError.name !== "AbortError") {
@@ -95,12 +133,14 @@ export function PlanningPage({ mode }) {
       }
     }
 
-    loadTasks();
+    loadAgenda();
 
     return () => controller.abort();
-  }, [mode, reloadKey, tomorrowStart]);
+  }, [mode, reloadKey, todayStart, tomorrowStart]);
 
-  const taskGroups = useMemo(() => {
+  const agendaGroups = useMemo(() => {
+    const sortedEvents = [...events].sort(byStartTime);
+
     if (mode === "today") {
       const overdue = tasks.filter(
         (task) => new Date(task.dueDate) < todayStart,
@@ -110,32 +150,58 @@ export function PlanningPage({ mode }) {
       );
 
       return [
-        ...(overdue.length > 0
-          ? [{ key: "overdue", label: "Overdue", tasks: overdue }]
+        ...(sortedEvents.length > 0
+          ? [
+              {
+                key: "events",
+                label: "Events today",
+                events: sortedEvents,
+                tasks: [],
+              },
+            ]
           : []),
-        { key: "today", label: "Today", tasks: dueToday },
+        ...(overdue.length > 0
+          ? [{ key: "overdue", label: "Overdue", events: [], tasks: overdue }]
+          : []),
+        ...(dueToday.length > 0
+          ? [{ key: "today", label: "Due today", events: [], tasks: dueToday }]
+          : []),
       ];
     }
 
     const groups = new Map();
 
-    for (const task of tasks) {
-      const date = startOfDay(new Date(task.dueDate));
-      const key = date.toISOString();
+    function groupFor(date) {
+      const day = startOfDay(date);
+      const key = day.toISOString();
 
       if (!groups.has(key)) {
         groups.set(key, {
           key,
-          label: dateFormatter.format(date),
+          day,
+          label: dateFormatter.format(day),
+          events: [],
           tasks: [],
         });
       }
 
-      groups.get(key).tasks.push(task);
+      return groups.get(key);
     }
 
-    return [...groups.values()];
-  }, [mode, tasks, todayStart]);
+    for (const event of sortedEvents) {
+      const startsAt = new Date(event.startsAt);
+      // Events that began before the range are listed on its first day.
+      groupFor(startsAt < tomorrowStart ? tomorrowStart : startsAt).events.push(
+        event,
+      );
+    }
+
+    for (const task of tasks) {
+      groupFor(new Date(task.dueDate)).tasks.push(task);
+    }
+
+    return [...groups.values()].sort((first, second) => first.day - second.day);
+  }, [events, mode, tasks, todayStart, tomorrowStart]);
 
   async function handleStatusChange(task, nextStatus) {
     const previousTasks = tasks;
@@ -183,7 +249,8 @@ export function PlanningPage({ mode }) {
   const description =
     mode === "today"
       ? "Focus on overdue work and everything due today."
-      : "See deadlines across every project for the next seven days.";
+      : "See events and deadlines across every project for the next seven days.";
+  const isEmpty = tasks.length === 0 && events.length === 0;
 
   return (
     <div className="workspace-shell">
@@ -252,7 +319,10 @@ export function PlanningPage({ mode }) {
           </div>
           <div className="planning-date">
             <span>{dateFormatter.format(new Date())}</span>
-            <strong>{tasks.length} open tasks</strong>
+            <strong>
+              {events.length} {events.length === 1 ? "event" : "events"} ·{" "}
+              {tasks.length} open {tasks.length === 1 ? "task" : "tasks"}
+            </strong>
           </div>
         </header>
 
@@ -264,13 +334,13 @@ export function PlanningPage({ mode }) {
 
         {status === "loading" && (
           <div className="board-loading" aria-live="polite">
-            Loading tasks...
+            Loading agenda...
           </div>
         )}
 
         {status === "error" && (
           <div className="content-error">
-            <h2>Tasks could not be loaded.</h2>
+            <h2>Your agenda could not be loaded.</h2>
             <button
               className="button button--ghost"
               onClick={() => setReloadKey((key) => key + 1)}
@@ -281,14 +351,14 @@ export function PlanningPage({ mode }) {
           </div>
         )}
 
-        {status === "success" && tasks.length === 0 && (
+        {status === "success" && isEmpty && (
           <div className="empty-state planning-empty">
             <span className="empty-state__number">✓</span>
             <h2>{mode === "today" ? "Nothing urgent" : "A clear week ahead"}</h2>
             <p>
               {mode === "today"
-                ? "You have no overdue tasks and nothing due today."
-                : "No open tasks are due during the next seven days."}
+                ? "You have no events, no overdue tasks and nothing due today."
+                : "No events or open tasks during the next seven days."}
             </p>
             <Link className="button button--dark" to="/app">
               Open projects
@@ -296,16 +366,47 @@ export function PlanningPage({ mode }) {
           </div>
         )}
 
-        {status === "success" && tasks.length > 0 && (
+        {status === "success" && !isEmpty && (
           <div className="planning-groups">
-            {taskGroups.map((group) => (
+            {agendaGroups.map((group) => (
               <section className="planning-group" key={group.key}>
                 <header>
                   <h2>{group.label}</h2>
-                  <span>{group.tasks.length}</span>
+                  <span>{group.events.length + group.tasks.length}</span>
                 </header>
 
                 <div className="planning-task-list">
+                  {group.events.map((event) => (
+                    <article
+                      className="planning-task planning-event"
+                      key={"event-" + event.id}
+                      style={{ "--event-color": event.color }}
+                    >
+                      <div className="planning-task__date">
+                        <span className="planning-event__badge">Event</span>
+                        <time dateTime={event.startsAt}>
+                          {eventTimeLabel(event)}
+                        </time>
+                      </div>
+
+                      <div className="planning-task__content">
+                        <h3>{event.title}</h3>
+                        {event.location && (
+                          <p className="planning-event__location">
+                            {event.location}
+                          </p>
+                        )}
+                      </div>
+
+                      <Link
+                        className="planning-event__link"
+                        to="/app/calendar"
+                      >
+                        Open calendar
+                      </Link>
+                    </article>
+                  ))}
+
                   {group.tasks.map((task) => (
                     <article className="planning-task" key={task.id}>
                       <div className="planning-task__date">

@@ -2551,6 +2551,39 @@ input:focus-visible {
   font-size: 0.78rem;
 }
 
+.planning-event {
+  box-shadow: inset 4px 0 0 var(--event-color, var(--accent));
+}
+
+.planning-event__badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--event-color, var(--accent));
+  background: color-mix(in srgb, var(--event-color, var(--accent)) 14%, transparent);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.planning-event__location {
+  overflow: hidden;
+  margin: 4px 0 0;
+  color: var(--text);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-event__link {
+  color: var(--text);
+  font-size: 0.78rem;
+  text-align: right;
+  text-decoration: none;
+}
+
+.planning-event__link:hover {
+  color: var(--accent);
+}
+
 .planning-empty {
   margin-top: 12px;
 }
