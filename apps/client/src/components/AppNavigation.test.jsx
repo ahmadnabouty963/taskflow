@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthContext } from "../context/auth-context.js";
+import { LanguageContext } from "../context/language-context.js";
+import { createLanguageValue } from "../test/language.js";
 import { AppNavigation } from "./AppNavigation.jsx";
 
 const authValue = {
@@ -66,5 +68,29 @@ describe("App navigation", () => {
     authValue.logout.mockResolvedValueOnce();
     await user.click(screen.getByRole("button", { name: "Log out" }));
     expect(await screen.findByText("Login page")).toBeInTheDocument();
+  });
+});
+
+describe("App navigation in German", () => {
+  it("shows German labels", () => {
+    render(
+      <AuthContext.Provider value={authValue}>
+        <LanguageContext.Provider value={createLanguageValue("de")}>
+          <MemoryRouter>
+            <AppNavigation active="today" />
+          </MemoryRouter>
+        </LanguageContext.Provider>
+      </AuthContext.Provider>,
+    );
+
+    const mobileNav = screen.getByRole("navigation", { name: "Mobile Navigation" });
+    expect(within(mobileNav).getAllByRole("link").map((link) => link.textContent)).toEqual([
+      "Projekte",
+      "Heute",
+      "Demnächst",
+      "Kalender",
+      "Konto",
+    ]);
+    expect(screen.getByRole("button", { name: "Abmelden" })).toBeInTheDocument();
   });
 });

@@ -1,9 +1,10 @@
 const writeRoles = ["OWNER", "ADMIN", "MEMBER"];
 const manageRoles = ["OWNER", "ADMIN"];
 
-export function calendarName(workspace) {
+export function calendarName(workspace, t) {
   if (!workspace) return "";
-  return workspace.type === "PERSONAL" ? "Personal" : workspace.name;
+  if (workspace.type !== "PERSONAL") return workspace.name;
+  return t ? t("calendar.personal") : "Personal";
 }
 
 export function writableCalendars(workspaces) {

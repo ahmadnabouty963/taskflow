@@ -1,3 +1,5 @@
+import { appTranslations } from "./app-translations.js";
+
 export const translations = {
   en: {
     "language.english": "English",
@@ -149,6 +151,7 @@ export const translations = {
     "page.calendar": "Calendar — Ordanly",
     "page.settings": "Settings — Ordanly",
     "page.notFound": "Page not found — Ordanly",
+    ...appTranslations.en,
   },
   de: {
     "language.english": "Englisch",
@@ -300,8 +303,13 @@ export const translations = {
     "page.calendar": "Kalender — Ordanly",
     "page.settings": "Einstellungen — Ordanly",
     "page.notFound": "Seite nicht gefunden — Ordanly",
+    ...appTranslations.de,
   },
 };
+
+export function localeFor(language) {
+  return language === "de" ? "de-DE" : "en-GB";
+}
 
 export function translate(language, key, variables = {}) {
   const template = translations[language]?.[key] ?? translations.en[key] ?? key;

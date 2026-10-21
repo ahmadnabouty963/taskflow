@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 
 export function WorkspaceDialog({ onClose, onSaved }) {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,21 +42,21 @@ export function WorkspaceDialog({ onClose, onSaved }) {
       >
         <header className="dialog-header">
           <div>
-            <p className="eyebrow">Team workspace</p>
-            <h2 id="workspace-dialog-title">Create a shared workspace</h2>
+            <p className="eyebrow">{t("workspaceDialog.eyebrow")}</p>
+            <h2 id="workspace-dialog-title">{t("workspaceDialog.title")}</h2>
           </div>
-          <button aria-label="Close dialog" className="dialog-close" disabled={isSubmitting} onClick={onClose} type="button">×</button>
+          <button aria-label={t("common.closeDialog")} className="dialog-close" disabled={isSubmitting} onClick={onClose} type="button">×</button>
         </header>
         <form className="dialog-form" onSubmit={handleSubmit}>
           {error ? <div className="form-message form-message--error" role="alert">{error}</div> : null}
           <label className="form-field">
-            <span>Workspace name</span>
-            <input autoFocus maxLength="80" minLength="2" onChange={(event) => setName(event.target.value)} placeholder="For example: Product team" required value={name} />
+            <span>{t("workspaceDialog.name")}</span>
+            <input autoFocus maxLength="80" minLength="2" onChange={(event) => setName(event.target.value)} placeholder={t("workspaceDialog.placeholder")} required value={name} />
           </label>
-          <p className="workspace-dialog-note">You become the owner. Add members and choose their roles from workspace settings.</p>
+          <p className="workspace-dialog-note">{t("workspaceDialog.note")}</p>
           <footer className="dialog-actions">
-            <button className="button button--ghost" disabled={isSubmitting} onClick={onClose} type="button">Cancel</button>
-            <button className="button button--dark" disabled={isSubmitting} type="submit">{isSubmitting ? "Creating..." : "Create workspace"}</button>
+            <button className="button button--ghost" disabled={isSubmitting} onClick={onClose} type="button">{t("common.cancel")}</button>
+            <button className="button button--dark" disabled={isSubmitting} type="submit">{isSubmitting ? t("common.creating") : t("workspaceDialog.submit")}</button>
           </footer>
         </form>
       </section>

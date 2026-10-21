@@ -1,15 +1,17 @@
 import { Navigate, useLocation } from "react-router";
 import { useAuth } from "../context/auth-context.js";
+import { useLanguage } from "../context/language-context.js";
 
 export function ProtectedRoute({ children }) {
   const { user, isLoading } = useAuth();
   const location = useLocation();
+  const { t } = useLanguage();
 
   if (isLoading) {
     return (
       <main className="loading-screen" aria-live="polite">
         <div className="loading-mark">O</div>
-        <p>Loading your workspace...</p>
+        <p>{t("protected.loading")}</p>
       </main>
     );
   }

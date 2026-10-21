@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthContext } from "../context/auth-context.js";
+import { LanguageContext } from "../context/language-context.js";
+import { createLanguageValue } from "../test/language.js";
 import { apiRequest } from "../lib/api.js";
 import { CalendarPage } from "./CalendarPage.jsx";
 
@@ -104,5 +106,14 @@ describe("Calendar", () => {
     expect(await screen.findByRole("region", { name: "Week calendar" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Next period" }));
     await waitFor(() => expect(apiRequest.mock.calls.filter(([path]) => path.startsWith("/api/events?")).length).toBeGreaterThanOrEqual(2));
+  });
+
+  it("shows the calendar in German", async () => {
+    render(<AuthContext.Provider value={authValue}><LanguageContext.Provider value={createLanguageValue("de")}><MemoryRouter><CalendarPage /></MemoryRouter></LanguageContext.Provider></AuthContext.Provider>);
+    expect(await screen.findByText("Teacher meeting")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Kalender" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Woche" })).toBeInTheDocument();
+    expect(await screen.findByRole("checkbox", { name: "Persönlich" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Monatskalender" })).toBeInTheDocument();
   });
 });

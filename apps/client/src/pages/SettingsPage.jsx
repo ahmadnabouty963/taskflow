@@ -80,7 +80,7 @@ export function SettingsPage() {
     if (normalizedName.length < 2) {
       setProfileStatus({
         type: "error",
-        message: "Name must contain at least 2 characters.",
+        message: t("settings.nameTooShort"),
       });
       return;
     }
@@ -92,7 +92,7 @@ export function SettingsPage() {
       setName(normalizedName);
       setProfileStatus({
         type: "success",
-        message: "Profile updated successfully.",
+        message: t("settings.profileSaved"),
       });
     } catch (error) {
       setProfileStatus({ type: "error", message: error.message });
@@ -117,7 +117,7 @@ export function SettingsPage() {
     if (passwords.newPassword !== passwords.confirmPassword) {
       setPasswordStatus({
         type: "error",
-        message: "The new passwords do not match.",
+        message: t("settings.passwordMismatch"),
       });
       return;
     }
@@ -125,7 +125,7 @@ export function SettingsPage() {
     if (passwords.newPassword.length < 8) {
       setPasswordStatus({
         type: "error",
-        message: "The new password must contain at least 8 characters.",
+        message: t("settings.passwordTooShort"),
       });
       return;
     }
@@ -140,7 +140,7 @@ export function SettingsPage() {
       setPasswords(emptyPasswordForm);
       setPasswordStatus({
         type: "success",
-        message: "Password changed. Other devices have been signed out.",
+        message: t("settings.passwordChanged"),
       });
     } catch (error) {
       setPasswordStatus({ type: "error", message: error.message });
@@ -159,10 +159,13 @@ export function SettingsPage() {
         type: "success",
         message:
           deletedSessions === 0
-            ? "No other active sessions were found."
-            : `Signed out ${deletedSessions} other session${
-                deletedSessions === 1 ? "" : "s"
-              }.`,
+            ? t("settings.noOtherSessions")
+            : t(
+                deletedSessions === 1
+                  ? "settings.signedOutOthers.one"
+                  : "settings.signedOutOthers.other",
+                { count: deletedSessions },
+              ),
       });
     } catch (error) {
       setSessionsStatus({ type: "error", message: error.message });
@@ -214,10 +217,10 @@ export function SettingsPage() {
       <main className="workspace-main settings-main">
         <header className="workspace-header settings-header">
           <div>
-            <p className="eyebrow">Personal settings</p>
-            <h1>Account</h1>
+            <p className="eyebrow">{t("settings.eyebrow")}</p>
+            <h1>{t("settings.title")}</h1>
             <p className="settings-header__copy">
-              Keep your profile, password and active sessions under control.
+              {t("settings.copy")}
             </p>
           </div>
         </header>
@@ -237,14 +240,14 @@ export function SettingsPage() {
 
           <section className="settings-card" aria-labelledby="profile-title">
             <header>
-              <p className="eyebrow">Profile</p>
-              <h2 id="profile-title">Personal information</h2>
-              <p>Your email address is used to identify your account.</p>
+              <p className="eyebrow">{t("settings.profileEyebrow")}</p>
+              <h2 id="profile-title">{t("settings.profileTitle")}</h2>
+              <p>{t("settings.profileCopy")}</p>
             </header>
 
             <form className="settings-form" onSubmit={handleProfileSubmit}>
               <label className="form-field">
-                <span>Name</span>
+                <span>{t("settings.name")}</span>
                 <input
                   autoComplete="name"
                   maxLength="80"
@@ -257,9 +260,9 @@ export function SettingsPage() {
               </label>
 
               <label className="form-field">
-                <span>Email</span>
+                <span>{t("settings.email")}</span>
                 <input disabled type="email" value={user.email} />
-                <small>Email changes are not available yet.</small>
+                <small>{t("settings.emailLocked")}</small>
               </label>
 
               {profileStatus.message && (
@@ -277,7 +280,7 @@ export function SettingsPage() {
                   disabled={isSavingProfile || name.trim() === user.name}
                   type="submit"
                 >
-                  {isSavingProfile ? "Saving..." : "Save changes"}
+                  {isSavingProfile ? t("common.saving") : t("common.saveChanges")}
                 </button>
               </div>
             </form>
@@ -285,14 +288,14 @@ export function SettingsPage() {
 
           <section className="settings-card" aria-labelledby="password-title">
             <header>
-              <p className="eyebrow">Security</p>
-              <h2 id="password-title">Change password</h2>
-              <p>Use at least 8 characters and avoid reused passwords.</p>
+              <p className="eyebrow">{t("settings.securityEyebrow")}</p>
+              <h2 id="password-title">{t("settings.passwordTitle")}</h2>
+              <p>{t("settings.passwordCopy")}</p>
             </header>
 
             <form className="settings-form" onSubmit={handlePasswordSubmit}>
               <label className="form-field">
-                <span>Current password</span>
+                <span>{t("settings.currentPassword")}</span>
                 <input
                   autoComplete="current-password"
                   name="currentPassword"
@@ -304,7 +307,7 @@ export function SettingsPage() {
               </label>
 
               <label className="form-field">
-                <span>New password</span>
+                <span>{t("settings.newPassword")}</span>
                 <input
                   autoComplete="new-password"
                   minLength="8"
@@ -317,7 +320,7 @@ export function SettingsPage() {
               </label>
 
               <label className="form-field">
-                <span>Confirm new password</span>
+                <span>{t("settings.confirmPassword")}</span>
                 <input
                   autoComplete="new-password"
                   minLength="8"
@@ -344,7 +347,7 @@ export function SettingsPage() {
                   disabled={isChangingPassword}
                   type="submit"
                 >
-                  {isChangingPassword ? "Changing..." : "Change password"}
+                  {isChangingPassword ? t("settings.changing") : t("settings.passwordTitle")}
                 </button>
               </div>
             </form>
@@ -355,12 +358,9 @@ export function SettingsPage() {
             aria-labelledby="sessions-title"
           >
             <header>
-              <p className="eyebrow">Sessions</p>
-              <h2 id="sessions-title">Signed-in devices</h2>
-              <p>
-                End every other active session while keeping this device signed
-                in.
-              </p>
+              <p className="eyebrow">{t("settings.sessionsEyebrow")}</p>
+              <h2 id="sessions-title">{t("settings.sessionsTitle")}</h2>
+              <p>{t("settings.sessionsCopy")}</p>
             </header>
 
             {sessionsStatus.message && (
@@ -374,8 +374,8 @@ export function SettingsPage() {
 
             <div className="settings-action-row">
               <div>
-                <strong>Other sessions</strong>
-                <span>Your current browser will remain connected.</span>
+                <strong>{t("settings.otherSessions")}</strong>
+                <span>{t("settings.otherSessionsCopy")}</span>
               </div>
               <button
                 className="button button--ghost"
@@ -384,15 +384,15 @@ export function SettingsPage() {
                 type="button"
               >
                 {isLoggingOutOthers
-                  ? "Signing out..."
-                  : "Log out other devices"}
+                  ? t("settings.signingOut")
+                  : t("settings.logoutOthers")}
               </button>
             </div>
 
             <div className="settings-action-row">
               <div>
-                <strong>This device</strong>
-                <span>Sign out of Ordanly in this browser.</span>
+                <strong>{t("settings.thisDevice")}</strong>
+                <span>{t("settings.thisDeviceCopy")}</span>
               </div>
               <button
                 className="button button--ghost"
@@ -400,7 +400,7 @@ export function SettingsPage() {
                 onClick={handleLogout}
                 type="button"
               >
-                {isLoggingOut ? "Signing out..." : "Log out of this device"}
+                {isLoggingOut ? t("settings.signingOut") : t("settings.logoutThis")}
               </button>
             </div>
           </section>
@@ -410,25 +410,22 @@ export function SettingsPage() {
             aria-labelledby="danger-title"
           >
             <header>
-              <p className="eyebrow eyebrow--danger">Danger zone</p>
-              <h2 id="danger-title">Delete account</h2>
-              <p>
-                Permanently remove your account, projects and tasks. This cannot
-                be undone.
-              </p>
+              <p className="eyebrow eyebrow--danger">{t("settings.dangerEyebrow")}</p>
+              <h2 id="danger-title">{t("settings.deleteTitle")}</h2>
+              <p>{t("settings.deleteCopy")}</p>
             </header>
 
             <div className="settings-action-row">
               <div>
-                <strong>Permanent deletion</strong>
-                <span>Your password is required before deletion.</span>
+                <strong>{t("settings.permanent")}</strong>
+                <span>{t("settings.permanentCopy")}</span>
               </div>
               <button
                 className="button button--danger"
                 onClick={() => setDeleteDialogOpen(true)}
                 type="button"
               >
-                Delete account
+                {t("settings.deleteTitle")}
               </button>
             </div>
           </section>
@@ -452,11 +449,11 @@ export function SettingsPage() {
           >
             <header className="dialog-header">
               <div>
-                <p className="eyebrow eyebrow--danger">Permanent action</p>
-                <h2 id="delete-account-title">Delete your account?</h2>
+                <p className="eyebrow eyebrow--danger">{t("settings.permanentAction")}</p>
+                <h2 id="delete-account-title">{t("settings.deleteQuestion")}</h2>
               </div>
               <button
-                aria-label="Close dialog"
+                aria-label={t("common.closeDialog")}
                 className="dialog-close"
                 disabled={isDeleting}
                 onClick={closeDeleteDialog}
@@ -467,13 +464,12 @@ export function SettingsPage() {
             </header>
 
             <p className="dialog-message">
-              All projects and tasks will be removed permanently. Enter your
-              password to confirm.
+              {t("settings.deleteDialogCopy")}
             </p>
 
             <form className="dialog-form" onSubmit={handleDeleteAccount}>
               <label className="form-field">
-                <span>Password</span>
+                <span>{t("common.password")}</span>
                 <input
                   autoComplete="current-password"
                   onChange={(event) => setDeletePassword(event.target.value)}
@@ -496,14 +492,14 @@ export function SettingsPage() {
                   onClick={closeDeleteDialog}
                   type="button"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
                 <button
                   className="button button--danger"
                   disabled={isDeleting || !deletePassword}
                   type="submit"
                 >
-                  {isDeleting ? "Deleting..." : "Delete permanently"}
+                  {isDeleting ? t("common.deleting") : t("settings.deletePermanently")}
                 </button>
               </footer>
             </form>

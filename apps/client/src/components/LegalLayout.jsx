@@ -1,16 +1,19 @@
 import { BrandLogo } from "./BrandLogo.jsx";
 import { Link } from "react-router";
+import { useLanguage } from "../context/language-context.js";
 
 export function LegalLayout({ eyebrow, title, intro, children }) {
+  const { t } = useLanguage();
+
   return (
     <div className="legal-page">
       <header className="legal-header">
-        <Link className="brand" to="/" aria-label="Ordanly home">
+        <Link className="brand" to="/" aria-label={t("invitation.home")}>
           <BrandLogo />
         </Link>
 
         <Link className="text-link" to="/">
-          Back to homepage
+          {t("legal.back")}
         </Link>
       </header>
 
@@ -33,7 +36,7 @@ export function LegalLayout({ eyebrow, title, intro, children }) {
       <footer className="site-footer legal-footer">
         <span>© 2026 Ordanly</span>
 
-        <nav className="legal-links" aria-label="Legal information">
+        <nav className="legal-links" aria-label={t("legal.label")}>
           <Link to="/impressum">Impressum</Link>
           <Link to="/datenschutz">Datenschutz</Link>
         </nav>

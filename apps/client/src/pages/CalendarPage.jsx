@@ -6,13 +6,9 @@ import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { EventDialog } from "../components/EventDialog.jsx";
 import { TaskDialog } from "../components/TaskDialog.jsx";
 import { useAuth } from "../context/auth-context.js";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 import { calendarName, canEditEvent, isSharedEvent, writableCalendars } from "../lib/calendars.js";
-
-const monthFormatter = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
-const dayFormatter = new Intl.DateTimeFormat(undefined, { weekday: "short" });
-const weekRangeFormatter = new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short" });
-const timeFormatter = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" });
 
 function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -52,6 +48,11 @@ function groupByDay(items, getDate) {
 
 export function CalendarPage() {
   const { user } = useAuth();
+  const { locale, t } = useLanguage();
+  const monthFormatter = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" });
+  const dayFormatter = new Intl.DateTimeFormat(locale, { weekday: "short" });
+  const weekRangeFormatter = new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short" });
+  const timeFormatter = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" });
   const [calendarView, setCalendarView] = useState("month");
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [tasks, setTasks] = useState([]);
@@ -78,10 +79,6 @@ export function CalendarPage() {
     const start = startOfWeek(monthStart);
     return { start, end: addDays(start, 42), days: Array.from({ length: 42 }, (_, index) => addDays(start, index)) };
   }, [anchorDate, calendarView]);
-
-  useEffect(() => {
-    document.title = "Calendar — Ordanly";
-  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -178,42 +175,42 @@ export function CalendarPage() {
 
       <main className="workspace-main calendar-main">
         <header className="workspace-header calendar-header">
-          <div><p className="eyebrow">Tasks and appointments</p><h1>Calendar</h1><p>Select a day to create a project task or an independent calendar event.</p></div>
-          <div className="calendar-view-toggle" role="group" aria-label="Calendar view">
-            <button aria-pressed={calendarView === "month"} className={calendarView === "month" ? "calendar-toggle--active" : ""} onClick={() => setCalendarView("month")} type="button">Month</button>
-            <button aria-pressed={calendarView === "week"} className={calendarView === "week" ? "calendar-toggle--active" : ""} onClick={() => setCalendarView("week")} type="button">Week</button>
+          <div><p className="eyebrow">{t("calendar.eyebrow")}</p><h1>{t("nav.calendar")}</h1><p>{t("calendar.copy")}</p></div>
+          <div className="calendar-view-toggle" role="group" aria-label={t("calendar.viewLabel")}>
+            <button aria-pressed={calendarView === "month"} className={calendarView === "month" ? "calendar-toggle--active" : ""} onClick={() => setCalendarView("month")} type="button">{t("calendar.month")}</button>
+            <button aria-pressed={calendarView === "week"} className={calendarView === "week" ? "calendar-toggle--active" : ""} onClick={() => setCalendarView("week")} type="button">{t("calendar.week")}</button>
           </div>
         </header>
 
-        <section className="calendar-toolbar" aria-label="Calendar controls">
-          <div className="calendar-toolbar__title"><span className="calendar-toolbar__label">{calendarView === "month" ? "Month overview" : "Week overview"}</span><h2>{visibleTitle}</h2></div>
+        <section className="calendar-toolbar" aria-label={t("calendar.controlsLabel")}>
+          <div className="calendar-toolbar__title"><span className="calendar-toolbar__label">{calendarView === "month" ? t("calendar.monthOverview") : t("calendar.weekOverview")}</span><h2>{visibleTitle}</h2></div>
           <div className="calendar-toolbar__actions">
-            <button aria-label="Previous period" onClick={() => movePeriod(-1)} type="button">Previous</button>
-            <button className="calendar-today-button" onClick={() => setAnchorDate(new Date())} type="button">Today</button>
-            <button aria-label="Next period" onClick={() => movePeriod(1)} type="button">Next</button>
+            <button aria-label={t("calendar.previousLabel")} onClick={() => movePeriod(-1)} type="button">{t("calendar.previous")}</button>
+            <button className="calendar-today-button" onClick={() => setAnchorDate(new Date())} type="button">{t("nav.today")}</button>
+            <button aria-label={t("calendar.nextLabel")} onClick={() => movePeriod(1)} type="button">{t("calendar.next")}</button>
           </div>
-          <p className="calendar-toolbar__meta"><strong>{tasks.length}</strong> tasks · <strong>{shownEvents.length}</strong> events</p>
+          <p className="calendar-toolbar__meta"><strong>{tasks.length}</strong> {t("calendar.tasks")} · <strong>{shownEvents.length}</strong> {t("calendar.events")}</p>
         </section>
 
         {workspaces.length > 1 && (
-          <section className="calendar-filters" aria-label="Calendars">
-            <span className="calendar-filters__label">Calendars</span>
+          <section className="calendar-filters" aria-label={t("calendar.calendars")}>
+            <span className="calendar-filters__label">{t("calendar.calendars")}</span>
             {workspaces.map((workspace) => (
               <label className="calendar-filter" key={workspace.id}>
                 <input checked={!hiddenWorkspaceIds.includes(workspace.id)} onChange={() => toggleCalendar(workspace.id)} type="checkbox" />
-                <span>{calendarName(workspace)}</span>
+                <span>{calendarName(workspace, t)}</span>
               </label>
             ))}
           </section>
         )}
 
         {error && <div className="form-message form-message--error" role="alert">{error}</div>}
-        {status === "loading" && <div className="board-loading" aria-live="polite">Loading calendar...</div>}
-        {status === "error" && <div className="content-error"><h2>Calendar could not be loaded.</h2><button className="button button--ghost" onClick={() => setReloadKey((key) => key + 1)} type="button">Try again</button></div>}
+        {status === "loading" && <div className="board-loading" aria-live="polite">{t("calendar.loading")}</div>}
+        {status === "error" && <div className="content-error"><h2>{t("calendar.loadError")}</h2><button className="button button--ghost" onClick={() => setReloadKey((key) => key + 1)} type="button">{t("common.tryAgain")}</button></div>}
 
         {status === "success" && (
           <div className="calendar-scroll">
-            <section aria-label={calendarView === "month" ? "Month calendar" : "Week calendar"} className={"calendar-grid" + (calendarView === "week" ? " calendar-grid--week" : "")}>
+            <section aria-label={calendarView === "month" ? t("calendar.monthLabel") : t("calendar.weekLabel")} className={"calendar-grid" + (calendarView === "week" ? " calendar-grid--week" : "")}>
               {range.days.slice(0, 7).map((day) => <div className="calendar-weekday" key={"weekday-" + dateKey(day)}>{dayFormatter.format(day)}</div>)}
               {range.days.map((day) => {
                 const key = dateKey(day);
@@ -226,16 +223,16 @@ export function CalendarPage() {
                 const outsideMonth = calendarView === "month" && day.getMonth() !== anchorDate.getMonth();
                 return (
                   <article className={"calendar-day calendar-day--interactive" + (outsideMonth ? " calendar-day--outside" : "") + (isSameDay(day, new Date()) ? " calendar-day--today" : "")} key={key} onClick={(clickEvent) => { if (!clickEvent.target.closest("a, button")) { setSelectedDate(key); setCreateMode("choose"); } }}>
-                    <header><button aria-label={"Add entry on " + key} className="calendar-day__date-button" onClick={() => { setSelectedDate(key); setCreateMode("choose"); }} type="button"><time dateTime={key}>{day.getDate()}</time>{calendarView === "week" && <span className="calendar-day__weekday">{dayFormatter.format(day)}</span>}<span className="calendar-day__add-label">Add</span></button></header>
+                    <header><button aria-label={t("calendar.addEntry", { date: key })} className="calendar-day__date-button" onClick={() => { setSelectedDate(key); setCreateMode("choose"); }} type="button"><time dateTime={key}>{day.getDate()}</time>{calendarView === "week" && <span className="calendar-day__weekday">{dayFormatter.format(day)}</span>}<span className="calendar-day__add-label">{t("calendar.add")}</span></button></header>
                     <div className="calendar-day__tasks">
-                      {calendarView === "week" && dayEvents.length + dayTasks.length === 0 && <span className="calendar-day__empty">No entries</span>}
+                      {calendarView === "week" && dayEvents.length + dayTasks.length === 0 && <span className="calendar-day__empty">{t("calendar.noEntries")}</span>}
                       {visibleEvents.map((event) => (
                         <button className="calendar-event" key={event.id} onClick={() => setEditingEvent(event)} style={{ "--calendar-event-color": event.color }} type="button">
-                          <span>{event.title}</span><small>{event.allDay ? "All day" : timeFormatter.format(new Date(event.startsAt))}{event.location ? ` · ${event.location}` : ""}{isSharedEvent(event) && event.owner ? ` · ${event.owner.name}` : ""}</small>
+                          <span>{event.title}</span><small>{event.allDay ? t("common.allDay") : timeFormatter.format(new Date(event.startsAt))}{event.location ? ` · ${event.location}` : ""}{isSharedEvent(event) && event.owner ? ` · ${event.owner.name}` : ""}</small>
                         </button>
                       ))}
                       {visibleTasks.map((task) => <Link className={"calendar-task calendar-task--" + task.status.toLowerCase().replace("_", "-")} key={task.id} style={{ "--calendar-project-color": task.project.color ?? "var(--green)" }} title={task.title + " — " + task.project.title} to={"/app/projects/" + task.project.id}><span>{task.title}</span>{calendarView === "week" && <small>{task.project.title}</small>}</Link>)}
-                      {hiddenCount > 0 && <span className="calendar-day__more">+{hiddenCount} more</span>}
+                      {hiddenCount > 0 && <span className="calendar-day__more">{t("calendar.more", { count: hiddenCount })}</span>}
                     </div>
                   </article>
                 );
@@ -249,7 +246,7 @@ export function CalendarPage() {
       {selectedDate && createMode === "task" && <TaskDialog initialDueDate={selectedDate} onClose={closeCreateFlow} onSaved={handleTaskCreated} projects={projects} />}
       {selectedDate && createMode === "event" && <EventDialog initialDate={selectedDate} onClose={closeCreateFlow} onRequestDelete={() => {}} onSaved={handleEventSaved} workspaces={eventCalendars} />}
       {editingEvent && <EventDialog event={editingEvent} initialDate={dateKey(new Date(editingEvent.startsAt))} onClose={() => setEditingEvent(null)} onRequestDelete={(event) => { setEditingEvent(null); setEventToDelete(event); }} onSaved={handleEventSaved} readOnly={!canEditEvent(editingEvent, user.id, workspaces)} workspaces={eventCalendars} />}
-      {eventToDelete && <ConfirmDialog confirmLabel="Delete event" errorMessage={deleteError} isWorking={isDeleting} message={`“${eventToDelete.title}” will be permanently deleted.`} onCancel={() => { setEventToDelete(null); setDeleteError(""); }} onConfirm={handleEventDeletion} title="Delete this event?" />}
+      {eventToDelete && <ConfirmDialog confirmLabel={t("calendar.deleteConfirm")} errorMessage={deleteError} isWorking={isDeleting} message={t("calendar.deleteMessage", { title: eventToDelete.title })} onCancel={() => { setEventToDelete(null); setDeleteError(""); }} onConfirm={handleEventDeletion} title={t("calendar.deleteTitle")} />}
     </div>
   );
 }

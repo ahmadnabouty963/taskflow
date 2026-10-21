@@ -6,28 +6,27 @@ import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { TaskDialog } from "../components/TaskDialog.jsx";
 import { TaskDetailsPanel } from "../components/TaskDetailsPanel.jsx";
 import { TaskCard } from "../components/TaskCard.jsx";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 
 const taskColumns = [
   {
     status: "TODO",
-    label: "To do",
     number: "01",
   },
   {
     status: "IN_PROGRESS",
-    label: "In progress",
     number: "02",
   },
   {
     status: "DONE",
-    label: "Done",
     number: "03",
   },
 ];
 
 export function ProjectPage() {
   const { projectId } = useParams();
+  const { t } = useLanguage();
 
   const [project, setProject] = useState(null);
   const [projectStatus, setProjectStatus] = useState("loading");
@@ -365,7 +364,7 @@ export function ProjectPage() {
     return (
       <main className="loading-screen" aria-live="polite">
         <div className="loading-mark">O</div>
-        <p>Loading project...</p>
+        <p>{t("project.loading")}</p>
       </main>
     );
   }
@@ -378,11 +377,11 @@ export function ProjectPage() {
         </Link>
 
         <div className="content-error" role="alert">
-          <p className="eyebrow eyebrow--danger">Unable to open project</p>
-          <h2>Project unavailable.</h2>
+          <p className="eyebrow eyebrow--danger">{t("project.openError")}</p>
+          <h2>{t("project.unavailable")}</h2>
           <p>{projectError}</p>
           <Link className="button button--dark" to="/app">
-            Back to projects
+            {t("project.back")}
           </Link>
         </div>
       </main>
@@ -395,15 +394,15 @@ export function ProjectPage() {
 
       <main className="workspace-main workspace-main--project">
         <Link className="back-link" to="/app">
-          ← All projects
+          ← {t("planning.eyebrow")}
         </Link>
 
         <header className="project-header">
           <div>
-            <p className="eyebrow">Project workspace</p>
+            <p className="eyebrow">{t("project.eyebrow")}</p>
             <h1>{project.title}</h1>
             <p>
-              {project.description || "No project description has been added."}
+              {project.description || t("project.noDescription")}
             </p>
           </div>
 
@@ -412,29 +411,28 @@ export function ProjectPage() {
             onClick={() => openCreateDialog()}
             type="button"
           >
-            New task
+            {t("taskDialog.eyebrowNew")}
           </button>
         </header>
 
         {projectProgress.status === "success" && (
           <section
-            aria-label="Project completion"
+            aria-label={t("project.completion")}
             className="project-progress"
           >
             <div className="project-progress__summary">
               <div>
-                <span>Project progress</span>
-                <strong>{completionPercentage}% complete</strong>
+                <span>{t("project.progress")}</span>
+                <strong>{t("project.percentComplete", { percent: completionPercentage })}</strong>
               </div>
 
               <p>
-                {projectProgress.completed} of {projectProgress.total} tasks
-                completed
+                {t("project.completedCount", { completed: projectProgress.completed, total: projectProgress.total })}
               </p>
             </div>
 
             <div
-              aria-label="Project completion"
+              aria-label={t("project.completion")}
               aria-valuemax="100"
               aria-valuemin="0"
               aria-valuenow={completionPercentage}
@@ -452,49 +450,49 @@ export function ProjectPage() {
           </div>
         )}
 
-        <section className="task-filters" aria-label="Task filters">
+        <section className="task-filters" aria-label={t("project.filtersLabel")}>
           <label className="task-search">
-            <span className="visually-hidden">Search tasks</span>
+            <span className="visually-hidden">{t("project.search")}</span>
             <input
               name="search"
               onChange={handleFilterChange}
-              placeholder="Search tasks..."
+              placeholder={t("project.searchPlaceholder")}
               type="search"
               value={filters.search}
             />
           </label>
 
           <label>
-            <span className="visually-hidden">Filter by status</span>
+            <span className="visually-hidden">{t("project.filterStatus")}</span>
             <select
               name="status"
               onChange={handleFilterChange}
               value={filters.status}
             >
-              <option value="">All statuses</option>
-              <option value="TODO">To do</option>
-              <option value="IN_PROGRESS">In progress</option>
-              <option value="DONE">Done</option>
+              <option value="">{t("project.allStatuses")}</option>
+              <option value="TODO">{t("task.status.TODO")}</option>
+              <option value="IN_PROGRESS">{t("task.status.IN_PROGRESS")}</option>
+              <option value="DONE">{t("task.status.DONE")}</option>
             </select>
           </label>
 
           <label>
-            <span className="visually-hidden">Filter by priority</span>
+            <span className="visually-hidden">{t("project.filterPriority")}</span>
             <select
               name="priority"
               onChange={handleFilterChange}
               value={filters.priority}
             >
-              <option value="">All priorities</option>
-              <option value="LOW">Low priority</option>
-              <option value="MEDIUM">Medium priority</option>
-              <option value="HIGH">High priority</option>
+              <option value="">{t("project.allPriorities")}</option>
+              <option value="LOW">{t("project.priorityOption.LOW")}</option>
+              <option value="MEDIUM">{t("project.priorityOption.MEDIUM")}</option>
+              <option value="HIGH">{t("project.priorityOption.HIGH")}</option>
             </select>
           </label>
 
-          <label><span className="visually-hidden">Filter by responsible person</span><select aria-label="Filter by responsible person" name="assigneeId" onChange={handleFilterChange} value={filters.assigneeId}><option value="">All people</option>{taskOptions.members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></label>
+          <label><span className="visually-hidden">{t("project.filterPerson")}</span><select aria-label={t("project.filterPerson")} name="assigneeId" onChange={handleFilterChange} value={filters.assigneeId}><option value="">{t("project.allPeople")}</option>{taskOptions.members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></label>
 
-          <label><span className="visually-hidden">Filter by label</span><select aria-label="Filter by label" name="labelId" onChange={handleFilterChange} value={filters.labelId}><option value="">All labels</option>{taskOptions.labels.map((label) => <option key={label.id} value={label.id}>{label.name}</option>)}</select></label>
+          <label><span className="visually-hidden">{t("project.filterLabel")}</span><select aria-label={t("project.filterLabel")} name="labelId" onChange={handleFilterChange} value={filters.labelId}><option value="">{t("project.allLabels")}</option>{taskOptions.labels.map((label) => <option key={label.id} value={label.id}>{label.name}</option>)}</select></label>
 
           {filtersAreActive && (
             <button
@@ -502,18 +500,18 @@ export function ProjectPage() {
               onClick={clearFilters}
               type="button"
             >
-              Clear filters
+              {t("project.clearFilters")}
             </button>
           )}
 
-          <div className="view-toggle" role="group" aria-label="Task view">
+          <div className="view-toggle" role="group" aria-label={t("project.viewLabel")}>
             <button
               aria-pressed={viewMode === "board"}
               className={viewMode === "board" ? "view-toggle__active" : ""}
               onClick={() => setViewMode("board")}
               type="button"
             >
-              Board
+              {t("project.board")}
             </button>
             <button
               aria-pressed={viewMode === "list"}
@@ -521,7 +519,7 @@ export function ProjectPage() {
               onClick={() => setViewMode("list")}
               type="button"
             >
-              List
+              {t("project.list")}
             </button>
           </div>
         </section>
@@ -534,22 +532,22 @@ export function ProjectPage() {
 
         {tasksStatus === "error" && (
           <div className="content-error" role="alert">
-            <p className="eyebrow eyebrow--danger">Unable to load tasks</p>
-            <h2>Something went wrong.</h2>
+            <p className="eyebrow eyebrow--danger">{t("project.tasksError")}</p>
+            <h2>{t("errorBoundary.title")}</h2>
             <p>{tasksError}</p>
             <button
               className="button button--ghost"
               onClick={() => setReloadKey((key) => key + 1)}
               type="button"
             >
-              Try again
+              {t("common.tryAgain")}
             </button>
           </div>
         )}
 
         {tasksStatus === "loading" && (
           <div className="board-loading" aria-live="polite">
-            Loading tasks...
+            {t("project.loadingTasks")}
           </div>
         )}
 
@@ -557,20 +555,20 @@ export function ProjectPage() {
           tasks.length === 0 &&
           filtersAreActive && (
             <div className="filtered-empty-state">
-              <h2>No matching tasks</h2>
-              <p>Try changing or clearing the current filters.</p>
+              <h2>{t("project.noMatches")}</h2>
+              <p>{t("project.noMatchesCopy")}</p>
               <button
                 className="button button--ghost"
                 onClick={clearFilters}
                 type="button"
               >
-                Clear filters
+                {t("project.clearFilters")}
               </button>
             </div>
           )}
 
         {tasksStatus === "success" && viewMode === "board" && (
-          <section className="task-board" aria-label="Kanban board">
+          <section className="task-board" aria-label={t("project.boardLabel")}>
             {taskColumns.map((column) => (
               <article
                 className={`task-column${
@@ -586,7 +584,7 @@ export function ProjectPage() {
                 <header className="task-column__header">
                   <div>
                     <span>{column.number}</span>
-                    <h2>{column.label}</h2>
+                    <h2>{t(`task.status.${column.status}`)}</h2>
                   </div>
                   <span>{tasksByStatus[column.status].length}</span>
                 </header>
@@ -602,7 +600,7 @@ export function ProjectPage() {
                       onEdit={openEditDialog}
                       onOpenDetails={setDetailTask}
                       onStatusChange={moveTask}
-                      statusLabel={column.label}
+                      statusLabel={t(`task.status.${column.status}`)}
                       task={task}
                     />
                   ))}
@@ -613,7 +611,7 @@ export function ProjectPage() {
                       onClick={() => openCreateDialog(column.status)}
                       type="button"
                     >
-                      + Add a task
+                      {t("project.addTask")}
                     </button>
                   )}
                 </div>
@@ -623,7 +621,7 @@ export function ProjectPage() {
         )}
 
         {tasksStatus === "success" && viewMode === "list" && (
-          <section aria-label="Task list" className="task-list" role="list">
+          <section aria-label={t("project.listLabel")} className="task-list" role="list">
             {tasks.map((task) => (
               <TaskCard
                 isListView
@@ -635,10 +633,7 @@ export function ProjectPage() {
                 onEdit={openEditDialog}
                 onOpenDetails={setDetailTask}
                 onStatusChange={moveTask}
-                statusLabel={
-                  taskColumns.find((column) => column.status === task.status)
-                    ?.label ?? task.status
-                }
+                statusLabel={t(`task.status.${task.status}`)}
                 task={task}
               />
             ))}
@@ -669,16 +664,16 @@ export function ProjectPage() {
 
       {taskToDelete && (
         <ConfirmDialog
-          confirmLabel="Delete task"
+          confirmLabel={t("project.deleteConfirm")}
           errorMessage={deleteError}
           isWorking={isDeleting}
-          message={`“${taskToDelete.title}” will be permanently deleted.`}
+          message={t("calendar.deleteMessage", { title: taskToDelete.title })}
           onCancel={() => {
             setTaskToDelete(null);
             setDeleteError("");
           }}
           onConfirm={handleTaskDeletion}
-          title="Delete this task?"
+          title={t("project.deleteTitle")}
         />
       )}
     </div>

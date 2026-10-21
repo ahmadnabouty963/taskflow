@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 import { calendarName } from "../lib/calendars.js";
 
@@ -39,6 +40,7 @@ export function EventDialog({
   readOnly = false,
   workspaces = [],
 }) {
+  const { t } = useLanguage();
   const isEditing = Boolean(event?.id);
   const defaultWorkspace =
     workspaces.find((workspace) => workspace.type === "PERSONAL") ??
@@ -89,7 +91,7 @@ export function EventDialog({
       : toIso(form.date, form.endTime);
 
     if (new Date(endsAt) <= new Date(startsAt)) {
-      setError("End time must be after start time.");
+      setError(t("eventDialog.endAfterStart"));
       return;
     }
 
@@ -133,18 +135,18 @@ export function EventDialog({
       >
         <header className="dialog-header">
           <div>
-            <p className="eyebrow">{isEditing ? "Calendar event" : "New appointment"}</p>
+            <p className="eyebrow">{isEditing ? t("calendarEntry.event") : t("eventDialog.eyebrowNew")}</p>
             <h2 id="event-dialog-title">
-              {readOnly ? "Event details" : isEditing ? "Edit event" : "Create an event"}
+              {readOnly ? t("eventDialog.titleDetails") : isEditing ? t("eventDialog.titleEdit") : t("eventDialog.titleNew")}
             </h2>
             {isEditing && event.owner && (
               <p className="event-dialog__meta">
-                {calendarName(event.workspace)} · Created by {event.owner.name}
+                {t("eventDialog.meta", { calendar: calendarName(event.workspace, t), name: event.owner.name })}
               </p>
             )}
           </div>
           <button
-            aria-label="Close dialog"
+            aria-label={t("common.closeDialog")}
             className="dialog-close"
             disabled={isSubmitting}
             onClick={onClose}
@@ -158,18 +160,18 @@ export function EventDialog({
           {error && <div className="form-message form-message--error" role="alert">{error}</div>}
           {readOnly && (
             <p className="form-message">
-              Only the creator or a calendar admin can change this event.
+              {t("eventDialog.readOnly")}
             </p>
           )}
 
           <fieldset className="event-dialog__fields" disabled={readOnly}>
             {workspaces.length > 0 && !readOnly && (
               <label className="form-field">
-                <span>Calendar</span>
+                <span>{t("eventDialog.calendar")}</span>
                 <select name="workspaceId" onChange={handleChange} value={form.workspaceId}>
                   {workspaces.map((workspace) => (
                     <option key={workspace.id} value={workspace.id}>
-                      {calendarName(workspace)}
+                      {calendarName(workspace, t)}
                     </option>
                   ))}
                 </select>
@@ -177,13 +179,13 @@ export function EventDialog({
             )}
 
             <label className="form-field">
-              <span>Event title</span>
+              <span>{t("eventDialog.name")}</span>
               <input
                 autoFocus
                 maxLength="120"
                 name="title"
                 onChange={handleChange}
-                placeholder="e.g. IHK presentation"
+                placeholder={t("eventDialog.namePlaceholder")}
                 required
                 type="text"
                 value={form.title}
@@ -192,54 +194,54 @@ export function EventDialog({
 
             <div className="form-grid">
               <label className="form-field">
-                <span>Date</span>
+                <span>{t("eventDialog.date")}</span>
                 <input name="date" onChange={handleChange} required type="date" value={form.date} />
               </label>
               <label className="event-all-day">
                 <input checked={form.allDay} name="allDay" onChange={handleChange} type="checkbox" />
-                <span>All day</span>
+                <span>{t("common.allDay")}</span>
               </label>
             </div>
 
             {!form.allDay && (
               <div className="form-grid">
                 <label className="form-field">
-                  <span>Start time</span>
+                  <span>{t("eventDialog.start")}</span>
                   <input name="startTime" onChange={handleChange} required type="time" value={form.startTime} />
                 </label>
                 <label className="form-field">
-                  <span>End time</span>
+                  <span>{t("eventDialog.end")}</span>
                   <input name="endTime" onChange={handleChange} required type="time" value={form.endTime} />
                 </label>
               </div>
             )}
 
             <label className="form-field">
-              <span>Location</span>
+              <span>{t("eventDialog.location")}</span>
               <input
                 maxLength="200"
                 name="location"
                 onChange={handleChange}
-                placeholder="Room, address or meeting link"
+                placeholder={t("eventDialog.locationPlaceholder")}
                 type="text"
                 value={form.location}
               />
             </label>
 
             <label className="form-field">
-              <span>Description</span>
+              <span>{t("common.description")}</span>
               <textarea
                 maxLength="2000"
                 name="description"
                 onChange={handleChange}
-                placeholder="Notes for this appointment"
+                placeholder={t("eventDialog.descriptionPlaceholder")}
                 rows="3"
                 value={form.description}
               />
             </label>
 
             <fieldset className="event-color-field">
-              <legend>Color</legend>
+              <legend>{t("eventDialog.color")}</legend>
               <div>
                 {EVENT_COLORS.map((color) => (
                   <label key={color} style={{ "--event-choice-color": color }}>
@@ -255,7 +257,7 @@ export function EventDialog({
           {readOnly ? (
             <footer className="dialog-actions event-dialog__actions">
               <span className="event-dialog__spacer" />
-              <button className="button button--dark" onClick={onClose} type="button">Close</button>
+              <button className="button button--dark" onClick={onClose} type="button">{t("common.close")}</button>
             </footer>
           ) : (
             <footer className="dialog-actions event-dialog__actions">
@@ -266,13 +268,13 @@ export function EventDialog({
                   onClick={() => onRequestDelete(event)}
                   type="button"
                 >
-                  Delete
+                  {t("common.delete")}
                 </button>
               )}
               <span className="event-dialog__spacer" />
-              <button className="button button--ghost" disabled={isSubmitting} onClick={onClose} type="button">Cancel</button>
+              <button className="button button--ghost" disabled={isSubmitting} onClick={onClose} type="button">{t("common.cancel")}</button>
               <button className="button button--dark" disabled={isSubmitting} type="submit">
-                {isSubmitting ? "Saving..." : isEditing ? "Save changes" : "Create event"}
+                {isSubmitting ? t("common.saving") : isEditing ? t("common.saveChanges") : t("eventDialog.submit")}
               </button>
             </footer>
           )}

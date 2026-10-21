@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 
 const editableRoles = ["ADMIN", "MEMBER", "VIEWER"];
-const invitationDateFormatter = new Intl.DateTimeFormat("en", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
 
 export function WorkspaceSettingsPage() {
   const { workspaceId } = useParams();
+  const { locale, t } = useLanguage();
+  const invitationDateFormatter = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
   const [workspace, setWorkspace] = useState(null);
   const [members, setMembers] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -79,7 +81,7 @@ export function WorkspaceSettingsPage() {
       ]);
       setEmail("");
       setRole("MEMBER");
-      setSuccessMessage(`Invitation sent to ${result.data.invitation.email}.`);
+      setSuccessMessage(t("workspaceSettings.sent", { email: result.data.invitation.email }));
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -101,7 +103,7 @@ export function WorkspaceSettingsPage() {
           invitation.id === invitationId ? result.data.invitation : invitation,
         ),
       );
-      setSuccessMessage(`Invitation resent to ${result.data.invitation.email}.`);
+      setSuccessMessage(t("workspaceSettings.resent", { email: result.data.invitation.email }));
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -121,7 +123,7 @@ export function WorkspaceSettingsPage() {
       setInvitations((current) =>
         current.filter((invitation) => invitation.id !== invitationId),
       );
-      setSuccessMessage("Invitation revoked.");
+      setSuccessMessage(t("workspaceSettings.revoked"));
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -159,17 +161,17 @@ export function WorkspaceSettingsPage() {
   }
 
   if (status === "loading") {
-    return <main className="workspace-settings-page"><p>Loading workspace...</p></main>;
+    return <main className="workspace-settings-page"><p>{t("workspaceSettings.loading")}</p></main>;
   }
 
   if (status === "error" || !workspace) {
-    return <main className="workspace-settings-page"><div className="content-error" role="alert"><h1>Workspace unavailable</h1><p>{error || "Workspace not found."}</p><Link to="/app">Back to projects</Link></div></main>;
+    return <main className="workspace-settings-page"><div className="content-error" role="alert"><h1>{t("workspaceSettings.unavailable")}</h1><p>{error || t("workspaceSettings.notFound")}</p><Link to="/app">{t("project.back")}</Link></div></main>;
   }
 
   return (
     <main className="workspace-settings-page">
       <header className="workspace-settings-header">
-        <div><Link className="text-link" to="/app">← Projects</Link><p className="eyebrow">Team settings</p><h1>{workspace.name}</h1><p>{workspace.type === "PERSONAL" ? "Personal workspace" : `Your role: ${currentRole.toLowerCase()}`}</p></div>
+        <div><Link className="text-link" to="/app">← {t("nav.projects")}</Link><p className="eyebrow">{t("workspaceSettings.eyebrow")}</p><h1>{workspace.name}</h1><p>{workspace.type === "PERSONAL" ? t("workspaceSettings.personal") : t("workspaceSettings.yourRole", { role: t(`role.${currentRole}`) })}</p></div>
       </header>
 
       {error ? <div className="form-message form-message--error" role="alert">{error}</div> : null}
@@ -177,45 +179,45 @@ export function WorkspaceSettingsPage() {
 
       {canManage && workspace.type === "TEAM" ? (
         <section className="workspace-settings-card" aria-labelledby="invite-member-title">
-          <div><p className="eyebrow">Team invitation</p><h2 id="invite-member-title">Invite a team member</h2><p>We send a private link that expires after seven days. The person can create an account after opening it.</p></div>
+          <div><p className="eyebrow">{t("workspaceSettings.inviteEyebrow")}</p><h2 id="invite-member-title">{t("workspaceSettings.inviteTitle")}</h2><p>{t("workspaceSettings.inviteCopy")}</p></div>
           <form className="member-add-form" onSubmit={sendInvitation}>
-            <label className="form-field"><span>Email address</span><input onChange={(event) => setEmail(event.target.value)} placeholder="teammate@example.com" required type="email" value={email} /></label>
-            <label className="form-field"><span>Role</span><select onChange={(event) => setRole(event.target.value)} value={role}>{editableRoles.map((item) => <option key={item} value={item}>{item.charAt(0) + item.slice(1).toLowerCase()}</option>)}</select></label>
-            <button className="button button--green" disabled={isInviting} type="submit">{isInviting ? "Sending..." : "Send invitation"}</button>
+            <label className="form-field"><span>{t("common.email")}</span><input onChange={(event) => setEmail(event.target.value)} placeholder="teammate@example.com" required type="email" value={email} /></label>
+            <label className="form-field"><span>{t("workspaceSettings.role")}</span><select onChange={(event) => setRole(event.target.value)} value={role}>{editableRoles.map((item) => <option key={item} value={item}>{t(`role.${item}`)}</option>)}</select></label>
+            <button className="button button--green" disabled={isInviting} type="submit">{isInviting ? t("workspaceSettings.sending") : t("workspaceSettings.send")}</button>
           </form>
         </section>
       ) : null}
 
       {canManage && workspace.type === "TEAM" ? (
         <section className="workspace-settings-card" aria-labelledby="pending-invitations-title">
-          <div><p className="eyebrow">Waiting for a response</p><h2 id="pending-invitations-title">Pending invitations</h2><p>Resending creates a new secure link and invalidates the previous one.</p></div>
+          <div><p className="eyebrow">{t("workspaceSettings.pendingEyebrow")}</p><h2 id="pending-invitations-title">{t("workspaceSettings.pendingTitle")}</h2><p>{t("workspaceSettings.pendingCopy")}</p></div>
           {invitations.length > 0 ? (
             <div className="invitation-list">
               {invitations.map((invitation) => (
                 <article className="pending-invitation" key={invitation.id}>
-                  <div><strong>{invitation.email}</strong><span>{invitation.role.charAt(0) + invitation.role.slice(1).toLowerCase()} · expires {invitationDateFormatter.format(new Date(invitation.expiresAt))}</span></div>
+                  <div><strong>{invitation.email}</strong><span>{t("workspaceSettings.invitationMeta", { role: t(`role.${invitation.role}`), date: invitationDateFormatter.format(new Date(invitation.expiresAt)) })}</span></div>
                   <div className="pending-invitation__actions">
-                    <button disabled={pendingInvitationId === invitation.id} onClick={() => resendInvitation(invitation.id)} type="button">Resend</button>
-                    <button className="text-action--danger" disabled={pendingInvitationId === invitation.id} onClick={() => revokeInvitation(invitation.id)} type="button">Revoke</button>
+                    <button disabled={pendingInvitationId === invitation.id} onClick={() => resendInvitation(invitation.id)} type="button">{t("workspaceSettings.resend")}</button>
+                    <button className="text-action--danger" disabled={pendingInvitationId === invitation.id} onClick={() => revokeInvitation(invitation.id)} type="button">{t("workspaceSettings.revoke")}</button>
                   </div>
                 </article>
               ))}
             </div>
-          ) : <p className="empty-inline">No pending invitations.</p>}
+          ) : <p className="empty-inline">{t("workspaceSettings.noPending")}</p>}
         </section>
       ) : null}
 
       <section className="workspace-settings-card" aria-labelledby="member-list-title">
-        <div><p className="eyebrow">Access</p><h2 id="member-list-title">Members</h2><p>Owners control the workspace. Admins manage it. Members edit work. Viewers can only read.</p></div>
+        <div><p className="eyebrow">{t("workspaceSettings.accessEyebrow")}</p><h2 id="member-list-title">{t("workspaceSettings.membersTitle")}</h2><p>{t("workspaceSettings.membersCopy")}</p></div>
         <div className="member-list">
           {members.map((member) => (
             <article className="member-row" key={member.userId}>
               <span className="member-avatar" aria-hidden="true">{member.user.name.charAt(0).toUpperCase()}</span>
               <div><strong>{member.user.name}</strong><span>{member.user.email}</span></div>
               {canManage && member.role !== "OWNER" ? (
-                <select aria-label={`Role for ${member.user.name}`} onChange={(event) => updateRole(member.userId, event.target.value)} value={member.role}>{editableRoles.map((item) => <option key={item} value={item}>{item.charAt(0) + item.slice(1).toLowerCase()}</option>)}</select>
-              ) : <span className="role-badge">{member.role.charAt(0) + member.role.slice(1).toLowerCase()}</span>}
-              {canManage && member.role !== "OWNER" ? <button className="member-remove" onClick={() => removeMember(member.userId)} type="button">Remove</button> : null}
+                <select aria-label={t("workspaceSettings.roleFor", { name: member.user.name })} onChange={(event) => updateRole(member.userId, event.target.value)} value={member.role}>{editableRoles.map((item) => <option key={item} value={item}>{t(`role.${item}`)}</option>)}</select>
+              ) : <span className="role-badge">{t(`role.${member.role}`)}</span>}
+              {canManage && member.role !== "OWNER" ? <button className="member-remove" onClick={() => removeMember(member.userId)} type="button">{t("workspaceSettings.remove")}</button> : null}
             </article>
           ))}
         </div>

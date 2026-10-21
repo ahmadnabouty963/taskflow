@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLanguage } from "../context/language-context.js";
 
 export function ConfirmDialog({
   title,
@@ -9,6 +10,8 @@ export function ConfirmDialog({
   onCancel,
   onConfirm,
 }) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === "Escape" && !isWorking) {
@@ -41,12 +44,12 @@ export function ConfirmDialog({
       >
         <header className="dialog-header">
           <div>
-            <p className="eyebrow eyebrow--danger">Please confirm</p>
+            <p className="eyebrow eyebrow--danger">{t("common.pleaseConfirm")}</p>
             <h2 id="confirm-dialog-title">{title}</h2>
           </div>
 
           <button
-            aria-label="Close dialog"
+            aria-label={t("common.closeDialog")}
             className="dialog-close"
             disabled={isWorking}
             onClick={onCancel}
@@ -71,7 +74,7 @@ export function ConfirmDialog({
             onClick={onCancel}
             type="button"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
 
           <button
@@ -80,7 +83,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             type="button"
           >
-            {isWorking ? "Deleting..." : confirmLabel}
+            {isWorking ? t("common.deleting") : confirmLabel}
           </button>
         </footer>
       </section>

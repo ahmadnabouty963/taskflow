@@ -1,11 +1,5 @@
 import { useEffect } from "react";
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
+import { useLanguage } from "../context/language-context.js";
 
 export function CalendarEntryDialog({
   date,
@@ -14,6 +8,14 @@ export function CalendarEntryDialog({
   onEvent,
   onTask,
 }) {
+  const { locale, t } = useLanguage();
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === "Escape") {
@@ -43,10 +45,10 @@ export function CalendarEntryDialog({
         <header className="dialog-header">
           <div>
             <p className="eyebrow">{dateFormatter.format(new Date(date + "T12:00:00"))}</p>
-            <h2 id="calendar-entry-title">What do you want to add?</h2>
+            <h2 id="calendar-entry-title">{t("calendarEntry.title")}</h2>
           </div>
           <button
-            aria-label="Close dialog"
+            aria-label={t("common.closeDialog")}
             className="dialog-close"
             onClick={onClose}
             type="button"
@@ -57,18 +59,18 @@ export function CalendarEntryDialog({
 
         <div className="calendar-entry-options">
           <button disabled={!canCreateTask} onClick={onTask} type="button">
-            <strong>Project task</strong>
-            <span>Work that belongs to an existing project.</span>
+            <strong>{t("calendarEntry.task")}</strong>
+            <span>{t("calendarEntry.taskCopy")}</span>
           </button>
           <button onClick={onEvent} type="button">
-            <strong>Calendar event</strong>
-            <span>An appointment independent from your projects.</span>
+            <strong>{t("calendarEntry.event")}</strong>
+            <span>{t("calendarEntry.eventCopy")}</span>
           </button>
         </div>
 
         {!canCreateTask && (
           <p className="calendar-entry-note">
-            Create an active project before adding project tasks.
+            {t("calendarEntry.noProjects")}
           </p>
         )}
       </section>

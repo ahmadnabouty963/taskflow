@@ -1,7 +1,10 @@
 import { BrandLogo } from "../components/BrandLogo.jsx";
 import { Link } from "react-router";
+import { useLanguage } from "../context/language-context.js";
 
 export function NotFoundPage() {
+  const { t } = useLanguage();
+
   return (
     <main className="not-found-page">
       <Link className="brand" to="/">
@@ -9,11 +12,11 @@ export function NotFoundPage() {
       </Link>
 
       <div>
-        <p className="eyebrow">Error 404</p>
-        <h1>This page does not exist.</h1>
-        <p>The address may be incorrect, or the page may have been moved.</p>
+        <p className="eyebrow">{t("notFound.eyebrow")}</p>
+        <h1>{t("notFound.title")}</h1>
+        <p>{t("notFound.copy")}</p>
         <Link className="button button--dark" to="/">
-          Return home
+          {t("notFound.home")}
         </Link>
       </div>
     </main>

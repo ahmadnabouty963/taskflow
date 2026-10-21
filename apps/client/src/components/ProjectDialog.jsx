@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 
 const projectColors = [
-  { label: "Violet", value: "#6D5EF5" },
-  { label: "Blue", value: "#2563EB" },
-  { label: "Sky", value: "#0EA5E9" },
-  { label: "Green", value: "#16A34A" },
-  { label: "Amber", value: "#D97706" },
-  { label: "Rose", value: "#E11D48" },
+  { key: "violet", value: "#6D5EF5" },
+  { key: "blue", value: "#2563EB" },
+  { key: "sky", value: "#0EA5E9" },
+  { key: "green", value: "#16A34A" },
+  { key: "amber", value: "#D97706" },
+  { key: "rose", value: "#E11D48" },
 ];
 
 export function ProjectDialog({ project, workspaceId, onClose, onSaved }) {
+  const { t } = useLanguage();
   const isEditing = Boolean(project?.id);
 
   const [form, setForm] = useState({
@@ -87,15 +89,15 @@ export function ProjectDialog({ project, workspaceId, onClose, onSaved }) {
         <header className="dialog-header">
           <div>
             <p className="eyebrow">
-              {isEditing ? "Update project" : "New project"}
+              {isEditing ? t("projectDialog.eyebrowEdit") : t("projectDialog.eyebrowNew")}
             </p>
             <h2 id="project-dialog-title">
-              {isEditing ? "Edit project" : "Create a project"}
+              {isEditing ? t("projectDialog.titleEdit") : t("projectDialog.titleNew")}
             </h2>
           </div>
 
           <button
-            aria-label="Close dialog"
+            aria-label={t("common.closeDialog")}
             className="dialog-close"
             disabled={isSubmitting}
             onClick={onClose}
@@ -113,13 +115,13 @@ export function ProjectDialog({ project, workspaceId, onClose, onSaved }) {
           )}
 
           <label className="form-field">
-            <span>Project title</span>
+            <span>{t("projectDialog.name")}</span>
             <input
               autoFocus
               maxLength="100"
               name="title"
               onChange={handleChange}
-              placeholder="For example: Website launch"
+              placeholder={t("projectDialog.namePlaceholder")}
               required
               type="text"
               value={form.title}
@@ -127,23 +129,23 @@ export function ProjectDialog({ project, workspaceId, onClose, onSaved }) {
           </label>
 
           <label className="form-field">
-            <span>Description</span>
+            <span>{t("common.description")}</span>
             <textarea
               maxLength="1000"
               name="description"
               onChange={handleChange}
-              placeholder="What should this project achieve?"
+              placeholder={t("projectDialog.descriptionPlaceholder")}
               rows="4"
               value={form.description}
             />
-            <small>{form.description.length}/1000 characters</small>
+            <small>{t("projectDialog.characters", { count: form.description.length })}</small>
           </label>
 
           <fieldset className="project-color-field">
-            <legend>Project color</legend>
+            <legend>{t("projectDialog.color")}</legend>
             <div className="project-color-options">
               {projectColors.map((color) => (
-                <label key={color.value} title={color.label}>
+                <label key={color.value} title={t(`color.${color.key}`)}>
                   <input
                     checked={form.color === color.value}
                     name="color"
@@ -152,7 +154,7 @@ export function ProjectDialog({ project, workspaceId, onClose, onSaved }) {
                     value={color.value}
                   />
                   <span
-                    aria-label={color.label}
+                    aria-label={t(`color.${color.key}`)}
                     className="project-color-swatch"
                     style={{ "--swatch-color": color.value }}
                   />
@@ -168,7 +170,7 @@ export function ProjectDialog({ project, workspaceId, onClose, onSaved }) {
               onClick={onClose}
               type="button"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
 
             <button
@@ -177,10 +179,10 @@ export function ProjectDialog({ project, workspaceId, onClose, onSaved }) {
               type="submit"
             >
               {isSubmitting
-                ? "Saving..."
+                ? t("common.saving")
                 : isEditing
-                  ? "Save changes"
-                  : "Create project"}
+                  ? t("common.saveChanges")
+                  : t("projectDialog.submit")}
             </button>
           </footer>
         </form>

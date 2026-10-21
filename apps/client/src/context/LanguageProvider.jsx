@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { translate } from "../i18n/translations.js";
+import { localeFor, translate } from "../i18n/translations.js";
 import { useAuth } from "./auth-context.js";
 import { LanguageContext } from "./language-context.js";
 
@@ -55,7 +55,7 @@ export function LanguageProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ language, setLanguage, t }),
+    () => ({ language, locale: localeFor(language), setLanguage, t }),
     [language, setLanguage, t],
   );
 

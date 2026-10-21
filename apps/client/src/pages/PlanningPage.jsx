@@ -1,30 +1,11 @@
 import { AppNavigation } from "../components/AppNavigation.jsx";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 import { calendarName, isSharedEvent } from "../lib/calendars.js";
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  weekday: "long",
-  day: "2-digit",
-  month: "long",
-});
-
-const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
-  day: "2-digit",
-  month: "short",
-});
-
-const timeFormatter = new Intl.DateTimeFormat(undefined, {
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
-const statuses = [
-  { value: "TODO", label: "To do" },
-  { value: "IN_PROGRESS", label: "In progress" },
-  { value: "DONE", label: "Done" },
-];
+const statuses = ["TODO", "IN_PROGRESS", "DONE"];
 
 function startOfDay(date) {
   return new Date(
@@ -44,22 +25,6 @@ function addDays(date, days) {
   return nextDate;
 }
 
-function priorityLabel(priority) {
-  return priority.charAt(0) + priority.slice(1).toLowerCase();
-}
-
-function eventTimeLabel(event) {
-  if (event.allDay) {
-    return "All day";
-  }
-
-  return (
-    timeFormatter.format(new Date(event.startsAt)) +
-    "–" +
-    timeFormatter.format(new Date(event.endsAt))
-  );
-}
-
 function byStartTime(first, second) {
   if (first.allDay !== second.allDay) {
     return first.allDay ? -1 : 1;
@@ -69,6 +34,33 @@ function byStartTime(first, second) {
 }
 
 export function PlanningPage({ mode }) {
+  const { locale, t } = useLanguage();
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+  });
+  const shortDateFormatter = new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "short",
+  });
+  const timeFormatter = new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  function eventTimeLabel(event) {
+    if (event.allDay) {
+      return t("common.allDay");
+    }
+
+    return (
+      timeFormatter.format(new Date(event.startsAt)) +
+      "–" +
+      timeFormatter.format(new Date(event.endsAt))
+    );
+  }
+
   const [tasks, setTasks] = useState([]);
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("loading");
@@ -78,11 +70,6 @@ export function PlanningPage({ mode }) {
 
   const todayStart = useMemo(() => startOfDay(new Date()), []);
   const tomorrowStart = useMemo(() => addDays(todayStart, 1), [todayStart]);
-
-  useEffect(() => {
-    document.title =
-      (mode === "today" ? "Today" : "Upcoming") + " — Ordanly";
-  }, [mode]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -151,17 +138,17 @@ export function PlanningPage({ mode }) {
           ? [
               {
                 key: "events",
-                label: "Events today",
+                labelKey: "planning.eventsToday",
                 events: sortedEvents,
                 tasks: [],
               },
             ]
           : []),
         ...(overdue.length > 0
-          ? [{ key: "overdue", label: "Overdue", events: [], tasks: overdue }]
+          ? [{ key: "overdue", labelKey: "planning.overdue", events: [], tasks: overdue }]
           : []),
         ...(dueToday.length > 0
-          ? [{ key: "today", label: "Due today", events: [], tasks: dueToday }]
+          ? [{ key: "today", labelKey: "planning.dueToday", events: [], tasks: dueToday }]
           : []),
       ];
     }
@@ -176,7 +163,6 @@ export function PlanningPage({ mode }) {
         groups.set(key, {
           key,
           day,
-          label: dateFormatter.format(day),
           events: [],
           tasks: [],
         });
@@ -230,11 +216,9 @@ export function PlanningPage({ mode }) {
     }
   }
 
-  const title = mode === "today" ? "Today" : "Upcoming";
+  const title = mode === "today" ? t("nav.today") : t("nav.upcoming");
   const description =
-    mode === "today"
-      ? "Focus on overdue work and everything due today."
-      : "See events and deadlines across every project for the next seven days.";
+    mode === "today" ? t("planning.todayCopy") : t("planning.upcomingCopy");
   const isEmpty = tasks.length === 0 && events.length === 0;
 
   return (
@@ -244,15 +228,15 @@ export function PlanningPage({ mode }) {
       <main className="workspace-main planning-main">
         <header className="workspace-header planning-header">
           <div>
-            <p className="eyebrow">All projects</p>
+            <p className="eyebrow">{t("planning.eyebrow")}</p>
             <h1>{title}</h1>
             <p>{description}</p>
           </div>
           <div className="planning-date">
             <span>{dateFormatter.format(new Date())}</span>
             <strong>
-              {events.length} {events.length === 1 ? "event" : "events"} ·{" "}
-              {tasks.length} open {tasks.length === 1 ? "task" : "tasks"}
+              {t(events.length === 1 ? "planning.eventCount.one" : "planning.eventCount.other", { count: events.length })} ·{" "}
+              {t(tasks.length === 1 ? "planning.taskCount.one" : "planning.taskCount.other", { count: tasks.length })}
             </strong>
           </div>
         </header>
@@ -265,19 +249,19 @@ export function PlanningPage({ mode }) {
 
         {status === "loading" && (
           <div className="board-loading" aria-live="polite">
-            Loading agenda...
+            {t("planning.loading")}
           </div>
         )}
 
         {status === "error" && (
           <div className="content-error">
-            <h2>Your agenda could not be loaded.</h2>
+            <h2>{t("planning.loadError")}</h2>
             <button
               className="button button--ghost"
               onClick={() => setReloadKey((key) => key + 1)}
               type="button"
             >
-              Try again
+              {t("common.tryAgain")}
             </button>
           </div>
         )}
@@ -285,14 +269,14 @@ export function PlanningPage({ mode }) {
         {status === "success" && isEmpty && (
           <div className="empty-state planning-empty">
             <span className="empty-state__number">✓</span>
-            <h2>{mode === "today" ? "Nothing urgent" : "A clear week ahead"}</h2>
+            <h2>{mode === "today" ? t("planning.emptyToday") : t("planning.emptyUpcoming")}</h2>
             <p>
               {mode === "today"
-                ? "You have no events, no overdue tasks and nothing due today."
-                : "No events or open tasks during the next seven days."}
+                ? t("planning.emptyTodayCopy")
+                : t("planning.emptyUpcomingCopy")}
             </p>
             <Link className="button button--dark" to="/app">
-              Open projects
+              {t("planning.openProjects")}
             </Link>
           </div>
         )}
@@ -302,7 +286,7 @@ export function PlanningPage({ mode }) {
             {agendaGroups.map((group) => (
               <section className="planning-group" key={group.key}>
                 <header>
-                  <h2>{group.label}</h2>
+                  <h2>{group.labelKey ? t(group.labelKey) : dateFormatter.format(group.day)}</h2>
                   <span>{group.events.length + group.tasks.length}</span>
                 </header>
 
@@ -314,7 +298,7 @@ export function PlanningPage({ mode }) {
                       style={{ "--event-color": event.color }}
                     >
                       <div className="planning-task__date">
-                        <span className="planning-event__badge">Event</span>
+                        <span className="planning-event__badge">{t("planning.eventBadge")}</span>
                         <time dateTime={event.startsAt}>
                           {eventTimeLabel(event)}
                         </time>
@@ -326,9 +310,10 @@ export function PlanningPage({ mode }) {
                           <p className="planning-event__location">
                             {[
                               isSharedEvent(event) &&
-                                calendarName(event.workspace) +
-                                  " · by " +
-                                  event.owner.name,
+                                t("planning.sharedBy", {
+                                  calendar: calendarName(event.workspace, t),
+                                  name: event.owner.name,
+                                }),
                               event.location,
                             ]
                               .filter(Boolean)
@@ -341,7 +326,7 @@ export function PlanningPage({ mode }) {
                         className="planning-event__link"
                         to="/app/calendar"
                       >
-                        Open calendar
+                        {t("planning.openCalendar")}
                       </Link>
                     </article>
                   ))}
@@ -355,7 +340,7 @@ export function PlanningPage({ mode }) {
                             task.priority.toLowerCase()
                           }
                         >
-                          {priorityLabel(task.priority)}
+                          {t(`task.priority.${task.priority}`)}
                         </span>
                         <time dateTime={task.dueDate}>
                           {shortDateFormatter.format(new Date(task.dueDate))}
@@ -371,10 +356,10 @@ export function PlanningPage({ mode }) {
 
                       <label className="planning-task__status">
                         <span className="visually-hidden">
-                          Change status for {task.title}
+                          {t("task.changeStatus", { title: task.title })}
                         </span>
                         <select
-                          aria-label={"Change status for " + task.title}
+                          aria-label={t("task.changeStatus", { title: task.title })}
                           disabled={updatingTaskId === task.id}
                           onChange={(event) =>
                             handleStatusChange(task, event.target.value)
@@ -382,8 +367,8 @@ export function PlanningPage({ mode }) {
                           value={task.status}
                         >
                           {statuses.map((taskStatus) => (
-                            <option key={taskStatus.value} value={taskStatus.value}>
-                              {taskStatus.label}
+                            <option key={taskStatus} value={taskStatus}>
+                              {t(`task.status.${taskStatus}`)}
                             </option>
                           ))}
                         </select>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { BrandLogo } from "./BrandLogo.jsx";
 import { useAuth } from "../context/auth-context.js";
+import { useLanguage } from "../context/language-context.js";
 
 function Icon({ children }) {
   return (
@@ -25,7 +26,7 @@ function Icon({ children }) {
 const navItems = [
   {
     key: "projects",
-    label: "Projects",
+    labelKey: "nav.projects",
     to: "/app",
     icon: (
       <Icon>
@@ -38,7 +39,7 @@ const navItems = [
   },
   {
     key: "today",
-    label: "Today",
+    labelKey: "nav.today",
     to: "/app/today",
     icon: (
       <Icon>
@@ -49,7 +50,7 @@ const navItems = [
   },
   {
     key: "upcoming",
-    label: "Upcoming",
+    labelKey: "nav.upcoming",
     to: "/app/upcoming",
     icon: (
       <Icon>
@@ -59,7 +60,7 @@ const navItems = [
   },
   {
     key: "calendar",
-    label: "Calendar",
+    labelKey: "nav.calendar",
     to: "/app/calendar",
     icon: (
       <Icon>
@@ -70,7 +71,8 @@ const navItems = [
   },
   {
     key: "settings",
-    label: "Settings",
+    labelKey: "nav.settings",
+    shortLabelKey: "nav.settingsShort",
     to: "/app/settings",
     icon: (
       <Icon>
@@ -85,6 +87,7 @@ const navItems = [
 // on phones and tablets, where the sidebar links are hidden.
 export function AppNavigation({ active, children, currentProject = false, onLogoutError }) {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -109,11 +112,11 @@ export function AppNavigation({ active, children, currentProject = false, onLogo
         <div>
           <Link className="workspace-brand" to="/"><BrandLogo /></Link>
           {children}
-          <nav className="workspace-nav" aria-label="Workspace navigation">
+          <nav className="workspace-nav" aria-label={t("nav.workspaceLabel")}>
             {navItems.map((item) => [
-              <Link className={itemClass(item.key, "workspace-nav__item")} key={item.key} to={item.to}>{item.label}</Link>,
+              <Link className={itemClass(item.key, "workspace-nav__item")} key={item.key} to={item.to}>{t(item.labelKey)}</Link>,
               currentProject && item.key === "projects" && (
-                <span className="workspace-nav__item workspace-nav__item--active" key="current-project">Current project</span>
+                <span className="workspace-nav__item workspace-nav__item--active" key="current-project">{t("nav.currentProject")}</span>
               ),
             ])}
           </nav>
@@ -122,12 +125,12 @@ export function AppNavigation({ active, children, currentProject = false, onLogo
           <span className="user-avatar" aria-hidden="true">{user.name.charAt(0).toUpperCase()}</span>
           <div><strong>{user.name}</strong><span>{user.email}</span></div>
           <button className="logout-button" disabled={isLoggingOut} onClick={handleLogout} type="button">
-            {isLoggingOut ? "..." : "Log out"}
+            {isLoggingOut ? "..." : t("nav.logout")}
           </button>
         </div>
       </aside>
 
-      <nav className="mobile-nav" aria-label="Mobile navigation">
+      <nav className="mobile-nav" aria-label={t("nav.mobileLabel")}>
         {navItems.map((item) => (
           <Link
             aria-current={item.key === active ? "page" : undefined}
@@ -136,7 +139,7 @@ export function AppNavigation({ active, children, currentProject = false, onLogo
             to={item.to}
           >
             {item.icon}
-            <span>{item.label}</span>
+            <span>{t(item.shortLabelKey ?? item.labelKey)}</span>
           </Link>
         ))}
       </nav>

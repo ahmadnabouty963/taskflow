@@ -4,16 +4,16 @@ import { Link } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { ProjectDialog } from "../components/ProjectDialog.jsx";
 import { WorkspaceDialog } from "../components/WorkspaceDialog.jsx";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-});
-
 export function DashboardPage() {
-
+  const { locale, t } = useLanguage();
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
   const [projects, setProjects] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState(
@@ -143,8 +143,8 @@ export function DashboardPage() {
       );
       setArchiveNotice(
         shouldArchive
-          ? `${project.title} was archived.`
-          : `${project.title} was restored.`,
+          ? t("dashboard.archived", { title: project.title })
+          : t("dashboard.restored", { title: project.title }),
       );
     } catch (error) {
       setArchiveError(error.message);
@@ -180,23 +180,23 @@ export function DashboardPage() {
     <div className="workspace-shell">
       <AppNavigation active="projects" onLogoutError={setLogoutError}>
           <div className="workspace-switcher">
-            <label htmlFor="active-workspace">Workspace</label>
+            <label htmlFor="active-workspace">{t("dashboard.workspace")}</label>
             <select id="active-workspace" onChange={selectWorkspace} value={activeWorkspaceId}>
               {workspaces.map((workspace) => (
                 <option key={workspace.id} value={workspace.id}>{workspace.name}</option>
               ))}
             </select>
-            <button onClick={() => setIsWorkspaceDialogOpen(true)} type="button">New team workspace</button>
+            <button onClick={() => setIsWorkspaceDialogOpen(true)} type="button">{t("dashboard.newWorkspace")}</button>
             {activeWorkspaceId ? (
-              <Link to={`/app/workspaces/${activeWorkspaceId}/settings`}>Members and roles</Link>
+              <Link to={`/app/workspaces/${activeWorkspaceId}/settings`}>{t("dashboard.members")}</Link>
             ) : null}
           </div>
       </AppNavigation>
 
       <main className="workspace-main">
         <header className="workspace-header">
-          <div><p className="eyebrow">{workspaces.find(({ id }) => id === activeWorkspaceId)?.name || "Your workspace"}</p><h1>Projects</h1></div>
-          <button className="button button--green" onClick={openCreateDialog} type="button">New project</button>
+          <div><p className="eyebrow">{workspaces.find(({ id }) => id === activeWorkspaceId)?.name || t("dashboard.yourWorkspace")}</p><h1>{t("nav.projects")}</h1></div>
+          <button className="button button--green" onClick={openCreateDialog} type="button">{t("projectDialog.eyebrowNew")}</button>
         </header>
 
         {logoutError && <div className="form-message form-message--error" role="alert">{logoutError}</div>}
@@ -205,44 +205,44 @@ export function DashboardPage() {
 
         <section id="projects">
           {projectsStatus === "loading" && (
-            <div className="projects-loading" aria-live="polite"><span /><span /><span /><p>Loading projects...</p></div>
+            <div className="projects-loading" aria-live="polite"><span /><span /><span /><p>{t("dashboard.loading")}</p></div>
           )}
 
           {projectsStatus === "error" && (
             <div className="content-error" role="alert">
-              <p className="eyebrow eyebrow--danger">Unable to load projects</p>
-              <h2>Something went wrong.</h2><p>{projectsError}</p>
-              <button className="button button--ghost" onClick={() => setReloadKey((key) => key + 1)} type="button">Try again</button>
+              <p className="eyebrow eyebrow--danger">{t("dashboard.loadError")}</p>
+              <h2>{t("errorBoundary.title")}</h2><p>{projectsError}</p>
+              <button className="button button--ghost" onClick={() => setReloadKey((key) => key + 1)} type="button">{t("common.tryAgain")}</button>
             </div>
           )}
 
           {projectsStatus === "success" && workspaceProjects.length === 0 && (
             <div className="empty-state">
-              <span className="empty-state__number">01</span><h2>Create your first project</h2>
-              <p>Projects give your work a clear home. Add one, then break the work into focused tasks.</p>
-              <button className="button button--dark" onClick={openCreateDialog} type="button">Create a project</button>
+              <span className="empty-state__number">01</span><h2>{t("dashboard.emptyTitle")}</h2>
+              <p>{t("dashboard.emptyCopy")}</p>
+              <button className="button button--dark" onClick={openCreateDialog} type="button">{t("projectDialog.titleNew")}</button>
             </div>
           )}
 
           {projectsStatus === "success" && workspaceProjects.length > 0 && (
             <>
               <div className="project-view-bar">
-                <div className="project-view-tabs" role="tablist" aria-label="Project status">
+                <div className="project-view-tabs" role="tablist" aria-label={t("dashboard.statusLabel")}>
                   <button aria-selected={projectView === "active"} className={projectView === "active" ? "is-active" : ""} onClick={() => setProjectView("active")} role="tab" type="button">
-                    Active <span>{activeProjects.length}</span>
+                    {t("dashboard.active")} <span>{activeProjects.length}</span>
                   </button>
                   <button aria-selected={projectView === "archived"} className={projectView === "archived" ? "is-active" : ""} onClick={() => setProjectView("archived")} role="tab" type="button">
-                    Archived <span>{archivedProjects.length}</span>
+                    {t("dashboard.archivedTab")} <span>{archivedProjects.length}</span>
                   </button>
                 </div>
-                <p>{projectView === "active" ? "Projects currently in motion" : "Finished or paused projects"}</p>
+                <p>{projectView === "active" ? t("dashboard.activeCopy") : t("dashboard.archivedCopy")}</p>
               </div>
 
               {visibleProjects.length === 0 ? (
                 <div className="empty-state empty-state--compact">
-                  <h2>{projectView === "active" ? "No active projects" : "Nothing archived yet"}</h2>
-                  <p>{projectView === "active" ? "Restore a project or start something new." : "Archived projects stay safe here until you restore them."}</p>
-                  {projectView === "active" && <button className="button button--dark" onClick={openCreateDialog} type="button">Create a project</button>}
+                  <h2>{projectView === "active" ? t("dashboard.noActive") : t("dashboard.noArchived")}</h2>
+                  <p>{projectView === "active" ? t("dashboard.noActiveCopy") : t("dashboard.noArchivedCopy")}</p>
+                  {projectView === "active" && <button className="button button--dark" onClick={openCreateDialog} type="button">{t("projectDialog.titleNew")}</button>}
                 </div>
               ) : (
                 <div className="projects-grid">
@@ -252,18 +252,18 @@ export function DashboardPage() {
                       <header>
                         <span className="project-number">{String(index + 1).padStart(2, "0")}</span>
                         <div className="project-actions">
-                          {!project.archivedAt && <button onClick={() => openEditDialog(project)} type="button">Edit</button>}
+                          {!project.archivedAt && <button onClick={() => openEditDialog(project)} type="button">{t("common.edit")}</button>}
                           <button disabled={archivingProjectId === project.id} onClick={() => toggleProjectArchive(project)} type="button">
-                            {archivingProjectId === project.id ? "Saving..." : project.archivedAt ? "Restore" : "Archive"}
+                            {archivingProjectId === project.id ? t("common.saving") : project.archivedAt ? t("dashboard.restore") : t("dashboard.archive")}
                           </button>
-                          <button className="project-delete" onClick={() => requestProjectDeletion(project)} type="button">Delete</button>
+                          <button className="project-delete" onClick={() => requestProjectDeletion(project)} type="button">{t("common.delete")}</button>
                         </div>
                       </header>
                       <Link className="project-card__link" to={`/app/projects/${project.id}`}>
                         <h2>{project.title}</h2>
-                        <p>{project.description || "No description has been added yet."}</p>
+                        <p>{project.description || t("dashboard.noDescription")}</p>
                         <footer>
-                          <span>{project.archivedAt ? `Archived ${dateFormatter.format(new Date(project.archivedAt))}` : `Updated ${dateFormatter.format(new Date(project.updatedAt))}`}</span>
+                          <span>{project.archivedAt ? t("dashboard.archivedOn", { date: dateFormatter.format(new Date(project.archivedAt)) }) : t("dashboard.updatedOn", { date: dateFormatter.format(new Date(project.updatedAt)) })}</span>
                           <span aria-hidden="true">→</span>
                         </footer>
                       </Link>
@@ -286,13 +286,13 @@ export function DashboardPage() {
 
       {projectToDelete && (
         <ConfirmDialog
-          confirmLabel="Delete project"
+          confirmLabel={t("dashboard.deleteConfirm")}
           errorMessage={deleteError}
           isWorking={isDeleting}
-          message={`“${projectToDelete.title}” and all of its tasks will be permanently deleted.`}
+          message={t("dashboard.deleteMessage", { title: projectToDelete.title })}
           onCancel={() => { setProjectToDelete(null); setDeleteError(""); }}
           onConfirm={handleProjectDeletion}
-          title="Delete this project?"
+          title={t("dashboard.deleteTitle")}
         />
       )}
     </div>

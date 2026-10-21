@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLanguage } from "../context/language-context.js";
 import { apiRequest } from "../lib/api.js";
 
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-const recurrenceLabels = { NONE: "Does not repeat", DAILY: "Daily", WEEKLY: "Weekly", MONTHLY: "Monthly" };
-function formatMinutes(minutes) {
-  if (!minutes) return "Not recorded";
+function formatMinutes(minutes, t) {
+  if (!minutes) return t("taskDetails.notRecorded");
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   return [hours ? `${hours}h` : "", rest ? `${rest}m` : ""].filter(Boolean).join(" ");
 }
 
 export function TaskDetailsPanel({ projectId, task, onClose }) {
+  const { locale, t } = useLanguage();
+  const dateTimeFormatter = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
   const [details, setDetails] = useState(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
@@ -168,46 +169,46 @@ export function TaskDetailsPanel({ projectId, task, onClose }) {
     <div className="task-detail-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <aside aria-labelledby="task-detail-title" aria-modal="true" className="task-detail-panel" role="dialog">
         <header className="task-detail-header">
-          <div><p className="eyebrow">Task details</p><h2 id="task-detail-title">{task.title}</h2></div>
-          <button aria-label="Close task details" className="dialog-close" onClick={onClose} type="button">×</button>
+          <div><p className="eyebrow">{t("taskDetails.eyebrow")}</p><h2 id="task-detail-title">{task.title}</h2></div>
+          <button aria-label={t("taskDetails.close")} className="dialog-close" onClick={onClose} type="button">×</button>
         </header>
 
-        {status === "loading" && <div className="task-detail-loading">Loading details...</div>}
+        {status === "loading" && <div className="task-detail-loading">{t("taskDetails.loading")}</div>}
         {error && <div className="form-message form-message--error" role="alert">{error}</div>}
 
         {status === "success" && details && (
           <div className="task-detail-content">
             <section className="task-detail-summary">
-              <div><span className={`priority-badge priority-badge--${details.priority.toLowerCase()}`}>{details.priority.toLowerCase()}</span><span>{details.status.replace("_", " ").toLowerCase()}</span></div>
-              <p>{details.description || "No description has been added."}</p>
+              <div><span className={`priority-badge priority-badge--${details.priority.toLowerCase()}`}>{t(`task.priority.${details.priority}`)}</span><span>{t(`task.status.${details.status}`)}</span></div>
+              <p>{details.description || t("taskDetails.noDescription")}</p>
               <div className="task-detail-meta">
-                <div><span>Responsible</span><strong>{details.assignee?.name || "Unassigned"}</strong></div>
-                <div><span>Due date</span><strong>{details.dueDate ? new Date(details.dueDate).toLocaleDateString() : "None"}</strong></div>
-                <div><span>Repeat</span><strong>{recurrenceLabels[details.recurrence ?? "NONE"]}</strong></div>
-                <div><span>Estimated</span><strong>{formatMinutes(details.estimatedMinutes)}</strong></div>
-                <div><span>Time spent</span><strong>{formatMinutes(details.actualMinutes)}</strong></div>
+                <div><span>{t("taskDetails.responsible")}</span><strong>{details.assignee?.name || t("task.unassigned")}</strong></div>
+                <div><span>{t("taskDialog.dueDate")}</span><strong>{details.dueDate ? new Date(details.dueDate).toLocaleDateString(locale) : t("taskDetails.none")}</strong></div>
+                <div><span>{t("taskDialog.repeat")}</span><strong>{t(`task.recurrence.${details.recurrence ?? "NONE"}`)}</strong></div>
+                <div><span>{t("taskDetails.estimated")}</span><strong>{formatMinutes(details.estimatedMinutes, t)}</strong></div>
+                <div><span>{t("taskDetails.spent")}</span><strong>{formatMinutes(details.actualMinutes, t)}</strong></div>
               </div>
-              {details.labels?.length ? <div className="task-card__labels task-detail-labels" aria-label="Task labels">{details.labels.map((label) => <span key={label.id} style={{ "--label-color": label.color }}>{label.name}</span>)}</div> : null}
+              {details.labels?.length ? <div className="task-card__labels task-detail-labels" aria-label={t("task.labelsLabel")}>{details.labels.map((label) => <span key={label.id} style={{ "--label-color": label.color }}>{label.name}</span>)}</div> : null}
             </section>
 
             <section className="task-detail-section">
               <div className="task-detail-section__heading">
-                <div><h3>Subtasks</h3><span>{completedSubtasks}/{details.subtasks.length}</span></div>
+                <div><h3>{t("taskDetails.subtasks")}</h3><span>{completedSubtasks}/{details.subtasks.length}</span></div>
                 <strong>{subtaskPercentage}%</strong>
               </div>
-              <div className="subtask-progress" aria-label="Subtask completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow={subtaskPercentage} role="progressbar"><span style={{ width: `${subtaskPercentage}%` }} /></div>
+              <div className="subtask-progress" aria-label={t("taskDetails.subtaskProgress")} aria-valuemin="0" aria-valuemax="100" aria-valuenow={subtaskPercentage} role="progressbar"><span style={{ width: `${subtaskPercentage}%` }} /></div>
 
               <form className="inline-create-form" onSubmit={addSubtask}>
-                <input aria-label="New subtask" maxLength="200" onChange={(event) => setSubtaskTitle(event.target.value)} placeholder="Add a smaller step..." value={subtaskTitle} />
-                <button disabled={workingId === "new-subtask" || !subtaskTitle.trim()} type="submit">Add</button>
+                <input aria-label={t("taskDetails.newSubtask")} maxLength="200" onChange={(event) => setSubtaskTitle(event.target.value)} placeholder={t("taskDetails.subtaskPlaceholder")} value={subtaskTitle} />
+                <button disabled={workingId === "new-subtask" || !subtaskTitle.trim()} type="submit">{t("taskDetails.add")}</button>
               </form>
 
-              {details.subtasks.length === 0 ? <p className="task-detail-empty">No subtasks yet.</p> : (
+              {details.subtasks.length === 0 ? <p className="task-detail-empty">{t("taskDetails.noSubtasks")}</p> : (
                 <ul className="subtask-list">
                   {details.subtasks.map((subtask) => (
                     <li key={subtask.id}>
                       <label><input checked={subtask.completed} disabled={workingId === subtask.id} onChange={() => toggleSubtask(subtask)} type="checkbox" /><span>{subtask.title}</span></label>
-                      <button aria-label={`Delete subtask ${subtask.title}`} disabled={workingId === subtask.id} onClick={() => deleteSubtask(subtask.id)} type="button">×</button>
+                      <button aria-label={t("taskDetails.deleteSubtask", { title: subtask.title })} disabled={workingId === subtask.id} onClick={() => deleteSubtask(subtask.id)} type="button">×</button>
                     </li>
                   ))}
                 </ul>
@@ -215,19 +216,19 @@ export function TaskDetailsPanel({ projectId, task, onClose }) {
             </section>
 
             <section className="task-detail-section">
-              <div className="task-detail-section__heading"><div><h3>Comments</h3><span>{details.comments.length}</span></div></div>
+              <div className="task-detail-section__heading"><div><h3>{t("taskDetails.comments")}</h3><span>{details.comments.length}</span></div></div>
               <form className="comment-form" onSubmit={addComment}>
-                <textarea aria-label="New comment" maxLength="2000" onChange={(event) => setCommentBody(event.target.value)} placeholder="Share an update or note..." rows="3" value={commentBody} />
-                <button className="button button--dark" disabled={workingId === "new-comment" || !commentBody.trim()} type="submit">Add comment</button>
+                <textarea aria-label={t("taskDetails.newComment")} maxLength="2000" onChange={(event) => setCommentBody(event.target.value)} placeholder={t("taskDetails.commentPlaceholder")} rows="3" value={commentBody} />
+                <button className="button button--dark" disabled={workingId === "new-comment" || !commentBody.trim()} type="submit">{t("taskDetails.addComment")}</button>
               </form>
 
-              {details.comments.length === 0 ? <p className="task-detail-empty">No comments yet.</p> : (
+              {details.comments.length === 0 ? <p className="task-detail-empty">{t("taskDetails.noComments")}</p> : (
                 <ul className="comment-list">
                   {details.comments.map((comment) => (
                     <li key={comment.id}>
                       <div className="comment-avatar" aria-hidden="true">{comment.author.name.charAt(0).toUpperCase()}</div>
                       <div><header><strong>{comment.author.name}</strong><time dateTime={comment.createdAt}>{dateTimeFormatter.format(new Date(comment.createdAt))}</time></header><p>{comment.body}</p></div>
-                      <button aria-label="Delete comment" disabled={workingId === comment.id} onClick={() => deleteComment(comment.id)} type="button">×</button>
+                      <button aria-label={t("taskDetails.deleteComment")} disabled={workingId === comment.id} onClick={() => deleteComment(comment.id)} type="button">×</button>
                     </li>
                   ))}
                 </ul>

@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthContext } from "../context/auth-context.js";
+import { LanguageContext } from "../context/language-context.js";
+import { createLanguageValue } from "../test/language.js";
 import { apiRequest } from "../lib/api.js";
 import { PlanningPage } from "./PlanningPage.jsx";
 
@@ -19,12 +21,14 @@ const authValue = {
   logout: vi.fn(),
 };
 
-function renderPlanningPage(mode) {
+function renderPlanningPage(mode, language = "en") {
   return render(
     <AuthContext.Provider value={authValue}>
-      <MemoryRouter>
-        <PlanningPage mode={mode} />
-      </MemoryRouter>
+      <LanguageContext.Provider value={createLanguageValue(language)}>
+        <MemoryRouter>
+          <PlanningPage mode={mode} />
+        </MemoryRouter>
+      </LanguageContext.Provider>
     </AuthContext.Provider>,
   );
 }
@@ -262,5 +266,31 @@ describe("Planning pages", () => {
         },
       );
     });
+  });
+
+  it("shows the agenda in German", async () => {
+    mockAgenda({
+      events: [
+        {
+          id: "event-1",
+          title: "Familienessen",
+          location: null,
+          startsAt: daysFromNow(0, 18).toISOString(),
+          endsAt: daysFromNow(0, 19).toISOString(),
+          allDay: false,
+          color: "#3B6F92",
+          owner: { id: "user-2", name: "Sara" },
+          workspace: { id: "family-1", name: "Familie", type: "TEAM" },
+        },
+      ],
+    });
+
+    renderPlanningPage("today", "de");
+
+    expect(await screen.findByRole("heading", { name: "Familienessen" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Heute" })).toBeInTheDocument();
+    expect(screen.getByText("Termine heute")).toBeInTheDocument();
+    expect(screen.getByText("Familie · von Sara")).toBeInTheDocument();
+    expect(screen.getByText("1 Termin · 0 offene Aufgaben")).toBeInTheDocument();
   });
 });
