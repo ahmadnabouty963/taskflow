@@ -1,6 +1,6 @@
-import { BrandLogo } from "../components/BrandLogo.jsx";
+import { AppNavigation } from "../components/AppNavigation.jsx";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { CalendarEntryDialog } from "../components/CalendarEntryDialog.jsx";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { EventDialog } from "../components/EventDialog.jsx";
@@ -51,8 +51,7 @@ function groupByDay(items, getDate) {
 }
 
 export function CalendarPage() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [calendarView, setCalendarView] = useState("month");
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [tasks, setTasks] = useState([]);
@@ -69,7 +68,6 @@ export function CalendarPage() {
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const range = useMemo(() => {
     if (calendarView === "week") {
@@ -170,40 +168,13 @@ export function CalendarPage() {
     }
   }
 
-  async function handleLogout() {
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      navigate("/login", { replace: true });
-    } catch (requestError) {
-      setError(requestError.message);
-      setIsLoggingOut(false);
-    }
-  }
-
   const visibleTitle = calendarView === "month"
     ? monthFormatter.format(anchorDate)
     : `${weekRangeFormatter.format(range.start)} – ${weekRangeFormatter.format(addDays(range.end, -1))}`;
 
   return (
     <div className="workspace-shell">
-      <aside className="workspace-sidebar">
-        <div>
-          <Link className="workspace-brand" to="/"><BrandLogo /></Link>
-          <nav className="workspace-nav" aria-label="Workspace navigation">
-            <Link className="workspace-nav__item" to="/app">Projects</Link>
-            <Link className="workspace-nav__item" to="/app/today">Today</Link>
-            <Link className="workspace-nav__item" to="/app/upcoming">Upcoming</Link>
-            <Link className="workspace-nav__item workspace-nav__item--active" to="/app/calendar">Calendar</Link>
-            <Link className="workspace-nav__item" to="/app/settings">Settings</Link>
-          </nav>
-        </div>
-        <div className="workspace-user">
-          <span className="user-avatar" aria-hidden="true">{user.name.charAt(0).toUpperCase()}</span>
-          <div><strong>{user.name}</strong><span>{user.email}</span></div>
-          <button className="logout-button" disabled={isLoggingOut} onClick={handleLogout} type="button">{isLoggingOut ? "..." : "Log out"}</button>
-        </div>
-      </aside>
+      <AppNavigation active="calendar" onLogoutError={setError} />
 
       <main className="workspace-main calendar-main">
         <header className="workspace-header calendar-header">

@@ -1,6 +1,6 @@
-import { BrandLogo } from "../components/BrandLogo.jsx";
+import { AppNavigation } from "../components/AppNavigation.jsx";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useAuth } from "../context/auth-context.js";
 import { useLanguage } from "../context/language-context.js";
 import { LanguageSwitcher } from "../components/LanguageSwitcher.jsx";
@@ -209,54 +209,7 @@ export function SettingsPage() {
 
   return (
     <div className="workspace-shell">
-      <aside className="workspace-sidebar">
-        <div>
-          <Link className="workspace-brand" to="/">
-            <BrandLogo />
-          </Link>
-
-          <nav className="workspace-nav" aria-label="Workspace navigation">
-            <Link className="workspace-nav__item" to="/app">
-              Projects
-            </Link>
-            <Link className="workspace-nav__item" to="/app/today">
-              Today
-            </Link>
-            <Link className="workspace-nav__item" to="/app/upcoming">
-              Upcoming
-            </Link>
-            <Link className="workspace-nav__item" to="/app/calendar">
-              Calendar
-            </Link>
-            <Link
-              className="workspace-nav__item workspace-nav__item--active"
-              to="/app/settings"
-            >
-              Settings
-            </Link>
-          </nav>
-        </div>
-
-        <div className="workspace-user">
-          <span className="user-avatar" aria-hidden="true">
-            {user.name.charAt(0).toUpperCase()}
-          </span>
-
-          <div>
-            <strong>{user.name}</strong>
-            <span>{user.email}</span>
-          </div>
-
-          <button
-            className="logout-button"
-            disabled={isLoggingOut}
-            onClick={handleLogout}
-            type="button"
-          >
-            {isLoggingOut ? "..." : "Log out"}
-          </button>
-        </div>
-      </aside>
+      <AppNavigation active="settings" onLogoutError={(message) => setSessionsStatus({ type: "error", message })} />
 
       <main className="workspace-main settings-main">
         <header className="workspace-header settings-header">
@@ -433,6 +386,21 @@ export function SettingsPage() {
                 {isLoggingOutOthers
                   ? "Signing out..."
                   : "Log out other devices"}
+              </button>
+            </div>
+
+            <div className="settings-action-row">
+              <div>
+                <strong>This device</strong>
+                <span>Sign out of Ordanly in this browser.</span>
+              </div>
+              <button
+                className="button button--ghost"
+                disabled={isLoggingOut}
+                onClick={handleLogout}
+                type="button"
+              >
+                {isLoggingOut ? "Signing out..." : "Log out of this device"}
               </button>
             </div>
           </section>

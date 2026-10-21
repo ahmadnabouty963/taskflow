@@ -1,7 +1,6 @@
-import { BrandLogo } from "../components/BrandLogo.jsx";
+import { AppNavigation } from "../components/AppNavigation.jsx";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { useAuth } from "../context/auth-context.js";
+import { Link } from "react-router";
 import { apiRequest } from "../lib/api.js";
 import { calendarName, isSharedEvent } from "../lib/calendars.js";
 
@@ -70,15 +69,12 @@ function byStartTime(first, second) {
 }
 
 export function PlanningPage({ mode }) {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [updatingTaskId, setUpdatingTaskId] = useState(null);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const todayStart = useMemo(() => startOfDay(new Date()), []);
   const tomorrowStart = useMemo(() => addDays(todayStart, 1), [todayStart]);
@@ -234,18 +230,6 @@ export function PlanningPage({ mode }) {
     }
   }
 
-  async function handleLogout() {
-    setIsLoggingOut(true);
-
-    try {
-      await logout();
-      navigate("/login", { replace: true });
-    } catch (requestError) {
-      setError(requestError.message);
-      setIsLoggingOut(false);
-    }
-  }
-
   const title = mode === "today" ? "Today" : "Upcoming";
   const description =
     mode === "today"
@@ -255,61 +239,7 @@ export function PlanningPage({ mode }) {
 
   return (
     <div className="workspace-shell">
-      <aside className="workspace-sidebar">
-        <div>
-          <Link className="workspace-brand" to="/">
-            <BrandLogo />
-          </Link>
-
-          <nav className="workspace-nav" aria-label="Workspace navigation">
-            <Link className="workspace-nav__item" to="/app">
-              Projects
-            </Link>
-            <Link
-              className={
-                "workspace-nav__item" +
-                (mode === "today" ? " workspace-nav__item--active" : "")
-              }
-              to="/app/today"
-            >
-              Today
-            </Link>
-            <Link
-              className={
-                "workspace-nav__item" +
-                (mode === "upcoming" ? " workspace-nav__item--active" : "")
-              }
-              to="/app/upcoming"
-            >
-              Upcoming
-            </Link>
-            <Link className="workspace-nav__item" to="/app/calendar">
-              Calendar
-            </Link>
-            <Link className="workspace-nav__item" to="/app/settings">
-              Settings
-            </Link>
-          </nav>
-        </div>
-
-        <div className="workspace-user">
-          <span className="user-avatar" aria-hidden="true">
-            {user.name.charAt(0).toUpperCase()}
-          </span>
-          <div>
-            <strong>{user.name}</strong>
-            <span>{user.email}</span>
-          </div>
-          <button
-            className="logout-button"
-            disabled={isLoggingOut}
-            onClick={handleLogout}
-            type="button"
-          >
-            {isLoggingOut ? "..." : "Log out"}
-          </button>
-        </div>
-      </aside>
+      <AppNavigation active={mode} onLogoutError={setError} />
 
       <main className="workspace-main planning-main">
         <header className="workspace-header planning-header">

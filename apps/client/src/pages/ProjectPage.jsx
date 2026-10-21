@@ -1,11 +1,11 @@
+import { AppNavigation } from "../components/AppNavigation.jsx";
 import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { TaskDialog } from "../components/TaskDialog.jsx";
 import { TaskDetailsPanel } from "../components/TaskDetailsPanel.jsx";
 import { TaskCard } from "../components/TaskCard.jsx";
-import { useAuth } from "../context/auth-context.js";
 import { apiRequest } from "../lib/api.js";
 
 const taskColumns = [
@@ -28,8 +28,6 @@ const taskColumns = [
 
 export function ProjectPage() {
   const { projectId } = useParams();
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
   const [projectStatus, setProjectStatus] = useState("loading");
@@ -64,7 +62,6 @@ export function ProjectPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [logoutError, setLogoutError] = useState("");
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [viewMode, setViewMode] = useState("board");
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dropStatus, setDropStatus] = useState(null);
@@ -364,19 +361,6 @@ export function ProjectPage() {
     }
   }
 
-  async function handleLogout() {
-    setLogoutError("");
-    setIsLoggingOut(true);
-
-    try {
-      await logout();
-      navigate("/login", { replace: true });
-    } catch (error) {
-      setLogoutError(error.message);
-      setIsLoggingOut(false);
-    }
-  }
-
   if (projectStatus === "loading") {
     return (
       <main className="loading-screen" aria-live="polite">
@@ -407,54 +391,7 @@ export function ProjectPage() {
 
   return (
     <div className="workspace-shell">
-      <aside className="workspace-sidebar">
-        <div>
-          <Link className="workspace-brand" to="/">
-            <BrandLogo />
-          </Link>
-
-          <nav className="workspace-nav" aria-label="Workspace navigation">
-            <Link className="workspace-nav__item" to="/app">
-              Projects
-            </Link>
-            <span className="workspace-nav__item workspace-nav__item--active">
-              Current project
-            </span>
-            <Link className="workspace-nav__item" to="/app/today">
-              Today
-            </Link>
-            <Link className="workspace-nav__item" to="/app/upcoming">
-              Upcoming
-            </Link>
-            <Link className="workspace-nav__item" to="/app/calendar">
-              Calendar
-            </Link>
-            <Link className="workspace-nav__item" to="/app/settings">
-              Settings
-            </Link>
-          </nav>
-        </div>
-
-        <div className="workspace-user">
-          <span className="user-avatar" aria-hidden="true">
-            {user.name.charAt(0).toUpperCase()}
-          </span>
-
-          <div>
-            <strong>{user.name}</strong>
-            <span>{user.email}</span>
-          </div>
-
-          <button
-            className="logout-button"
-            disabled={isLoggingOut}
-            onClick={handleLogout}
-            type="button"
-          >
-            {isLoggingOut ? "..." : "Log out"}
-          </button>
-        </div>
-      </aside>
+      <AppNavigation active="projects" currentProject onLogoutError={setLogoutError} />
 
       <main className="workspace-main workspace-main--project">
         <Link className="back-link" to="/app">

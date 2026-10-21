@@ -1,10 +1,9 @@
-import { BrandLogo } from "../components/BrandLogo.jsx";
+import { AppNavigation } from "../components/AppNavigation.jsx";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { ConfirmDialog } from "../components/ConfirmDialog.jsx";
 import { ProjectDialog } from "../components/ProjectDialog.jsx";
 import { WorkspaceDialog } from "../components/WorkspaceDialog.jsx";
-import { useAuth } from "../context/auth-context.js";
 import { apiRequest } from "../lib/api.js";
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
@@ -14,8 +13,6 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 });
 
 export function DashboardPage() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   const [projects, setProjects] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
@@ -37,7 +34,6 @@ export function DashboardPage() {
   const [archiveNotice, setArchiveNotice] = useState("");
   const [archivingProjectId, setArchivingProjectId] = useState(null);
   const [logoutError, setLogoutError] = useState("");
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -180,25 +176,9 @@ export function DashboardPage() {
     }
   }
 
-  async function handleLogout() {
-    setLogoutError("");
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      navigate("/login", { replace: true });
-    } catch (error) {
-      setLogoutError(error.message);
-      setIsLoggingOut(false);
-    }
-  }
-
   return (
     <div className="workspace-shell">
-      <aside className="workspace-sidebar">
-        <div>
-          <Link className="workspace-brand" to="/">
-            <BrandLogo />
-          </Link>
+      <AppNavigation active="projects" onLogoutError={setLogoutError}>
           <div className="workspace-switcher">
             <label htmlFor="active-workspace">Workspace</label>
             <select id="active-workspace" onChange={selectWorkspace} value={activeWorkspaceId}>
@@ -211,22 +191,7 @@ export function DashboardPage() {
               <Link to={`/app/workspaces/${activeWorkspaceId}/settings`}>Members and roles</Link>
             ) : null}
           </div>
-          <nav className="workspace-nav" aria-label="Workspace navigation">
-            <Link className="workspace-nav__item workspace-nav__item--active" to="/app">Projects</Link>
-            <Link className="workspace-nav__item" to="/app/today">Today</Link>
-            <Link className="workspace-nav__item" to="/app/upcoming">Upcoming</Link>
-            <Link className="workspace-nav__item" to="/app/calendar">Calendar</Link>
-            <Link className="workspace-nav__item" to="/app/settings">Settings</Link>
-          </nav>
-        </div>
-        <div className="workspace-user">
-          <span className="user-avatar" aria-hidden="true">{user.name.charAt(0).toUpperCase()}</span>
-          <div><strong>{user.name}</strong><span>{user.email}</span></div>
-          <button className="logout-button" disabled={isLoggingOut} onClick={handleLogout} type="button">
-            {isLoggingOut ? "..." : "Log out"}
-          </button>
-        </div>
-      </aside>
+      </AppNavigation>
 
       <main className="workspace-main">
         <header className="workspace-header">
