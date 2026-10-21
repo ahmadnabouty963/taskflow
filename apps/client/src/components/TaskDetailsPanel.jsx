@@ -5,6 +5,13 @@ const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
   timeStyle: "short",
 });
+const recurrenceLabels = { NONE: "Does not repeat", DAILY: "Daily", WEEKLY: "Weekly", MONTHLY: "Monthly" };
+function formatMinutes(minutes) {
+  if (!minutes) return "Not recorded";
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return [hours ? `${hours}h` : "", rest ? `${rest}m` : ""].filter(Boolean).join(" ");
+}
 
 export function TaskDetailsPanel({ projectId, task, onClose }) {
   const [details, setDetails] = useState(null);
@@ -176,6 +183,9 @@ export function TaskDetailsPanel({ projectId, task, onClose }) {
               <div className="task-detail-meta">
                 <div><span>Responsible</span><strong>{details.assignee?.name || "Unassigned"}</strong></div>
                 <div><span>Due date</span><strong>{details.dueDate ? new Date(details.dueDate).toLocaleDateString() : "None"}</strong></div>
+                <div><span>Repeat</span><strong>{recurrenceLabels[details.recurrence ?? "NONE"]}</strong></div>
+                <div><span>Estimated</span><strong>{formatMinutes(details.estimatedMinutes)}</strong></div>
+                <div><span>Time spent</span><strong>{formatMinutes(details.actualMinutes)}</strong></div>
               </div>
               {details.labels?.length ? <div className="task-card__labels task-detail-labels" aria-label="Task labels">{details.labels.map((label) => <span key={label.id} style={{ "--label-color": label.color }}>{label.name}</span>)}</div> : null}
             </section>

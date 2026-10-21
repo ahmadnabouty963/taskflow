@@ -6,6 +6,30 @@ const taskRelations = {
   labels: { select: { id: true, name: true, color: true } },
 };
 
+function getNextDueDate(currentDueDate, recurrence) {
+  const next = new Date(currentDueDate);
+  if (recurrence === "DAILY") next.setUTCDate(next.getUTCDate() + 1);
+  if (recurrence === "WEEKLY") next.setUTCDate(next.getUTCDate() + 7);
+  if (recurrence === "MONTHLY") {
+    const originalDay = next.getUTCDate();
+    next.setUTCDate(1);
+    next.setUTCMonth(next.getUTCMonth() + 1);
+    const lastDay = new Date(Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0)).getUTCDate();
+    next.setUTCDate(Math.min(originalDay, lastDay));
+  }
+  return next;
+}
+
+function sendMissingRecurringDate(response) {
+  return response.status(422).json({
+    success: false,
+    error: {
+      code: "RECURRING_TASK_REQUIRES_DUE_DATE",
+      message: "A due date is required for a recurring task.",
+    },
+  });
+}
+
 async function validateRelations(project, assigneeId, labelIds) {
   if (assigneeId) {
     const membership = await prisma.workspaceMember.findUnique({
@@ -37,6 +61,9 @@ export async function createTask(request, response, next) {
     if (!project) return response.status(404).json({ success: false, error: { code: "PROJECT_NOT_FOUND", message: "Project not found." } });
 
     const { assigneeId, labelIds, ...fields } = request.body;
+    if (fields.recurrence && fields.recurrence !== "NONE" && !fields.dueDate) {
+      return sendMissingRecurringDate(response);
+    }
     const relationError = await validateRelations(project, assigneeId, labelIds);
     if (relationError) return sendRelationError(response, relationError);
 
@@ -112,19 +139,59 @@ export async function updateTask(request, response, next) {
     if (!existingTask) return response.status(404).json({ success: false, error: { code: "TASK_NOT_FOUND", message: "Task not found." } });
 
     const { assigneeId, labelIds, ...fields } = request.body;
+    const effectiveRecurrence = fields.recurrence ?? existingTask.recurrence;
+    const effectiveDueDate = fields.dueDate !== undefined ? fields.dueDate : existingTask.dueDate;
+    if (effectiveRecurrence !== "NONE" && !effectiveDueDate) {
+      return sendMissingRecurringDate(response);
+    }
     const relationError = await validateRelations(existingTask.project, assigneeId, labelIds);
     if (relationError) return sendRelationError(response, relationError);
 
-    const task = await prisma.task.update({
-      where: { id: taskId },
-      data: {
-        ...fields,
-        ...(assigneeId !== undefined ? { assigneeId } : {}),
-        ...(labelIds !== undefined ? { labels: { set: labelIds.map((id) => ({ id })) } } : {}),
-      },
-      include: taskRelations,
+    const shouldCreateNext =
+      fields.status === "DONE" &&
+      existingTask.status !== "DONE" &&
+      effectiveRecurrence !== "NONE";
+
+    const { task, nextOccurrence } = await prisma.$transaction(async (transaction) => {
+      const updatedTask = await transaction.task.update({
+        where: { id: taskId },
+        data: {
+          ...fields,
+          ...(assigneeId !== undefined ? { assigneeId } : {}),
+          ...(labelIds !== undefined ? { labels: { set: labelIds.map((id) => ({ id })) } } : {}),
+        },
+        include: taskRelations,
+      });
+
+      if (!shouldCreateNext) return { task: updatedTask, nextOccurrence: null };
+
+      const alreadyCreated = await transaction.task.findUnique({
+        where: { recurringFromId: taskId },
+        include: taskRelations,
+      });
+      if (alreadyCreated) return { task: updatedTask, nextOccurrence: alreadyCreated };
+
+      const nextTask = await transaction.task.create({
+        data: {
+          title: updatedTask.title,
+          description: updatedTask.description,
+          status: "TODO",
+          priority: updatedTask.priority,
+          dueDate: getNextDueDate(updatedTask.dueDate, updatedTask.recurrence),
+          recurrence: updatedTask.recurrence,
+          estimatedMinutes: updatedTask.estimatedMinutes,
+          projectId,
+          assigneeId: updatedTask.assigneeId,
+          recurringFromId: taskId,
+          labels: {
+            connect: updatedTask.labels.map(({ id }) => ({ id })),
+          },
+        },
+        include: taskRelations,
+      });
+      return { task: updatedTask, nextOccurrence: nextTask };
     });
-    return response.status(200).json({ success: true, data: { task } });
+    return response.status(200).json({ success: true, data: { task, nextOccurrence } });
   } catch (error) { next(error); }
 }
 

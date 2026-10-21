@@ -3693,3 +3693,33 @@ input:focus-visible {
 .task-detail-meta strong { font-size: 0.8rem; }
 .task-detail-labels { margin: 0.5rem 0 0; }
 @media (max-width: 620px) { .label-create-row { grid-template-columns: 1fr auto; } .label-create-row .button { grid-column: 1 / -1; width: 100%; } }
+
+/* Recurring tasks and time tracking */
+.task-card__schedule {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: -0.3rem 0 0.85rem;
+}
+
+.task-card__schedule span {
+  padding: 0.28rem 0.52rem;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  color: var(--muted);
+  background: var(--surface);
+  font-size: 0.66rem;
+  font-weight: 650;
+}
+
+.task-detail-meta {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 720px) {
+  .task-detail-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 460px) {
+  .task-detail-meta { grid-template-columns: 1fr; }
+}

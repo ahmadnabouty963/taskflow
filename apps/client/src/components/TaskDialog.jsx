@@ -16,6 +16,9 @@ export function TaskDialog({ projectId, projects = EMPTY_PROJECTS, initialDueDat
     status: task?.status ?? "TODO",
     priority: task?.priority ?? "MEDIUM",
     dueDate: getDateInputValue(task?.dueDate ?? initialDueDate),
+    recurrence: task?.recurrence ?? "NONE",
+    estimatedMinutes: task?.estimatedMinutes?.toString() ?? "",
+    actualMinutes: task?.actualMinutes?.toString() ?? "",
     assigneeId: task?.assigneeId ?? task?.assignee?.id ?? "",
     labelIds: task?.labels?.map(({ id }) => id) ?? [],
   });
@@ -81,9 +84,17 @@ export function TaskDialog({ projectId, projects = EMPTY_PROJECTS, initialDueDat
 
   async function handleSubmit(event) {
     event.preventDefault(); setErrorMessage(""); setIsSubmitting(true);
+    if (form.recurrence !== "NONE" && !form.dueDate) {
+      setErrorMessage("Choose a due date before making this task repeat.");
+      setIsSubmitting(false);
+      return;
+    }
     const payload = {
       title: form.title.trim(), description: form.description.trim(), status: form.status,
       priority: form.priority, dueDate: getIsoDate(form.dueDate),
+      recurrence: form.recurrence,
+      estimatedMinutes: form.estimatedMinutes ? Number(form.estimatedMinutes) : null,
+      actualMinutes: form.actualMinutes ? Number(form.actualMinutes) : null,
       assigneeId: form.assigneeId || null, labelIds: form.labelIds,
     };
     try {
@@ -109,6 +120,9 @@ export function TaskDialog({ projectId, projects = EMPTY_PROJECTS, initialDueDat
             <label className="form-field"><span>Priority</span><select name="priority" onChange={handleChange} value={form.priority}><option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option></select></label>
             <label className="form-field"><span>Due date</span><input name="dueDate" onChange={handleChange} type="date" value={form.dueDate} /></label>
             <label className="form-field"><span>Responsible person</span><select disabled={optionsStatus !== "success"} name="assigneeId" onChange={handleChange} value={form.assigneeId}><option value="">Unassigned</option>{options.members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></label>
+            <label className="form-field"><span>Repeat</span><select aria-label="Repeat" name="recurrence" onChange={handleChange} value={form.recurrence}><option value="NONE">Does not repeat</option><option value="DAILY">Daily</option><option value="WEEKLY">Weekly</option><option value="MONTHLY">Monthly</option></select><small>A new task appears when this one is completed.</small></label>
+            <label className="form-field"><span>Estimated time (minutes)</span><input inputMode="numeric" min="1" name="estimatedMinutes" onChange={handleChange} placeholder="e.g. 90" type="number" value={form.estimatedMinutes} /></label>
+            <label className="form-field"><span>Time spent (minutes)</span><input inputMode="numeric" min="1" name="actualMinutes" onChange={handleChange} placeholder="e.g. 45" type="number" value={form.actualMinutes} /></label>
           </div>
           <fieldset className="task-label-field"><legend>Labels</legend>
             {optionsStatus === "loading" ? <p>Loading workspace options...</p> : null}

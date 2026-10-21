@@ -5,6 +5,18 @@ const labelIds = z.array(z.string().uuid("Label ID must be a valid UUID.")).max(
   (values) => new Set(values).size === values.length,
   "Labels must be unique.",
 ).optional();
+const recurrence = z.enum(["NONE", "DAILY", "WEEKLY", "MONTHLY"]);
+const minutes = z.number().int().min(1).max(525600).nullable().optional();
+
+function requireDueDateForRecurrence(data, context) {
+  if (data.recurrence && data.recurrence !== "NONE" && !data.dueDate) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["dueDate"],
+      message: "A due date is required for a recurring task.",
+    });
+  }
+}
 
 export const createTaskSchema = z.object({
   title: z.string().trim().min(1, "Task title is required.").max(150),
@@ -12,9 +24,12 @@ export const createTaskSchema = z.object({
   status: z.enum(["TODO", "IN_PROGRESS", "DONE"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   dueDate: z.string().datetime({ offset: true }).transform((value) => new Date(value)).nullable().optional(),
+  recurrence: recurrence.optional(),
+  estimatedMinutes: minutes,
+  actualMinutes: minutes,
   assigneeId,
   labelIds,
-});
+}).superRefine(requireDueDateForRecurrence);
 
 export const taskIdParamsSchema = z.object({
   projectId: z.string().uuid("Project ID must be a valid UUID."),
@@ -27,6 +42,9 @@ export const updateTaskSchema = z.object({
   status: z.enum(["TODO", "IN_PROGRESS", "DONE"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   dueDate: z.string().datetime({ offset: true }).transform((value) => new Date(value)).nullable().optional(),
+  recurrence: recurrence.optional(),
+  estimatedMinutes: minutes,
+  actualMinutes: minutes,
   assigneeId,
   labelIds,
 }).refine((data) => Object.keys(data).length > 0, {
