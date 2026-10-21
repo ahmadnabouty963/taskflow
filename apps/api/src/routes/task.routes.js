@@ -7,6 +7,7 @@ import {
   deleteTask,
 } from "../controllers/task.controller.js";
 import { authenticate } from "../middleware/authenticate.js";
+import { getTaskOptions } from "../controllers/task-metadata.controller.js";
 import { validateBody } from "../middleware/validateBody.js";
 import { validateParams } from "../middleware/validateParams.js";
 import { projectIdParamsSchema } from "../schemas/project.schema.js";
@@ -42,6 +43,7 @@ taskRouter.use(validateParams(projectIdParamsSchema));
 taskRouter.post("/", validateBody(createTaskSchema), createTask);
 
 taskRouter.get("/", validateQuery(taskListQuerySchema), getTasks);
+taskRouter.get("/options", getTaskOptions);
 taskRouter.post(
   "/:taskId/subtasks",
   validateParams(taskIdParamsSchema),

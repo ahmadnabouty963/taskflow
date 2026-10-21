@@ -1,110 +1,16 @@
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-});
+const dateFormatter = new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short", year: "numeric" });
+const statuses = [{ value: "TODO", label: "To do" }, { value: "IN_PROGRESS", label: "In progress" }, { value: "DONE", label: "Done" }];
+function formatPriority(priority) { return priority.charAt(0) + priority.slice(1).toLowerCase(); }
 
-const statuses = [
-  { value: "TODO", label: "To do" },
-  { value: "IN_PROGRESS", label: "In progress" },
-  { value: "DONE", label: "Done" },
-];
-
-function formatPriority(priority) {
-  return priority.charAt(0) + priority.slice(1).toLowerCase();
-}
-
-export function TaskCard({
-  task,
-  statusLabel,
-  isMoving,
-  isListView = false,
-  onEdit,
-  onDelete,
-  onOpenDetails,
-  onStatusChange,
-  onDragStart,
-  onDragEnd,
-}) {
-  const isOverdue =
-    task.dueDate &&
-    task.status !== "DONE" &&
-    new Date(task.dueDate) < new Date();
-
+export function TaskCard({ task, statusLabel, isMoving, isListView = false, onEdit, onDelete, onOpenDetails, onStatusChange, onDragStart, onDragEnd }) {
+  const isOverdue = task.dueDate && task.status !== "DONE" && new Date(task.dueDate) < new Date();
   return (
-    <article
-      aria-busy={isMoving}
-      className={`task-card${isMoving ? " task-card--moving" : ""}${
-        isListView ? " task-card--list" : ""
-      }`}
-      draggable={!isMoving}
-      onDragEnd={onDragEnd}
-      onDragStart={(event) => onDragStart(event, task)}
-      role={isListView ? "listitem" : undefined}
-    >
-      <header>
-        <span
-          className={`priority-badge priority-badge--${task.priority.toLowerCase()}`}
-        >
-          {formatPriority(task.priority)}
-        </span>
-
-        <span className="task-card__drag-hint" aria-hidden="true">
-          ⋮⋮
-        </span>
-      </header>
-
-      <div className="task-card__content">
-        <h3>{task.title}</h3>
-        {task.description && <p>{task.description}</p>}
-      </div>
-
-      <footer>
-        <span className={isOverdue ? "task-due--overdue" : ""}>
-          {task.dueDate
-            ? `${isOverdue ? "Overdue" : "Due"} ${dateFormatter.format(
-                new Date(task.dueDate),
-              )}`
-            : "No due date"}
-        </span>
-
-        <div className="task-card__controls">
-          <label className="task-status-control">
-            <span className="visually-hidden">
-              Change status for {task.title}
-            </span>
-            <select
-              aria-label={`Change status for ${task.title}`}
-              disabled={isMoving}
-              onChange={(event) => onStatusChange(task, event.target.value)}
-              value={task.status}
-            >
-              {statuses.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="task-card__actions">
-            <button onClick={() => onOpenDetails(task)} type="button">
-              Details
-            </button>
-            <button onClick={() => onEdit(task)} type="button">
-              Edit
-            </button>
-            <button
-              className="project-delete"
-              onClick={() => onDelete(task)}
-              type="button"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </footer>
-
+    <article aria-busy={isMoving} className={`task-card${isMoving ? " task-card--moving" : ""}${isListView ? " task-card--list" : ""}`} draggable={!isMoving} onDragEnd={onDragEnd} onDragStart={(event) => onDragStart(event, task)} role={isListView ? "listitem" : undefined}>
+      <header><span className={`priority-badge priority-badge--${task.priority.toLowerCase()}`}>{formatPriority(task.priority)}</span><span className="task-card__drag-hint" aria-hidden="true">⋮⋮</span></header>
+      <div className="task-card__content"><h3>{task.title}</h3>{task.description ? <p>{task.description}</p> : null}</div>
+      {task.labels?.length ? <div className="task-card__labels" aria-label="Task labels">{task.labels.map((label) => <span key={label.id} style={{ "--label-color": label.color }}>{label.name}</span>)}</div> : null}
+      <div className="task-card__assignment"><span className={task.assignee ? "assignee-avatar" : "assignee-avatar assignee-avatar--empty"} aria-hidden="true">{task.assignee?.name?.charAt(0).toUpperCase() || "–"}</span><span>{task.assignee?.name || "Unassigned"}</span></div>
+      <footer><span className={isOverdue ? "task-due--overdue" : ""}>{task.dueDate ? `${isOverdue ? "Overdue" : "Due"} ${dateFormatter.format(new Date(task.dueDate))}` : "No due date"}</span><div className="task-card__controls"><label className="task-status-control"><span className="visually-hidden">Change status for {task.title}</span><select aria-label={`Change status for ${task.title}`} disabled={isMoving} onChange={(event) => onStatusChange(task, event.target.value)} value={task.status}>{statuses.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}</select></label><div className="task-card__actions"><button onClick={() => onOpenDetails(task)} type="button">Details</button><button onClick={() => onEdit(task)} type="button">Edit</button><button className="project-delete" onClick={() => onDelete(task)} type="button">Delete</button></div></div></footer>
       <span className="visually-hidden">Current status: {statusLabel}</span>
     </article>
   );

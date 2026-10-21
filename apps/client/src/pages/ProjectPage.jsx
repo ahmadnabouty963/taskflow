@@ -48,7 +48,10 @@ export function ProjectPage() {
     search: "",
     status: "",
     priority: "",
+    assigneeId: "",
+    labelId: "",
   });
+  const [taskOptions, setTaskOptions] = useState({ members: [], labels: [] });
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
@@ -66,6 +69,14 @@ export function ProjectPage() {
   const [dropStatus, setDropStatus] = useState(null);
   const [movingTaskId, setMovingTaskId] = useState(null);
   const [moveError, setMoveError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    apiRequest(`/api/projects/${projectId}/tasks/options`, { signal: controller.signal })
+      .then((result) => setTaskOptions(result.data))
+      .catch((error) => { if (error.name !== "AbortError") setTaskOptions({ members: [], labels: [] }); });
+    return () => controller.abort();
+  }, [projectId]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -126,9 +137,9 @@ export function ProjectPage() {
         query.set("status", filters.status);
       }
 
-      if (filters.priority) {
-        query.set("priority", filters.priority);
-      }
+      if (filters.priority) { query.set("priority", filters.priority); }
+      if (filters.assigneeId) { query.set("assigneeId", filters.assigneeId); }
+      if (filters.labelId) { query.set("labelId", filters.labelId); }
 
       try {
         const result = await apiRequest(
@@ -153,7 +164,7 @@ export function ProjectPage() {
     return () => {
       controller.abort();
     };
-  }, [projectId, debouncedSearch, filters.status, filters.priority, reloadKey]);
+  }, [projectId, debouncedSearch, filters.status, filters.priority, filters.assigneeId, filters.labelId, reloadKey]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -214,7 +225,7 @@ export function ProjectPage() {
   }, [tasks]);
 
   const filtersAreActive = Boolean(
-    filters.search || filters.status || filters.priority,
+    filters.search || filters.status || filters.priority || filters.assigneeId || filters.labelId,
   );
 
   function handleFilterChange(event) {
@@ -231,6 +242,8 @@ export function ProjectPage() {
       search: "",
       status: "",
       priority: "",
+      assigneeId: "",
+      labelId: "",
     });
   }
 
@@ -542,6 +555,10 @@ export function ProjectPage() {
               <option value="HIGH">High priority</option>
             </select>
           </label>
+
+          <label><span className="visually-hidden">Filter by responsible person</span><select aria-label="Filter by responsible person" name="assigneeId" onChange={handleFilterChange} value={filters.assigneeId}><option value="">All people</option>{taskOptions.members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></label>
+
+          <label><span className="visually-hidden">Filter by label</span><select aria-label="Filter by label" name="labelId" onChange={handleFilterChange} value={filters.labelId}><option value="">All labels</option>{taskOptions.labels.map((label) => <option key={label.id} value={label.id}>{label.name}</option>)}</select></label>
 
           {filtersAreActive && (
             <button

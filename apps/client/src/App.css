@@ -3665,3 +3665,31 @@ input:focus-visible {
   .invitation-actions .button { width: 100%; }
   .pending-invitation { align-items: start; grid-template-columns: 1fr; }
 }
+
+/* Task ownership and labels */
+.dialog-card--wide { width: min(680px, calc(100% - 2rem)); }
+.task-label-field { margin: 0; padding: 0; border: 0; }
+.task-label-field legend { margin-bottom: 0.65rem; color: var(--ink); font-size: 0.8rem; font-weight: 700; }
+.task-label-field > p { margin: 0.35rem 0; color: var(--muted); font-size: 0.76rem; }
+.task-label-options { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.task-label-options label { position: relative; cursor: pointer; }
+.task-label-options input { position: absolute; opacity: 0; pointer-events: none; }
+.task-label-options span,
+.task-card__labels span { display: inline-flex; align-items: center; min-height: 1.65rem; padding: 0.28rem 0.62rem; border: 1px solid color-mix(in srgb, var(--label-color) 52%, var(--line)); border-radius: 999px; color: color-mix(in srgb, var(--label-color) 78%, var(--ink)); background: color-mix(in srgb, var(--label-color) 12%, var(--surface)); font-size: 0.68rem; font-weight: 700; }
+.task-label-options input:checked + span { color: #fff; background: var(--label-color); border-color: var(--label-color); }
+.task-label-options input:focus-visible + span { outline: 3px solid color-mix(in srgb, var(--label-color) 32%, transparent); outline-offset: 2px; }
+.label-create-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: end; gap: 0.7rem; padding-top: 0.15rem; }
+.label-create-row .button { min-height: 45px; }
+.label-color-control { display: grid; gap: 0.45rem; color: var(--ink); font-size: 0.76rem; font-weight: 650; }
+.label-color-control input { width: 48px; height: 45px; padding: 3px; border: 1px solid var(--line); border-radius: 0.6rem; background: var(--surface); cursor: pointer; }
+.field-error { color: #b43838 !important; }
+.task-card__labels { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
+.task-card__assignment { display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.85rem; color: var(--muted); font-size: 0.72rem; }
+.assignee-avatar { display: grid; width: 1.65rem; height: 1.65rem; place-items: center; border-radius: 50%; color: #fff; background: var(--green); font-size: 0.68rem; font-weight: 800; }
+.assignee-avatar--empty { color: var(--muted); background: var(--paper); border: 1px dashed var(--line); }
+.task-detail-meta { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem !important; margin: 1rem 0; text-transform: none !important; }
+.task-detail-meta div { display: grid; gap: 0.2rem; padding: 0.7rem; border: 1px solid var(--line); border-radius: 0.65rem; background: var(--surface); }
+.task-detail-meta span { color: var(--muted); font-size: 0.64rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.task-detail-meta strong { font-size: 0.8rem; }
+.task-detail-labels { margin: 0.5rem 0 0; }
+@media (max-width: 620px) { .label-create-row { grid-template-columns: 1fr auto; } .label-create-row .button { grid-column: 1 / -1; width: 100%; } }

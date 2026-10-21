@@ -173,7 +173,11 @@ export function TaskDetailsPanel({ projectId, task, onClose }) {
             <section className="task-detail-summary">
               <div><span className={`priority-badge priority-badge--${details.priority.toLowerCase()}`}>{details.priority.toLowerCase()}</span><span>{details.status.replace("_", " ").toLowerCase()}</span></div>
               <p>{details.description || "No description has been added."}</p>
-              <small>{details.dueDate ? `Due ${new Date(details.dueDate).toLocaleDateString()}` : "No due date"}</small>
+              <div className="task-detail-meta">
+                <div><span>Responsible</span><strong>{details.assignee?.name || "Unassigned"}</strong></div>
+                <div><span>Due date</span><strong>{details.dueDate ? new Date(details.dueDate).toLocaleDateString() : "None"}</strong></div>
+              </div>
+              {details.labels?.length ? <div className="task-card__labels task-detail-labels" aria-label="Task labels">{details.labels.map((label) => <span key={label.id} style={{ "--label-color": label.color }}>{label.name}</span>)}</div> : null}
             </section>
 
             <section className="task-detail-section">

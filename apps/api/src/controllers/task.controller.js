@@ -1,255 +1,141 @@
 import prisma from "../lib/prisma.js";
-import {
-  findAccessibleProject,
-  workspaceWriteRoles,
-} from "../lib/workspace-access.js";
+import { findAccessibleProject, workspaceWriteRoles } from "../lib/workspace-access.js";
+
+const taskRelations = {
+  assignee: { select: { id: true, name: true, email: true } },
+  labels: { select: { id: true, name: true, color: true } },
+};
+
+async function validateRelations(project, assigneeId, labelIds) {
+  if (assigneeId) {
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId: project.workspaceId, userId: assigneeId } },
+    });
+    if (!membership) return "ASSIGNEE_NOT_IN_WORKSPACE";
+  }
+
+  if (labelIds?.length) {
+    const count = await prisma.label.count({
+      where: { id: { in: labelIds }, workspaceId: project.workspaceId },
+    });
+    if (count !== labelIds.length) return "LABEL_NOT_IN_WORKSPACE";
+  }
+  return null;
+}
+
+function sendRelationError(response, code) {
+  const message = code === "ASSIGNEE_NOT_IN_WORKSPACE"
+    ? "The responsible person must be a member of this workspace."
+    : "Every label must belong to this workspace.";
+  return response.status(422).json({ success: false, error: { code, message } });
+}
 
 export async function createTask(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
+    const project = await findAccessibleProject(projectId, request.user.id, workspaceWriteRoles);
+    if (!project) return response.status(404).json({ success: false, error: { code: "PROJECT_NOT_FOUND", message: "Project not found." } });
 
-    const project = await findAccessibleProject(
-      projectId,
-      request.user.id,
-      workspaceWriteRoles,
-    );
-
-    if (!project) {
-      return response.status(404).json({
-        success: false,
-        error: {
-          code: "PROJECT_NOT_FOUND",
-          message: "Project not found.",
-        },
-      });
-    }
+    const { assigneeId, labelIds, ...fields } = request.body;
+    const relationError = await validateRelations(project, assigneeId, labelIds);
+    if (relationError) return sendRelationError(response, relationError);
 
     const task = await prisma.task.create({
       data: {
-        ...request.body,
+        ...fields,
         projectId,
+        ...(assigneeId !== undefined ? { assigneeId } : {}),
+        ...(labelIds ? { labels: { connect: labelIds.map((id) => ({ id })) } } : {}),
       },
+      include: taskRelations,
     });
-
-    return response.status(201).json({
-      success: true,
-      data: {
-        task,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+    return response.status(201).json({ success: true, data: { task } });
+  } catch (error) { next(error); }
 }
 
 export async function getTasks(request, response, next) {
   try {
     const { projectId } = request.validatedParams;
-    const { status, priority, search, page, limit } = request.validatedQuery;
-
+    const { status, priority, search, page, limit, assigneeId, labelId } = request.validatedQuery;
     const project = await findAccessibleProject(projectId, request.user.id);
-
-    if (!project) {
-      return response.status(404).json({
-        success: false,
-        error: {
-          code: "PROJECT_NOT_FOUND",
-          message: "Project not found.",
-        },
-      });
-    }
+    if (!project) return response.status(404).json({ success: false, error: { code: "PROJECT_NOT_FOUND", message: "Project not found." } });
 
     const where = {
       projectId,
-      ...(status && {
-        status,
-      }),
-      ...(priority && {
-        priority,
-      }),
-      ...(search && {
-        OR: [
-          {
-            title: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            description: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-        ],
-      }),
+      ...(status && { status }),
+      ...(priority && { priority }),
+      ...(assigneeId && { assigneeId }),
+      ...(labelId && { labels: { some: { id: labelId } } }),
+      ...(search && { OR: [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ] }),
     };
 
     const [tasks, total] = await prisma.$transaction([
       prisma.task.findMany({
         where,
-        include: {
-          _count: {
-            select: { subtasks: true, comments: true },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
+        include: { ...taskRelations, _count: { select: { subtasks: true, comments: true } } },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.task.count({
-        where,
-      }),
+      prisma.task.count({ where }),
     ]);
-
-    return response.status(200).json({
-      success: true,
-      data: {
-        tasks,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+    return response.status(200).json({ success: true, data: { tasks, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } } });
+  } catch (error) { next(error); }
 }
+
 export async function getTaskById(request, response, next) {
   try {
     const { projectId, taskId } = request.validatedParams;
-
     const task = await prisma.task.findFirst({
-      where: {
-        id: taskId,
-        projectId,
-        project: {
-          workspace: {
-            members: { some: { userId: request.user.id } },
-          },
-        },
-      },
+      where: { id: taskId, projectId, project: { workspace: { members: { some: { userId: request.user.id } } } } },
       include: {
-        subtasks: {
-          orderBy: { createdAt: "asc" },
-        },
-        comments: {
-          include: {
-            author: {
-              select: { id: true, name: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        },
+        ...taskRelations,
+        subtasks: { orderBy: { createdAt: "asc" } },
+        comments: { include: { author: { select: { id: true, name: true } } }, orderBy: { createdAt: "desc" } },
       },
     });
-
-    if (!task) {
-      return response.status(404).json({
-        success: false,
-        error: {
-          code: "TASK_NOT_FOUND",
-          message: "Task not found.",
-        },
-      });
-    }
-
-    return response.status(200).json({
-      success: true,
-      data: {
-        task,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+    if (!task) return response.status(404).json({ success: false, error: { code: "TASK_NOT_FOUND", message: "Task not found." } });
+    return response.status(200).json({ success: true, data: { task } });
+  } catch (error) { next(error); }
 }
+
 export async function updateTask(request, response, next) {
   try {
     const { projectId, taskId } = request.validatedParams;
-
     const existingTask = await prisma.task.findFirst({
-      where: {
-        id: taskId,
-        projectId,
-        project: {
-          workspace: {
-            members: {
-              some: { userId: request.user.id, role: { in: workspaceWriteRoles } },
-            },
-          },
-        },
-      },
+      where: { id: taskId, projectId, project: { workspace: { members: { some: { userId: request.user.id, role: { in: workspaceWriteRoles } } } } } },
+      include: { project: { select: { workspaceId: true } } },
     });
+    if (!existingTask) return response.status(404).json({ success: false, error: { code: "TASK_NOT_FOUND", message: "Task not found." } });
 
-    if (!existingTask) {
-      return response.status(404).json({
-        success: false,
-        error: {
-          code: "TASK_NOT_FOUND",
-          message: "Task not found.",
-        },
-      });
-    }
+    const { assigneeId, labelIds, ...fields } = request.body;
+    const relationError = await validateRelations(existingTask.project, assigneeId, labelIds);
+    if (relationError) return sendRelationError(response, relationError);
 
     const task = await prisma.task.update({
-      where: {
-        id: taskId,
-      },
-      data: request.body,
-    });
-
-    return response.status(200).json({
-      success: true,
+      where: { id: taskId },
       data: {
-        task,
+        ...fields,
+        ...(assigneeId !== undefined ? { assigneeId } : {}),
+        ...(labelIds !== undefined ? { labels: { set: labelIds.map((id) => ({ id })) } } : {}),
       },
+      include: taskRelations,
     });
-  } catch (error) {
-    next(error);
-  }
+    return response.status(200).json({ success: true, data: { task } });
+  } catch (error) { next(error); }
 }
+
 export async function deleteTask(request, response, next) {
   try {
     const { projectId, taskId } = request.validatedParams;
-
     const existingTask = await prisma.task.findFirst({
-      where: {
-        id: taskId,
-        projectId,
-        project: {
-          workspace: {
-            members: {
-              some: { userId: request.user.id, role: { in: workspaceWriteRoles } },
-            },
-          },
-        },
-      },
+      where: { id: taskId, projectId, project: { workspace: { members: { some: { userId: request.user.id, role: { in: workspaceWriteRoles } } } } } },
     });
-
-    if (!existingTask) {
-      return response.status(404).json({
-        success: false,
-        error: {
-          code: "TASK_NOT_FOUND",
-          message: "Task not found.",
-        },
-      });
-    }
-
-    await prisma.task.delete({
-      where: {
-        id: taskId,
-      },
-    });
-
+    if (!existingTask) return response.status(404).json({ success: false, error: { code: "TASK_NOT_FOUND", message: "Task not found." } });
+    await prisma.task.delete({ where: { id: taskId } });
     return response.status(204).send();
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
