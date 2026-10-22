@@ -1,6 +1,6 @@
 import { AppNavigation } from "../components/AppNavigation.jsx";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/auth-context.js";
 import { useLanguage } from "../context/language-context.js";
 import { LanguageSwitcher } from "../components/LanguageSwitcher.jsx";
@@ -226,6 +226,17 @@ export function SettingsPage() {
         </header>
 
         <div className="settings-grid">
+          {user.isPlatformAdmin && (
+            <section className="settings-card settings-card--wide" aria-labelledby="admin-link-title">
+              <header>
+                <p className="eyebrow">{t("admin.eyebrow")}</p>
+                <h2 id="admin-link-title">{t("admin.title")}</h2>
+                <p>{t("admin.settingsCopy")}</p>
+              </header>
+              <Link className="button button--dark" to="/app/admin">{t("admin.open")}</Link>
+            </section>
+          )}
+
           <section className="settings-card settings-card--language" aria-labelledby="language-title">
             <header>
               <p className="eyebrow">{t("settings.language.eyebrow")}</p>

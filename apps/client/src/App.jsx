@@ -11,6 +11,7 @@ import { ProjectPage } from "./pages/ProjectPage.jsx";
 import { ImpressumPage } from "./pages/ImpressumPage.jsx";
 import { PrivacyPage } from "./pages/PrivacyPage.jsx";
 import { SettingsPage } from "./pages/SettingsPage.jsx";
+import { AdminPage } from "./pages/AdminPage.jsx";
 import { PlanningPage } from "./pages/PlanningPage.jsx";
 import { CalendarPage } from "./pages/CalendarPage.jsx";
 import { WorkspaceSettingsPage } from "./pages/WorkspaceSettingsPage.jsx";
@@ -84,6 +85,14 @@ function App() {
           element={
             <ProtectedRoute>
               <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/app/admin"
+          element={
+            <ProtectedRoute>
+              <AdminPage />
             </ProtectedRoute>
           }
         />

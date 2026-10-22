@@ -16,6 +16,7 @@ function getPageTitleKey(pathname) {
   if (pathname === "/app/upcoming") return "page.upcoming";
   if (pathname === "/app/calendar") return "page.calendar";
   if (pathname === "/app/settings") return "page.settings";
+  if (pathname === "/app/admin") return "page.admin";
   if (pathname.startsWith("/app/projects/")) return "page.project";
   return "page.notFound";
 }

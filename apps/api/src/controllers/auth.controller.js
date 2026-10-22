@@ -1,5 +1,6 @@
 import argon2 from "argon2";
-import { removeAttachmentFiles, storageKeysWhere } from "../lib/attachments.js";
+import { countryFromIp, describeUserAgent } from "../lib/client-info.js";
+import { deleteUserWithFiles } from "../lib/accounts.js";
 import prisma from "../lib/prisma.js";
 import {
   createAuthToken,
@@ -18,6 +19,7 @@ const publicUserSelect = {
   email: true,
   emailVerifiedAt: true,
   language: true,
+  isPlatformAdmin: true,
   createdAt: true,
 };
 
@@ -145,6 +147,15 @@ export async function login(request, response, next) {
         },
       });
     }
+    if (user.blockedAt) {
+      return response.status(403).json({
+        success: false,
+        error: {
+          code: "ACCOUNT_BLOCKED",
+          message: "This account has been blocked. Please contact support.",
+        },
+      });
+    }
 
     const sessionToken = createSessionToken();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -153,6 +164,17 @@ export async function login(request, response, next) {
         tokenHash: hashSessionToken(sessionToken),
         userId: user.id,
         expiresAt,
+      },
+    });
+    const { browser, device } = describeUserAgent(request.get("user-agent"));
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastLoginAt: new Date(),
+        lastActiveAt: new Date(),
+        lastLoginCountry: countryFromIp(request.ip),
+        lastLoginDevice: device,
+        lastLoginBrowser: browser,
       },
     });
     response.cookie("session_token", sessionToken, {
@@ -171,6 +193,7 @@ export async function login(request, response, next) {
           email: user.email,
           emailVerifiedAt: user.emailVerifiedAt,
           language: user.language,
+          isPlatformAdmin: user.isPlatformAdmin,
         },
       },
     });
@@ -403,10 +426,7 @@ export async function deleteAccount(request, response, next) {
         error: { code: "INVALID_PASSWORD", message: "Password is incorrect." },
       });
     }
-    // Owned workspaces are deleted with the account, and with them every file.
-    const storageKeys = await storageKeysWhere({ workspace: { ownerId: request.user.id } });
-    await prisma.user.delete({ where: { id: request.user.id } });
-    await removeAttachmentFiles(storageKeys);
+    await deleteUserWithFiles(request.user.id);
     response.clearCookie("session_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

@@ -10,6 +10,7 @@ import eventRouter from "./routes/event.routes.js";
 import workspaceRouter from "./routes/workspace.routes.js";
 import invitationRouter from "./routes/invitation.routes.js";
 import attachmentRouter from "./routes/attachment.routes.js";
+import adminRouter from "./routes/admin.routes.js";
 import whiteboardRouter, {
   whiteboardBodyParser,
 } from "./routes/whiteboard.routes.js";
@@ -65,6 +66,7 @@ app.use("/api/events", eventRouter);
 app.use("/api/projects/:projectId/tasks", taskRouter);
 app.use("/api/projects/:projectId/whiteboard", whiteboardRouter);
 app.use("/api/attachments", attachmentRouter);
+app.use("/api/admin", adminRouter);
 app.use(notFound);
 app.use(errorHandler);
 

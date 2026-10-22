@@ -422,6 +422,25 @@ R2_JURISDICTION=eu
 
 Die API vertraut genau einem Proxy (`TRUST_PROXY_HOPS=1`, Standard), damit Render-Anfragen pro Besucher-IP gezählt werden. `PORT` wird von Render automatisch bereitgestellt.
 
+### Plattform-Administratoren
+
+Das Admin-Dashboard unter `/app/admin` zeigt Konten, Aktivität, Länder, Geräte und Speicher und erlaubt das Sperren und Löschen von Konten. Inhalte von Projekten, Aufgaben, Terminen und Dateien sind dort nicht sichtbar. Admin-Rechte lassen sich bewusst nicht in der App vergeben.
+
+Lokal:
+
+```bash
+npm run admin:grant -- person@example.com
+npm run admin:revoke -- person@example.com
+```
+
+In Produktion (ohne Render-Shell) im SQL Editor von Neon:
+
+```sql
+UPDATE "User" SET "isPlatformAdmin" = true WHERE "email" = 'person@example.com';
+```
+
+Beim Login wird aus der IP-Adresse offline nur das Land ermittelt (Daten der Number Resource Organization, CC BY 4.0); die IP-Adresse selbst wird nicht gespeichert.
+
 Der kostenlose Render Web Service kann nach längerer Inaktivität herunterfahren. Deshalb kann die erste API-Anfrage kurzzeitig länger dauern.
 
 ## Produktionsprüfung

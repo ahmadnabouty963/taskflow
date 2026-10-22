@@ -30,7 +30,12 @@ export function PrivacyPage() {
           <li>Name und E-Mail-Adresse des Benutzerkontos</li>
           <li>sicher gehashter Passwortwert</li>
           <li>Session- und Anmeldedaten</li>
-          <li>vom Benutzer erstellte Projekte und Aufgaben</li>
+          <li>vom Benutzer erstellte Projekte, Aufgaben, Termine und Whiteboards</li>
+          <li>hochgeladene Dateien wie Bilder, PDFs und Office-Dokumente</li>
+          <li>
+            Zeitpunkt der letzten Anmeldung und Aktivität sowie Land, Gerätetyp
+            und Browser der letzten Anmeldung
+          </li>
           <li>E-Mail-Adressen und Rollen für Team-Einladungen</li>
           <li>technische Verbindungs- und Sicherheitsdaten</li>
         </ul>
@@ -43,7 +48,12 @@ export function PrivacyPage() {
           Speicherung der Projekte und Aufgaben sowie zur Absicherung der
           Anwendung verarbeitet. Rechtsgrundlagen sind insbesondere Art. 6
           Abs. 1 lit. b DSGVO für die Bereitstellung der Anwendung und Art. 6
-          Abs. 1 lit. f DSGVO für Sicherheit und Missbrauchsprävention.
+          Abs. 1 lit. f DSGVO für Sicherheit und Missbrauchsprävention. Auf
+          derselben Grundlage sehen Plattform-Administratoren eine Übersicht
+          der Konten mit Registrierungsdatum, letzter Aktivität, Land und
+          Gerätetyp sowie zusammengefasste Nutzungszahlen. Sie können Konten bei
+          Missbrauch sperren oder löschen. Inhalte von Projekten, Aufgaben,
+          Terminen und Dateien sind in dieser Übersicht nicht sichtbar.
         </p>
       </section>
 
@@ -54,6 +64,14 @@ export function PrivacyPage() {
           Session-Cookie. Es ist als HttpOnly, Secure und SameSite=Lax
           konfiguriert und wird nicht für Werbung oder Analyse verwendet.
         </p>
+        <p>
+          Bei jeder Anmeldung ermittelt Ordanly aus der IP-Adresse das Land und
+          aus der Browserkennung den Gerätetyp und den Browser. Gespeichert
+          werden nur das Land, der Gerätetyp und der Browser, nicht die
+          IP-Adresse. Die Länderzuordnung erfolgt auf dem eigenen Server ohne
+          Anfrage an Dritte und beruht auf Daten der Number Resource
+          Organization (nro.net), lizenziert unter CC BY 4.0.
+        </p>
       </section>
 
       <section>
@@ -61,7 +79,12 @@ export function PrivacyPage() {
         <p>
           Das Frontend wird über Vercel bereitgestellt. Die REST-API wird über
           Render betrieben und die PostgreSQL-Datenbank über Neon. Dabei können
-          technisch notwendige Verbindungsdaten verarbeitet werden. Für
+          technisch notwendige Verbindungsdaten verarbeitet werden.
+          Hochgeladene Dateien werden bei Cloudflare R2 mit Speicherort in der
+          Europäischen Union gespeichert. Der Zugriff ist nur Mitgliedern des
+          jeweiligen Arbeitsbereichs über zeitlich begrenzte Links möglich.
+          Beim Löschen einer Aufgabe, eines Projekts oder des Kontos werden
+          die zugehörigen Dateien ebenfalls gelöscht. Für
           internationale Datenübermittlungen gelten die Vereinbarungen und
           Schutzmechanismen der jeweiligen Anbieter.
         </p>
@@ -130,7 +153,7 @@ export function PrivacyPage() {
         </p>
       </section>
 
-      <p className="legal-updated">Stand: 20. Oktober 2026</p>
+      <p className="legal-updated">Stand: 22. Oktober 2026</p>
     </LegalLayout>
   );
 }

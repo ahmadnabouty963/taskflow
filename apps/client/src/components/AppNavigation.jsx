@@ -119,6 +119,9 @@ export function AppNavigation({ active, children, currentProject = false, onLogo
                 <span className="workspace-nav__item workspace-nav__item--active" key="current-project">{t("nav.currentProject")}</span>
               ),
             ])}
+            {user.isPlatformAdmin && (
+              <Link className={itemClass("admin", "workspace-nav__item")} to="/app/admin">{t("nav.admin")}</Link>
+            )}
           </nav>
         </div>
         <div className="workspace-user">
