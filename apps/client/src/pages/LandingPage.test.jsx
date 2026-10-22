@@ -70,4 +70,25 @@ describe("LandingPage", () => {
       screen.queryByRole("link", { name: "Log in" }),
     ).not.toBeInTheDocument();
   });
+
+  it("lists every feature, including the newer ones, in both languages", () => {
+    const { unmount } = renderLandingPage({ user: null, isLoading: false });
+    const features = screen.getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent);
+
+    expect(features).toEqual(expect.arrayContaining([
+      "Project whiteboards",
+      "Files and attachments",
+      "Shared calendars",
+      "Today and Upcoming",
+      "Invitations by email",
+      "Phone, dark mode and two languages",
+    ]));
+    expect(document.querySelectorAll(".landing-feature-grid article")).toHaveLength(12);
+    unmount();
+
+    renderLandingPage({ user: null, isLoading: false }, "de");
+    expect(screen.getByRole("heading", { name: "Whiteboard für Projekte" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Gemeinsame Kalender" })).toBeInTheDocument();
+    expect(screen.queryByText(/landing\.feature\./)).not.toBeInTheDocument();
+  });
 });

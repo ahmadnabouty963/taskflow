@@ -3,7 +3,20 @@ import { BrandLogo } from "../components/BrandLogo.jsx";
 import { useAuth } from "../context/auth-context.js";
 import { useLanguage } from "../context/language-context.js";
 
-const featureKeys = ["workspaces", "tasks", "calendar", "details", "recurring", "account"];
+const featureKeys = [
+  "workspaces",
+  "tasks",
+  "whiteboard",
+  "files",
+  "calendar",
+  "sharedCalendars",
+  "agenda",
+  "details",
+  "recurring",
+  "invitations",
+  "mobile",
+  "account",
+];
 const workflowKeys = ["one", "two", "three"];
 
 export function LandingPage() {
