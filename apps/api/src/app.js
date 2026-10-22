@@ -11,6 +11,7 @@ import workspaceRouter from "./routes/workspace.routes.js";
 import invitationRouter from "./routes/invitation.routes.js";
 import attachmentRouter from "./routes/attachment.routes.js";
 import adminRouter from "./routes/admin.routes.js";
+import analyticsRouter from "./routes/analytics.routes.js";
 import whiteboardRouter, {
   whiteboardBodyParser,
 } from "./routes/whiteboard.routes.js";
@@ -55,6 +56,8 @@ app.get("/api/health", (request, response) => {
   });
 });
 
+// Mounted before the general limiter: it has its own limit for guests.
+app.use("/api/analytics", analyticsRouter);
 app.use("/api", apiLimiter);
 
 app.use("/api/auth", authRouter);

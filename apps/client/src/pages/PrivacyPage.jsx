@@ -114,10 +114,30 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>8. Keine Analyse- oder Werbe-Cookies</h2>
+        <h2>8. Besucherstatistik ohne Cookies</h2>
         <p>
-          Ordanly verwendet derzeit keine Webanalyse, kein Werbetracking und
-          keine personalisierte Werbung.
+          Um die Website zu verbessern, zählt Ordanly Seitenaufrufe mit einer
+          eigenen, datensparsamen Statistik. Es werden keine Cookies gesetzt und
+          keine Daten im Browser gespeichert. Erfasst werden die aufgerufene
+          Seite (ohne persönliche Links wie Einladungs- oder Passwort-Links),
+          die Domain der verweisenden Website, das aus der IP-Adresse ermittelte
+          Land sowie Gerätetyp und Browser.
+        </p>
+        <p>
+          Damit ein Besucher an einem Tag nur einmal gezählt wird, bildet
+          Ordanly aus IP-Adresse, Browserkennung und einem täglich neu erzeugten
+          Zufallswert eine anonyme Prüfsumme. Der Zufallswert des Vortags wird
+          gelöscht, sodass Besuche an verschiedenen Tagen nicht miteinander
+          verknüpft und keiner Person zugeordnet werden können. Die IP-Adresse
+          selbst wird nicht gespeichert. Ist im Browser „Do Not Track“ oder
+          „Global Privacy Control“ aktiviert, wird der Besuch nicht gezählt.
+        </p>
+        <p>
+          Die einzelnen Aufrufe werden nach zwölf Monaten gelöscht; danach
+          bleiben nur Monatssummen ohne Einzelangaben erhalten. Rechtsgrundlage
+          ist Art. 6 Abs. 1 lit. f DSGVO, das berechtigte Interesse an der
+          Verbesserung des Angebots. Ordanly verwendet kein Werbetracking, keine
+          personalisierte Werbung und keine Analysedienste Dritter.
         </p>
       </section>
 

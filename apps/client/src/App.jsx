@@ -21,12 +21,14 @@ import { VerifyEmailPage } from "./pages/VerifyEmailPage.jsx";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage.jsx";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage.jsx";
 import { PageTitle } from "./components/PageTitle.jsx";
+import { PageViewTracker } from "./components/PageViewTracker.jsx";
 import "./App.css";
 
 function App() {
   return (
     <>
       <PageTitle />
+      <PageViewTracker />
       <LanguageSwitcher />
       <ThemeToggle />
       <Routes>

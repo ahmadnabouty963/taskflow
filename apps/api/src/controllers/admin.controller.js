@@ -222,3 +222,71 @@ export async function deleteUser(request, response, next) {
     next(error);
   }
 }
+
+// Visitors are counted per day (the anonymous hash changes daily), so a
+// period's visitor total is the sum of each day's unique visitors.
+export async function getTraffic(request, response, next) {
+  try {
+    const { days } = request.validatedQuery;
+    const since = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate() - (days - 1)));
+
+    const topBy = (column, limit = 10) => prisma.$queryRaw`
+      SELECT ${Prisma.raw(`"${column}"`)} AS value, COUNT(DISTINCT "visitorHash")::int AS count
+      FROM "PageView"
+      WHERE "createdAt" >= ${since}
+      GROUP BY 1
+      ORDER BY 2 DESC
+      LIMIT ${limit}`;
+
+    const [daily, pages, referrers, countries, devices, browsers, signups, monthly] = await Promise.all([
+      prisma.$queryRaw`
+        SELECT to_char(date_trunc('day', "createdAt"), 'YYYY-MM-DD') AS day,
+               COUNT(DISTINCT "visitorHash")::int AS visitors,
+               COUNT(*)::int AS "pageViews"
+        FROM "PageView"
+        WHERE "createdAt" >= ${since}
+        GROUP BY 1
+        ORDER BY 1`,
+      prisma.$queryRaw`
+        SELECT "path" AS value, COUNT(*)::int AS count
+        FROM "PageView"
+        WHERE "createdAt" >= ${since}
+        GROUP BY 1
+        ORDER BY 2 DESC
+        LIMIT 10`,
+      topBy("referrerHost"),
+      topBy("country"),
+      topBy("device"),
+      topBy("browser"),
+      prisma.user.count({ where: { createdAt: { gte: since } } }),
+      prisma.monthlyTraffic.findMany({ orderBy: { month: "desc" }, take: 24 }),
+    ]);
+
+    const visitors = daily.reduce((sum, day) => sum + day.visitors, 0);
+    const pageViews = daily.reduce((sum, day) => sum + day.pageViews, 0);
+    const today = new Date().toISOString().slice(0, 10);
+
+    return response.status(200).json({
+      success: true,
+      data: {
+        days,
+        totals: {
+          visitors,
+          pageViews,
+          visitorsToday: daily.find((day) => day.day === today)?.visitors ?? 0,
+          signups,
+          conversionRate: visitors > 0 ? signups / visitors : null,
+        },
+        daily,
+        pages,
+        referrers,
+        countries,
+        devices,
+        browsers,
+        monthly,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}

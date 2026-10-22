@@ -4479,3 +4479,12 @@ body:has(.dialog-backdrop, .task-detail-backdrop) .language-switcher-wrapper {
   .admin-table td[data-label]:not(:first-child)::before { content: attr(data-label); display: block; color: var(--muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
   .admin-table__actions { padding-bottom: 14px !important; text-align: left; }
 }
+
+/* Admin visitor statistics */
+.admin-traffic { margin-top: 32px; }
+.admin-traffic .admin-users__header { align-items: flex-start; flex-wrap: wrap; }
+.admin-traffic__note { max-width: 46rem; margin: 6px 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.5; }
+.admin-panels--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.admin-traffic__archive { margin-top: 12px; }
+@media (max-width: 1100px) { .admin-panels--three { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .admin-panels--three { grid-template-columns: minmax(0, 1fr); } }

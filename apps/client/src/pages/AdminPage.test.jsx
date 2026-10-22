@@ -39,9 +39,22 @@ const sara = {
   isCurrentUser: false,
 };
 
+const traffic = {
+  days: 30,
+  totals: { visitors: 120, pageViews: 340, visitorsToday: 9, signups: 6, conversionRate: 0.05 },
+  daily: [{ day: new Date().toISOString().slice(0, 10), visitors: 9, pageViews: 20 }],
+  pages: [{ value: "/", count: 200 }, { value: "/register", count: 40 }],
+  referrers: [{ value: null, count: 70 }, { value: "google.com", count: 30 }],
+  countries: [{ value: "DE", count: 90 }],
+  devices: [{ value: "MOBILE", count: 60 }],
+  browsers: [{ value: "Safari", count: 50 }],
+  monthly: [],
+};
+
 function mockAdminApi() {
   apiRequest.mockImplementation((path, options = {}) => {
     if (path === "/api/admin/overview") return Promise.resolve({ data: overview });
+    if (path.startsWith("/api/admin/traffic")) return Promise.resolve({ data: { ...traffic, days: Number(new URLSearchParams(path.split("?")[1]).get("days")) } });
     if (path.startsWith("/api/admin/users?")) {
       return Promise.resolve({ data: { users: [sara], pagination: { page: 1, limit: 25, total: 1, totalPages: 1 } } });
     }
@@ -134,6 +147,7 @@ describe("Admin dashboard", () => {
   it("offers no actions on the admin's own account", async () => {
     apiRequest.mockImplementation((path) => {
       if (path === "/api/admin/overview") return Promise.resolve({ data: overview });
+    if (path.startsWith("/api/admin/traffic")) return Promise.resolve({ data: { ...traffic, days: Number(new URLSearchParams(path.split("?")[1]).get("days")) } });
       return Promise.resolve({ data: { users: [{ ...sara, isCurrentUser: true, isPlatformAdmin: true }], pagination: { page: 1, limit: 25, total: 1, totalPages: 1 } } });
     });
     renderAdmin();
@@ -149,5 +163,21 @@ describe("Admin dashboard", () => {
     expect(await screen.findByRole("heading", { name: "Admin-Dashboard" })).toBeInTheDocument();
     expect(await screen.findByText("Handy · Chrome")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Länder bei der letzten Anmeldung" })).getByText("Deutschland")).toBeInTheDocument();
+  });
+
+  it("shows visitor statistics and switches the period", async () => {
+    const user = userEvent.setup();
+    renderAdmin();
+
+    const section = await screen.findByRole("region", { name: "Visitors" });
+    expect(await within(section).findByText("120")).toBeInTheDocument();
+    expect(within(section).getByText("5%")).toBeInTheDocument();
+    expect(within(section).getByText("Homepage")).toBeInTheDocument();
+    expect(within(section).getByText("Direct or unknown")).toBeInTheDocument();
+    expect(within(section).getByText("google.com")).toBeInTheDocument();
+
+    await user.click(within(section).getByRole("button", { name: "90 days" }));
+    await waitFor(() => expect(apiRequest).toHaveBeenCalledWith("/api/admin/traffic?days=90", expect.anything()));
+    expect(within(section).getByRole("button", { name: "90 days" })).toHaveAttribute("aria-pressed", "true");
   });
 });

@@ -311,3 +311,33 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
 }
+
+// Cookieless visitor statistics. A visitor is only recognisable within one
+// day: visitorHash mixes the IP and browser with a salt that is replaced
+// daily, and neither the IP nor old salts are kept.
+model PageView {
+  id           String   @id @default(uuid())
+  path         String
+  referrerHost String?
+  country      String?
+  device       String?
+  browser      String?
+  visitorHash  String
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([visitorHash, createdAt])
+}
+
+model AnalyticsSalt {
+  day       String   @id
+  salt      String
+  createdAt DateTime @default(now())
+}
+
+// Page views older than twelve months are folded into these monthly totals.
+model MonthlyTraffic {
+  month     String @id
+  visitors  Int
+  pageViews Int
+}

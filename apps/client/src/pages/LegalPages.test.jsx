@@ -38,7 +38,8 @@ describe("Legal pages", () => {
     expect(heading).toHaveClass("legal-title--long");
 
     expect(screen.getByText(/Vercel bereitgestellt/i)).toBeInTheDocument();
-    expect(screen.getByText(/keine Webanalyse/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Besucherstatistik ohne Cookies/i })).toBeInTheDocument();
+    expect(screen.getByText(/keine Analysedienste Dritter/i)).toBeInTheDocument();
     expect(screen.getByText(/HttpOnly, Secure/i)).toBeInTheDocument();
   });
 });
